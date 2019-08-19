@@ -1,0 +1,108 @@
+OBJS =  functions_real.o functions_complex.o binary_decimal.o Base_to_Decimal.o reading_input.o Basis_2_orb_Hubbard_chain.o Basis_2_orb_Hubbard_chain_KSector.o Basis_3_orb_Hubbard_chain.o Basis_3_orb_Hubbard_chain_two_SzSectors.o Basis_3_orb_Hubbard_chain_GC.o Basis_3_orb_Hubbard_chain_GC_restricted.o Model_2_orb_Hubbard_chain.o Model_2_orb_Hubbard_chain_KSector.o Model_3_orb_Hubbard_chain.o Model_3_orb_Hubbard_chain_GC.o Model_3_orb_Hubbard_chain_two_SzSectors.o Model_3_orb_Hubbard_chain_two_SzSectors_complex.o Model_3_orb_Hubbard_chain_complex.o Basis_1_orb_Hubbard_chain.o Basis_1_orb_tJ.o Basis_Spins.o Model_Spins.o Model_1_orb_Hubbard_chain.o Model_1_orb_Hubbard_chain_complex.o Model_1_orb_tJ.o Model_1_orb_tJ_complex.o Lanczos_engine_real.o Lanczos_engine_complex.o main.o 
+DEBUG = #-g3
+OPTFLAG = -O3
+CC = g++ $(OPTFLAG) #-std=c++11
+CFLAGS = -c $(DEBUG) #-DUSE_COMPLEX
+LFLAGS = $(DEBUG)
+MKL_LIB = #/opt/intel/mkl/lib/libmkl_core.a  /opt/intel/mkl/lib/libmkl_intel_lp64.a /opt/intel/mkl/lib/libmkl_sequential.a
+MKL_LIB += -llapack -lblas #-ldl -lpthread -lm
+MKL_LIB2 = #-L/opt/intel/mkl/lib/ -lmkl_core -lmkl_intel_lp64 -lmkl_sequential /opt/intel/mkl/lib/libmkl_core.a  /opt/intel/mkl/lib/libmkl_intel_lp65.a /opt/intel/mkl/lib/libmkl_sequential.a
+MKL_LIB2 = #/opt/intel/mkl/lib/libmkl_core.a  /opt/intel/mkl/lib/libmkl_intel_lp64.a /opt/intel/mkl/lib/libmkl_sequential.a
+MKL_include = #-I/opt/intel/mkl/include
+OPENMP = #/opt/intel/compilers_and_libraries_2016.3.170/mac/compiler/lib/
+LIBS_1 =  #-L$(OPENMP)
+LIBS_1 += #-liomp5 #-qopenmp
+ 
+
+all : clean $(OBJS) 
+	$(CC) $(LFLAGS) $(OBJS) -o lanczos $(MKL_include) $(MKL_LIB2) $(MKL_LIB) $(LIBS_1)
+
+functions_real.o : functions_real.cpp
+	$(CC) $(CFLAGS) functions_real.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+functions_complex.o : functions_complex.cpp
+	$(CC) $(CFLAGS) functions_complex.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+reading_input.o : reading_input.cpp
+	$(CC) $(CFLAGS) reading_input.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+binary_decimal.o : binary_decimal.cpp
+	$(CC) $(CFLAGS) binary_decimal.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Base_to_Decimal.o : Base_to_Decimal.cpp
+	$(CC) $(CFLAGS) Base_to_Decimal.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Basis_2_orb_Hubbard_chain_KSector.o : basis/Basis_2_orb_Hubbard_chain_KSector.cpp
+	$(CC) $(CFLAGS) basis/Basis_2_orb_Hubbard_chain_KSector.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Basis_2_orb_Hubbard_chain.o : basis/Basis_2_orb_Hubbard_chain.cpp
+	$(CC) $(CFLAGS) basis/Basis_2_orb_Hubbard_chain.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Basis_3_orb_Hubbard_chain.o : basis/Basis_3_orb_Hubbard_chain.cpp
+	$(CC) $(CFLAGS) basis/Basis_3_orb_Hubbard_chain.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Basis_3_orb_Hubbard_chain_two_SzSectors.o : basis/Basis_3_orb_Hubbard_chain_two_SzSectors.cpp
+	$(CC) $(CFLAGS) basis/Basis_3_orb_Hubbard_chain_two_SzSectors.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Basis_3_orb_Hubbard_chain_GC.o : basis/Basis_3_orb_Hubbard_chain_GC.cpp
+	$(CC) $(CFLAGS) basis/Basis_3_orb_Hubbard_chain_GC.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Basis_3_orb_Hubbard_chain_GC_restricted.o : basis/Basis_3_orb_Hubbard_chain_GC_restricted.cpp
+	$(CC) $(CFLAGS) basis/Basis_3_orb_Hubbard_chain_GC_restricted.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Model_3_orb_Hubbard_chain_two_SzSectors.o : models/Model_3_orb_Hubbard_chain_two_SzSectors.cpp
+	$(CC) $(CFLAGS) models/Model_3_orb_Hubbard_chain_two_SzSectors.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Model_3_orb_Hubbard_chain_two_SzSectors_complex.o : models/Model_3_orb_Hubbard_chain_two_SzSectors_complex.cpp
+	$(CC) $(CFLAGS) models/Model_3_orb_Hubbard_chain_two_SzSectors_complex.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Model_2_orb_Hubbard_chain.o : models/Model_2_orb_Hubbard_chain.cpp
+	$(CC) $(CFLAGS) models/Model_2_orb_Hubbard_chain.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Model_2_orb_Hubbard_chain_KSector.o : models/Model_2_orb_Hubbard_chain_KSector.cpp
+	$(CC) $(CFLAGS) models/Model_2_orb_Hubbard_chain_KSector.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Model_3_orb_Hubbard_chain.o : models/Model_3_orb_Hubbard_chain.cpp
+	$(CC) $(CFLAGS) models/Model_3_orb_Hubbard_chain.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Model_3_orb_Hubbard_chain_complex.o : models/Model_3_orb_Hubbard_chain_complex.cpp
+	$(CC) $(CFLAGS) models/Model_3_orb_Hubbard_chain_complex.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Model_3_orb_Hubbard_chain_GC.o : models/Model_3_orb_Hubbard_chain_GC.cpp
+	$(CC) $(CFLAGS) models/Model_3_orb_Hubbard_chain_GC.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Basis_1_orb_Hubbard_chain.o : basis/Basis_1_orb_Hubbard_chain.cpp
+	$(CC) $(CFLAGS) basis/Basis_1_orb_Hubbard_chain.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Basis_Spins.o : basis/Basis_Spins.cpp
+	$(CC) $(CFLAGS) basis/Basis_Spins.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Basis_1_orb_tJ.o : basis/Basis_1_orb_tJ.cpp
+	$(CC) $(CFLAGS) basis/Basis_1_orb_tJ.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Model_Spins.o : models/Model_Spins.cpp
+	$(CC) $(CFLAGS) models/Model_Spins.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Model_1_orb_Hubbard_chain.o : models/Model_1_orb_Hubbard_chain.cpp
+	$(CC) $(CFLAGS) models/Model_1_orb_Hubbard_chain.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Model_1_orb_tJ_complex.o : models/Model_1_orb_tJ_complex.cpp
+	$(CC) $(CFLAGS) models/Model_1_orb_tJ_complex.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Model_1_orb_tJ.o : models/Model_1_orb_tJ.cpp
+	$(CC) $(CFLAGS) models/Model_1_orb_tJ.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Model_1_orb_Hubbard_chain_complex.o : models/Model_1_orb_Hubbard_chain_complex.cpp
+	$(CC) $(CFLAGS) models/Model_1_orb_Hubbard_chain_complex.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Lanczos_engine_real.o : Lanczos_engine_real.cpp
+	$(CC) $(CFLAGS) Lanczos_engine_real.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Lanczos_engine_complex.o : Lanczos_engine_complex.cpp
+	$(CC) $(CFLAGS) Lanczos_engine_complex.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+main.o : main.cpp
+	$(CC) $(CFLAGS) main.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+clean:
+	rm -f *.o lanczos

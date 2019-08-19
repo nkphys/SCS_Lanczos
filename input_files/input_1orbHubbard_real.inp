@@ -1,0 +1,57 @@
+Geometry = NNN_2D_Lattice
+Model = 1_orb_Hubbard_chain
+------------------------------------------
+PBC = true
+Length_X = 2
+Length_Y = 2
+Ndown = 2
+Nup = 2
+ 
+Hopping = 1.0
+Hopping_NN = 0.0
+U = 10.0
+H_mag = 0
+File_Onsite_Energies = true onsite_ener.txt
+----------------------------------------
+-------------------------------------
+Lanc_Error = 10e-12
+max_steps = 300
+file_eval_spectrum = out0.txt
+save_all_Krylov_space_vecs = false
+get_overlap_bw_eigstates_and_K_vecs = false
+lanczos_reorthogonalization = false
+Get_Full_Spectrum = false
+need_few_eig_vecs = false
+few = 6
+----------------------------------------
+Get_overlap_with_basis = false
+States_to_look = 11 0 3 4 5 13 14 15 16 58 1 2
+overlap_out_file = out0.txt
+calculate_local_obs_for_states_to_look = false
+calculate_local_obs_for_states_to_look_for_first_n_basis = 100
+file_out_local_obs_for_states_to_look = local_obs_for_state_no
+--------------------------------------
+
+----------------------------------
+Perform_Dynamics = false
+eta = 0.2
+check_omega = 0.05
+omega_max = 20.0
+omega_min = -20.0
+d_omega = 0.001
+Opr_for_Dynamics = J
+Momentum_resolved = false
+k = 0.4
+file_dynamics_out = orb0_up_site1
+Dynamics_dos_operators = 1 1.0 0 1 1
+---------------------------------
+
+---------------------------------------------------
+#2 1.654 0 0 1 0.0321 0 1 1
+#no_of_orps real orb spin site ...
+
+#upspin=0, downspin=1
+---------------------------------
+
+
+

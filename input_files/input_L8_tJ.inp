@@ -1,0 +1,59 @@
+Model = 1_orb_tJ
+------------------------------------------
+PBC = false
+Length = 8
+Ndown = 2
+Nup = 2
+
+Hopping NN = -1.0
+U = 0
+H_mag = 0
+LongRangeHopping = true
+LongRangeInteraction = true
+LongRangeExchangeZZ = true
+LongRangeExchangePM = true
+LongRangeHopping file = input_files/hopping_longrange_8.txt
+LongRangeInteraction file = input_files/denden_longrange_8_old.txt
+LongRangeExchangeZZ file = input_files/Jzz_longrange_8_old.txt
+LongRangeExchangePM file = input_files/Jpm_longrange_8_old.txt
+----------------------------------------
+
+No_of_onepoint_obs = 2
+One_point_oprt_path_1 = nup.txt
+One_point_oprt_path_2 = n.txt
+
+
+--------------------------------------
+FourPointObservablesSites file = fourpoint.txt
+-------------------------------------
+Lanc_Error = -10e-15
+max_steps = 200
+file_eval_spectrum = out0.txt
+save_all_Krylov_space_vecs = false
+get_overlap_bw_eigstates_and_K_vecs = false
+lanczos_reorthogonalization = false
+Get_Full_Spectrum = true
+need_few_eig_vecs = false
+few = 6
+----------------------------------------
+Get_overlap_with_basis = false
+States_to_look = 6 0 1 2 3 4 5
+overlap_out_file = out0.txt
+calculate_local_obs_for_states_to_look = true
+calculate_local_obs_for_states_to_look_for_first_n_basis = 100
+file_out_local_obs_for_states_to_look = local_obs_for_state_no
+--------------------------------------
+
+----------------------------------
+Perform_Dynamics = false
+eta = 0.05
+check_omega = 0.05
+omega_max = 20.0
+omega_min = 0.02
+d_omega = 0.001
+Opr_for_Dynamics = J
+Momentum_resolved = false
+k = 0.4
+file_dynamics_out = J_1orbHubb_U0_L12_n2.txt
+---------------------------------
+

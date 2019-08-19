@@ -1,0 +1,91 @@
+Model = 2_orb_Hubbard_chain
+------------------------------------------
+PBC = true
+Length = 6
+Ndown = 6
+Nup = 6
+CFS = 0.0 0.0
+
+Hopping_mat[0][orb] = 1.0 0.0
+Hopping_mat[1][orb] = 0.0 1.0
+U = U_VALUE
+JHund = JHUND_VALUE
+Uprime = UPRIME_VALUE
+Dz_Anisotropy = 0.0
+H_mag = 0
+----------------------------------------
+--------------------------------------
+Lanc_Error = -10e-6
+max_steps = 400
+file_eval_spectrum = out0.txt
+save_all_Krylov_space_vecs = false
+get_overlap_bw_eigstates_and_K_vecs = true
+lanczos_reorthogonalization = false
+Get_Full_Spectrum = true
+need_few_eig_vecs = false
+few = 6
+----------------------------------------
+Get_overlap_with_basis = false
+States_to_look = 12 0 1 2 3 4 5 6 7 8 9 10 11
+overlap_out_file = overlap_out.txt
+calculate_local_obs_for_states_to_look = false
+calculate_local_obs_for_states_to_look_for_first_n_basis = 100
+file_out_local_obs_for_states_to_look = local_obs_for_state_no
+--------------------------------------
+
+#D === Diagonal pair
+#AC === Along chain
+#OA === Orbital antisymmetric
+#OS === Orbital Symmetric
+#NOS1 === part_1 i.e / or _(on orb 0) 
+#NOS2 === part_2 i.e \ or -(on orb 1)
+#S === Spin Singlet
+#T === Spin Triplet
+
+-------------------------
+Variational_state_contruction = AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0
+
+
+#AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 0
+
+
+#AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0 
+
+
+
+#AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0
+
+#AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0 
+#AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 0
+#AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0
+#AC S NOS1 6 7 AC S NOS2 7 0
+-------------------------
+
+
+
+
+
+----------------------------------
+Perform_Dynamics = false
+check_omega = 0.05
+Opr_for_Dynamics = J_0
+Momentum_resolved = false
+k = 0.4
+file_dynamics_out = opt_orbHubb_U0_L12_n2.txt
+---------------------------------
+
+---------------For both RIXS and std. dynamics---------
+eta = 0.05
+omega_max = 20.0
+omega_min = 0.02
+d_omega = 0.001
+--------------------------------------
+
+----------------------------------------
+Perform_RIXS = false
+Gamma = 0.2
+No_of_intermediate_states(n) = 100
+Light_polarization_in = 1 0 0 
+Light_polarization_in = 0 1 0
+Incident_energy = 0.1
+----------------------------------------

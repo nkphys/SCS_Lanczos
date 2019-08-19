@@ -1,0 +1,58 @@
+Model = 1_orb_Hubbard_chain
+------------------------------------------
+PBC = false
+Length = 8
+Ndown = 0
+Nup = 4
+ 
+Hopping NN = -1.0
+U = 0
+H_mag = 0
+LongRangeHopping = true
+LongRangeInteraction = false
+LongRangeHopping file = LongRangeinputs/hopp_L8.txt
+LongRangeInteraction file = LongRangeinputs/interaction_L8.txt
+----------------------------------------
+
+No_of_onepoint_obs = 6
+One_point_oprt_path_1 = OPRTS/n_up.txt
+One_point_oprt_path_2 = OPRTS/n.txt
+One_point_oprt_path_3 = OPRTS/n_dn.txt
+One_point_oprt_path_4 = OPRTS/Sz.txt
+One_point_oprt_path_5 = OPRTS/Sz_2.txt
+One_point_oprt_path_6 = OPRTS/S_2.txt
+
+--------------------------------------
+FourPointObservablesSites file = fourpoint.txt
+-------------------------------------
+Lanc_Error = -10e-15
+max_steps = 300
+file_eval_spectrum = out0.txt
+save_all_Krylov_space_vecs = false
+get_overlap_bw_eigstates_and_K_vecs = false
+lanczos_reorthogonalization = false
+Get_Full_Spectrum = true
+need_few_eig_vecs = false
+few = 6
+----------------------------------------
+Get_overlap_with_basis = false
+States_to_look = 11 0 3 4 5 13 14 15 16 58 1 2
+overlap_out_file = out0.txt
+calculate_local_obs_for_states_to_look = false
+calculate_local_obs_for_states_to_look_for_first_n_basis = 100
+file_out_local_obs_for_states_to_look = local_obs_for_state_no
+--------------------------------------
+
+----------------------------------
+Perform_Dynamics = false
+eta = 0.05
+check_omega = 0.05
+omega_max = 20.0
+omega_min = 0.02
+d_omega = 0.001
+Opr_for_Dynamics = J
+Momentum_resolved = false
+k = 0.4
+file_dynamics_out = J_1orbHubb_U0_L12_n2.txt
+---------------------------------
+
