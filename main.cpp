@@ -1476,8 +1476,6 @@ int main(int argc, char** argv){
         cout<<"Connections done"<<endl;
 
 
-
-
         cout<<"Size of Hilbert space = "<<_MODEL.Hamil.nrows<<endl;
         cout<<scientific<<setprecision(1);
         // Print_Matrix_COO(_MODEL.Hamil);
@@ -1495,6 +1493,45 @@ int main(int argc, char** argv){
         _MODEL.Initialize_two_point_to_calculate();
 
 
+#ifdef USE_COMPLEX
+
+    if(false){
+        //--UPDATING Lanczos Eig vecs with phase---------//
+        complex<double> a_;
+        //double _PI_ = 3.14159265358979;
+        Mat_1_Complex_doub Phases;
+        Phases.resize(15);
+
+        //Only works for specific value U=20, H_mag = 0.000001, lambda_SOC = 0.002, Random_seed_generator = 321
+
+        a_=complex <double>(-0.408147,0.00907139);Phases[0]=conj(a_);
+        a_=complex <double>(0.432517,0.559401);Phases[1]=conj(a_);
+        a_=complex <double>(-0.418029,0.27432);Phases[2]=conj(a_);
+        a_=complex <double>(0.206927,0.286673);Phases[3]=conj(a_);
+        a_=complex <double>(-0.406994,0.578235);Phases[4]=conj(a_);
+        a_=complex <double>(0.0377325,-0.706099);Phases[5]=conj(a_);
+        a_=complex <double>(0.205799,0.202436);Phases[6]=conj(a_);
+        a_=complex <double>(0.259928,-0.239557);Phases[7]=conj(a_);
+        a_=complex <double>(-0.281476,0.648669);Phases[8]=conj(a_);
+        a_=complex <double>(0.342784,-0.364005);Phases[9]=conj(a_);
+        a_=complex <double>(-0.499813,0.0117241);Phases[10]=conj(a_);
+        a_=complex <double>(-0.014609,0.816366);Phases[11]=conj(a_);
+        a_=complex <double>(-0.391111,0.31158);Phases[12]=conj(a_);
+        a_=complex <double>(0.487954,0.10909);Phases[13]=conj(a_);
+        a_=complex <double>(0.113232,0.566138);Phases[14]=conj(a_);
+
+        for(int state_=0;state_<Phases.size();state_++){
+            value_multiply_vector(Phases[state_], _LANCZOS.Eig_vecs[state_]);
+            Normalize_vec(_LANCZOS.Eig_vecs[state_]);
+        }
+
+    }
+
+
+        //-----------DONE--------------------------------//
+#endif
+
+
         for(int i=0;i<_LANCZOS.states_to_look.size();i++){
             cout<<"===================FOR STATE NO "<<i<<"============================="<<endl;
             _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, i);
@@ -1502,6 +1539,21 @@ int main(int argc, char** argv){
             //_LANCZOS.Measure_two_point_observables(_MODEL.two_point_obs, _MODEL.Two_point_oprts, _BASIS.Length, i, _MODEL.PBC);
             _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs,_MODEL.One_point_oprts, _BASIS.Length, i,"3_orb_Hubbard_chain_GC");
             cout<<"============================================================================"<<endl;
+        }
+
+        //_MODEL.Get_Delta_Matrix(_LANCZOS);
+        _MODEL.Get_ExcitonCoherence_Length(_LANCZOS.Eig_vecs[0]);
+
+        for(int state_=0;state_<_LANCZOS.Eig_vecs.size();state_++){
+
+            string state_string;
+            stringstream state_ss;
+            state_ss << state_;
+            state_string = state_ss.str();
+
+            string file_name_state = "State"+ state_string + "_.txt";
+
+            Print_vector_in_file(_LANCZOS.Eig_vecs[state_], file_name_state);
         }
 
 

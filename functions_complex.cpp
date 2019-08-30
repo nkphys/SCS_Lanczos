@@ -493,6 +493,28 @@ void Print_Matrix_COO(Matrix_COO &A){
 }
 
 
+
+void Normalize_vec(Mat_1_doub &vec_in){
+
+    complex<double> val_comp;
+    double val;
+
+    val_comp = dot_product(vec_in, vec_in);
+    val = val_comp.real();
+    val = sqrt(val);
+    for(int i=0;i<vec_in.size();i++){
+        vec_in[i] = vec_in[i]*(1.0/val);
+    }
+
+}
+
+void value_multiply_vector(complex<double> value, Mat_1_doub &vec_in){
+
+    for(int i=0;i<vec_in.size();i++){
+    vec_in[i] = vec_in[i]*value;
+    }
+}
+
 complex<double> dot_product(Mat_1_doub &vec1, Mat_1_doub &vec2){
     //This dot_product is parallelized always, create another one with _PARALLELIZE_AT_MATRICES_LEVEL
     complex<double> temp;
@@ -505,7 +527,7 @@ complex<double> dot_product(Mat_1_doub &vec1, Mat_1_doub &vec2){
     //#pragma omp parallel for default(shared) reduction(+:temp1)
     //skiploop_143:
     for(int i=0;i<vec1.size();i++){
-        temp1 = temp1 + (vec1[i])*(conj(vec2[i]));
+        temp1 = temp1 + (vec1[i])*(conj(vec2[i])); //<vec2|vec1>
     }
 
     temp = temp1;

@@ -8,6 +8,25 @@ extern "C" void dsyev_(char * , char * , int * , double * , int *, double *, dou
 #ifndef USE_COMPLEX
 
 
+void Normalize_vec(Mat_1_doub &vec_in){
+
+    double val;
+
+    val = dot_product(vec_in, vec_in);
+    val = sqrt(val);
+    for(int i=0;i<vec_in.size();i++){
+        vec_in[i] = vec_in[i]*(1.0/val);
+    }
+
+}
+
+void value_multiply_vector(double value, Mat_1_doub &vec_in){
+
+    for(int i=0;i<vec_in.size();i++){
+    vec_in[i] = vec_in[i]*value;
+    }
+}
+
 void reading_input_dos_trio(string inp_filename, Mat_1_trio_int &TRIO_VEC, Mat_1_doub &values_ ){
 
 

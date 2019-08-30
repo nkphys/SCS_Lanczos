@@ -726,7 +726,7 @@ void LANCZOS::Measure_one_point_observables(Mat_1_string one_point_obs, Hamilton
 
             Matrix_COO_vector_multiplication("cx", One_point_oprts[opr_no][site], vector_used, temp_vec);
 
-            value = dot_product(vector_used,temp_vec);
+            value = dot_product(temp_vec,vector_used);
 
             cout<<one_point_obs[opr_no]<<"["<<site<<"]  "<<value<<endl;
             One_point_observables_values[opr_no][site]=value;

@@ -57,6 +57,11 @@ public:
                      Mat_1_trio_int TRIO_VEC, Mat_1_doub values);
     void Get_cdagger_on_GS(LANCZOS & lanczos, BASIS_3_orb_Hubb_chain_GC & basis_Np1,
                      Mat_1_trio_int TRIO_VEC, Mat_1_doub values);
+    void Get_Delta_Matrix(LANCZOS & lanczos);
+    void Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site);
+    void Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site, int site_p);
+    void Get_ExcitonCoherence_Length(Mat_1_doub &vector_used);
+
 
 private:
     Basis_type& basis;

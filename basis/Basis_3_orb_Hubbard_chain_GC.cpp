@@ -117,6 +117,38 @@ void BASIS_3_orb_Hubb_chain_GC::Construct_basis(){
     }
 
 
+    bool PRINTING_BASIS =false;
+    if(PRINTING_BASIS){
+        int up_el, dn_el;
+        string value_string;
+        for(int basis_index=0;basis_index<D_up_basis.size();basis_index++){
+            cout<<"basis = "<<basis_index<<" XXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+            for(int orb_no=2;orb_no>=0;orb_no--){
+                for(int site=0;site<Length;site++){
+                    up_el=bit_value(D_up_basis[basis_index],orb_no*Length + site);
+                    dn_el=bit_value(D_dn_basis[basis_index],orb_no*Length + site);
+                    if(up_el==1 && dn_el==1){
+                        value_string="ud";
+                    }
+                    else if(up_el==1 && dn_el==0){
+                        value_string ="up";
+                    }
+                    else if(up_el==0 && dn_el==1){
+                        value_string="dn";
+                    }
+                    else{
+                        value_string="00";
+                    }
+
+                    cout<<value_string<<" ";
+                }
+                cout<<endl;
+            }
+            cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+
+        }
+
+    }
 
     //cout<<"here 2"<<endl;
 

@@ -19,7 +19,13 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_diagonal_terms(){
     Hamil.nrows = basis.D_up_basis.size();
     Hamil.ncols = Hamil.nrows;
 
-
+    int gamma, gamma_p;
+    int D_up, D_dn;
+    int nup_temp, ndn_temp;
+    int m_new, i_new, j_new;
+    int l, lp;
+    int sign_pow_up;
+    double sign_FM;
 
     //Remember H[l][m]=<l|H|m>
     int m,j;
@@ -74,7 +80,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_diagonal_terms(){
 
 
 
-        //magnetic Field
+        //magnetic Field * [Sz]
         for(int gamma=0;gamma<3;gamma++){
             for(int site=0;site<basis.Length;site++){
                 value+=0.5*(H_field[site])*
@@ -83,9 +89,6 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_diagonal_terms(){
                           );
             }
         }
-
-
-
 
 
         if(value!=0){
@@ -111,6 +114,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_non_diagonal_terms(){
     double sign_FM ;
     int sign_pow_up, sign_pow_dn ;
     int l,lp;
+    int _gamma, _gamma_p;
     int nup_temp, ndn_temp;
     for (int i=0;i<basis.D_up_basis.size();i++){
 
@@ -257,6 +261,108 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_non_diagonal_terms(){
         } //gamma
 
 
+
+#ifdef USE_COMPLEX
+
+        //magnetic Field * [-Lz]
+        //---------------------------------------
+        _gamma=1;_gamma_p=0;
+        for(int site=0;site<basis.Length;site++){
+            //for up spin
+            if(
+                    (bit_value(basis.D_up_basis[i],_gamma*basis.Length + site)==1)
+                    &&
+                    (bit_value(basis.D_up_basis[i],_gamma_p*basis.Length + site)==0)
+                    )
+            {
+
+                D_up = (int) (basis.D_up_basis[i] - pow(2,_gamma*basis.Length + site) + pow(2,_gamma_p*basis.Length + site) );
+                D_dn = (int) (basis.D_dn_basis[i]);
+
+                if(basis.Restricted==true){
+                    nup_temp = __builtin_popcount(D_up);
+                    ndn_temp = __builtin_popcount(D_dn);
+                    // m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
+                    //       basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
+                    m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+                }
+                else{
+                    i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                    j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+                    m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                            basis.Nup_offsets[__builtin_popcount(D_up)].first;
+                }
+
+                //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,
+                //basis.D_dn_basis,__builtin_popcount(D_up),basis.Nup_offsets);
+
+                l=_gamma*basis.Length + site;
+                lp=_gamma_p*basis.Length + site;
+
+                sign_pow_up = one_bits_in_bw(lp ,l,basis.D_up_basis[i]);
+
+                sign_FM = pow(-1.0, sign_pow_up);
+
+
+                assert(m_new<m);
+                Hamil.value.push_back((1.0*H_field[site])*sign_FM*iota_comp);
+                Hamil.rows.push_back((m_new));
+                Hamil.columns.push_back((m));
+
+            }
+
+            //for down spin
+            if(
+                    (bit_value(basis.D_dn_basis[i],_gamma*basis.Length + site)==1)
+                    &&
+                    (bit_value(basis.D_dn_basis[i],_gamma_p*basis.Length + site)==0)
+                    )
+            {
+
+                D_dn = (int) (basis.D_dn_basis[i] - pow(2,_gamma*basis.Length + site) + pow(2,_gamma_p*basis.Length + site) );
+                D_up = (int) (basis.D_up_basis[i]);
+
+                if(basis.Restricted==true){
+                    nup_temp = __builtin_popcount(D_up);
+                    ndn_temp = __builtin_popcount(D_dn);
+                    //  m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
+                    //        basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
+                    m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+                }
+                else{
+                    i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                    j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+                    m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                            basis.Nup_offsets[__builtin_popcount(D_up)].first;
+                }
+
+                //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,
+                //basis.D_dn_basis,__builtin_popcount(D_up),basis.Nup_offsets);
+
+                l=_gamma*basis.Length + site;
+                lp=_gamma_p*basis.Length + site;
+
+                sign_pow_up = one_bits_in_bw(lp ,l,basis.D_dn_basis[i]);
+
+                sign_FM = pow(-1.0, sign_pow_up);
+
+
+                assert(m_new<m);
+                Hamil.value.push_back((1.0*H_field[site])*sign_FM*iota_comp);
+                Hamil.rows.push_back((m_new));
+                Hamil.columns.push_back((m));
+
+            }
+
+        }
+        //---------------------------------------
+#endif
+
+
     } // "i" i.e up_decimals
 
 }
@@ -358,7 +464,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_connections(){
                             }
 
                             //if(site == 1 && make_blocks==true){
-                              //  value=0.0*one;
+                            //  value=0.0*one;
                             //}
 
 
@@ -947,19 +1053,19 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
         assert(1==0);
     }
 
-//   cout<<"here 1"<<endl;
+    //   cout<<"here 1"<<endl;
 
     basis.Length=atoi(length.c_str());
     basis.N_total=atoi(ntotal.c_str());
 
-//cout<<"here 2"<<endl;
+    //cout<<"here 2"<<endl;
 
     U=atof(ucoul.c_str());
     J_H=atof(jhund.c_str());
     U_p=atof(upcoul.c_str());
     lambda_SOC=atof(lambda_soc_.c_str());
 
- //   cout<<"here 3"<<endl;
+    //   cout<<"here 3"<<endl;
 
     double h;
     h=atof(hmag.c_str());
@@ -968,7 +1074,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
         H_field[i]=h;
     }
 
-  //  cout<<"here 4"<<endl;
+    //  cout<<"here 4"<<endl;
 
     stringstream cfs_stream;
     cfs_stream<<cfs_;
@@ -982,7 +1088,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
         CFS[n]=temp_val;
     }
 
-//cout<<"here 5"<<endl;
+    //cout<<"here 5"<<endl;
 
     string temp_string;
     stringstream cfs_site_resolved_stream;
@@ -990,10 +1096,10 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
     cfs_site_resolved_stream>>temp_string;
 
     if(temp_string == "true"){
-    CFS_SITE_RESOLVED_bool = true;
+        CFS_SITE_RESOLVED_bool = true;
     }
     else{
-     CFS_SITE_RESOLVED_bool = false;
+        CFS_SITE_RESOLVED_bool = false;
     }
 
 
@@ -1002,19 +1108,19 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
 
 
     for(int i=0;i<basis.Length;i++){
-      CFS_SITE_RESOLVED_[i].resize(3);
-      for(int orb=0;orb<3;orb++){
-          if(CFS_SITE_RESOLVED_bool==true){
-       cfs_site_resolved_stream >> temp_val;
-       CFS_SITE_RESOLVED_[i][orb]=temp_val;
-          }
-          else{
-            CFS_SITE_RESOLVED_[i][orb]=CFS[orb];
-          }
-      }
+        CFS_SITE_RESOLVED_[i].resize(3);
+        for(int orb=0;orb<3;orb++){
+            if(CFS_SITE_RESOLVED_bool==true){
+                cfs_site_resolved_stream >> temp_val;
+                CFS_SITE_RESOLVED_[i][orb]=temp_val;
+            }
+            else{
+                CFS_SITE_RESOLVED_[i][orb]=CFS[orb];
+            }
+        }
     }
 
-//cout<<"here 6"<<endl;
+    //cout<<"here 6"<<endl;
 
 
     Hopping_mat_NN.clear();
@@ -1025,7 +1131,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
 
     //Hopping_mat_NN[alpha][beta] comes in front of c^{\dagger}_{alpha\sigma}c_{beta\sigma}
 
-//cout<<"here 7"<<endl;
+    //cout<<"here 7"<<endl;
 
     stringstream hopp0_stream(hopp0_);
 
@@ -1046,7 +1152,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
 
     cout<<"READING PARAMETERS"<<endl;
 
-   // cout<<"here 8"<<endl;
+    // cout<<"here 8"<<endl;
 
     stringstream rolo_stream(restriction_on_local_occupations_);
     int temp_int;
@@ -1902,7 +2008,6 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_one_point_to_calculate(){
 
 
     //Del_{3by2_pm(sby2)_1by2_pm(sby2)}
-
     for(int opr_no=12;opr_no<=13;opr_no++){
         if(opr_no==12){
             s_val=1;
@@ -1919,8 +2024,6 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_one_point_to_calculate(){
 
                 m=i;
                 j=i;
-
-
 
                 gamma=2;
                 for(gamma_p=0;gamma_p<=1;gamma_p++){
@@ -2011,21 +2114,13 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_one_point_to_calculate(){
                             }
                         }
 
-
-
-
-
                         sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn);
-
 
                         One_point_oprts[opr_no][site].value.push_back(factor_comp*sign_FM);
                         One_point_oprts[opr_no][site].rows.push_back(m_new);
                         One_point_oprts[opr_no][site].columns.push_back(m);
 
-
-
                     }
-
                 }
 
 
@@ -2085,7 +2180,6 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_one_point_to_calculate(){
                         //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,
                         //basis.D_dn_basis,__builtin_popcount(D_up),basis.Nup_offsets);
 
-
                         l=gamma*basis.Length + site;
                         lp=gamma_p*basis.Length + site;
 
@@ -2093,7 +2187,6 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_one_point_to_calculate(){
                         min_up = 0;
                         max_dn = 2*basis.Length + basis.Length -1;
                         min_dn = 0;
-
 
                         if(s_val==-1){
                             sign_pow_up = one_bits_in_bw(max_up ,l,basis.D_up_basis[i]) ;
@@ -2116,21 +2209,14 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_one_point_to_calculate(){
                             }
                         }
 
-
-
-
-
                         sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn);
-
 
                         One_point_oprts[opr_no][site].value.push_back(factor_comp*sign_FM);
                         One_point_oprts[opr_no][site].rows.push_back(m_new);
                         One_point_oprts[opr_no][site].columns.push_back(m);
 
                     }
-
                 }
-
 
 
                 for(gamma=0;gamma<=1;gamma++){
@@ -2143,8 +2229,6 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_one_point_to_calculate(){
                         gamma_p=0;
                         factor_comp = iota*((-1.0*s_val)/(sqrt(2.0)*3.0));
                     }
-
-
 
                     if(
                             (
@@ -2165,7 +2249,6 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_one_point_to_calculate(){
 
                             )
                     {
-
 
                         if(s_val==-1){
                             D_dn = (int) (basis.D_dn_basis[i]);
@@ -2208,19 +2291,12 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_one_point_to_calculate(){
                         }
 
 
-
-
                         One_point_oprts[opr_no][site].value.push_back(factor_comp*sign_FM);
                         One_point_oprts[opr_no][site].rows.push_back(m_new);
                         One_point_oprts[opr_no][site].columns.push_back(m);
 
                     }
-
-
-
                 }
-
-
 
 
 
@@ -2254,24 +2330,8 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_one_point_to_calculate(){
                         One_point_oprts[opr_no][site].columns.push_back(m);
                     }
                 }
-
-
-
-
-
-
-
-
             }
-
-
-
-
         }
-
-
-
-
     }
 
 
@@ -2316,7 +2376,6 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_one_point_to_calculate(){
 
             m=i;
             j=i;
-
 
             // 0=xz, 1=yz, 2=xy
             gamma=0;gamma_p=1;
@@ -2644,17 +2703,9 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_one_point_to_calculate(){
                 One_point_oprts[15][site].columns.push_back(m_new);
 
             }
-
-
-
-
-
-
         }
 
-
         One_point_oprts[16][site]=Dagger(One_point_oprts[15][site]);
-
     }
 
 
@@ -2812,13 +2863,8 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_one_point_to_calculate(){
                     One_point_oprts[18][site].rows.push_back(m_new);
                     One_point_oprts[18][site].columns.push_back(m);
 
-
                 }
-
-
-
             }
-
         }
 
 
@@ -2895,23 +2941,671 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_one_point_to_calculate(){
 
 
 
+    one_point_obs.resize(38);
+    one_point_obs[33]="Delta_3by2_1by2_1by2_m1by2";
+    one_point_obs[34]="Delta_3by2_m1by2_1by2_1by2";
+    one_point_obs[35]="Delta_3by2_1by2_1by2_1by2";
+    one_point_obs[36]="Delta_3by2_m1by2_1by2_m1by2";
+    one_point_obs[37]="Dummy";
+    One_point_oprts.resize(38);
+
+    for(int i=33;i<38;i++){
+        One_point_oprts[i].resize(basis.Length);
+    }
 
 
+    Mat_2_doub AMat, AMat0; //[sigma,alpha][sigma_p,beta]
+    AMat.resize(6);AMat0.resize(6);
+    for(int ind=0;ind<6;ind++){
+        AMat[ind].resize(6);
+        AMat0[ind].resize(6);
+    }
+    Mat_1_doub Vec_0, Vec_1, Vec_2;
+    Vec_0.resize(6); Vec_1.resize(6); Vec_2.resize(6);
+    int SPIN_UP=0;
+    int SPIN_DN=1;
+    int XZ_,YZ_,XY_;
+    XZ_=0;YZ_=1;XY_=2;
+
+    int Jz_SPIN_, Jz_SPIN_P_;
+    int SPIN_, SPIN_P_;
+    int BAR_SPIN_, BAR_SPIN_P_;
+    //Del_{3by2_pm(sby2)_1by2_pm(sby2)}
+    for(int opr_no=33;opr_no<=37;opr_no++){
+
+        if(opr_no==33){
+            //Del_3by2_1by2_1by2_m1by2
+            Jz_SPIN_=-1;
+            Jz_SPIN_P_=1;
+            SPIN_=SPIN_DN;
+            SPIN_P_=SPIN_UP;
+            BAR_SPIN_=SPIN_UP;
+            BAR_SPIN_P_=SPIN_DN;
+
+        }
+        if(opr_no==34){
+            //Del_3by2_m1by2_1by2_1by2
+            Jz_SPIN_=1;
+            Jz_SPIN_P_=-1;
+            SPIN_=SPIN_UP;
+            SPIN_P_=SPIN_DN;
+            BAR_SPIN_=SPIN_DN;
+            BAR_SPIN_P_=SPIN_UP;
+        }
+        if(opr_no==35){
+            //Del_3by2_1by2_1by2_1by2
+            Jz_SPIN_=1;
+            Jz_SPIN_P_=1;
+            SPIN_=SPIN_UP;
+            SPIN_P_=SPIN_UP;
+            BAR_SPIN_=SPIN_DN;
+            BAR_SPIN_P_=SPIN_DN;
+        }
+        if(opr_no==36){
+            //Del_3by2_m1by2_1by2_m1by2
+            Jz_SPIN_=-1;
+            Jz_SPIN_P_=-1;
+            SPIN_=SPIN_DN;
+            SPIN_P_=SPIN_DN;
+            BAR_SPIN_=SPIN_UP;
+            BAR_SPIN_P_=SPIN_UP;
+        }
+        if(opr_no==37){
+            //Dummy, declared below
+        }
 
 
+        //index = spin*3 + orb
+        Vec_1=Vec_0;
+        Vec_1[(BAR_SPIN_P_*3) + YZ_] = complex<double> ((-1.0*Jz_SPIN_P_)/sqrt(6.0) , 0.0);
+        Vec_1[(BAR_SPIN_P_*3) + XZ_] = complex<double> (0.0, (-1.0)/sqrt(6.0));
+        Vec_1[(SPIN_P_*3) + XY_] = complex<double> ((2.0)/sqrt(6.0), 0.0);
+        //        Vec_1[ (SPIN_UP*3) + YZ_] = complex<double>(0.0, -1.0/sqrt(2.0)); //*iota_comp;
+        //        Vec_1[ (SPIN_UP*3) + XZ_] = complex<double>(1.0/sqrt(2.0), 0.0);
 
+        //        Vec_1[ (SPIN_UP*3) + YZ_] = complex<double>(1.0, 0.0); //*iota_comp;
+        //        Vec_1[ (SPIN_UP*3) + XZ_] = complex<double>(0.0, 0.0);
 
+        Vec_2=Vec_0;
+        //        Vec_2[ (SPIN_UP*3) + YZ_] = complex<double>(0.0, 1.0/sqrt(2.0));
+        //        Vec_2[ (SPIN_UP*3) + XZ_] = complex<double>(1.0/sqrt(2.0), 0.0);
+        //        Vec_2[ (SPIN_UP*3) + YZ_] = complex<double>(0.0, 0.0);
+        //        Vec_2[ (SPIN_UP*3) + XZ_] = complex<double>(1.0, 0.0);
+
+        Vec_2[(BAR_SPIN_*3) + YZ_] = complex<double> ((1.0*Jz_SPIN_)/sqrt(3.0) , 0.0);
+        Vec_2[(BAR_SPIN_*3) + XZ_] = complex<double> (0.0, (-1.0)/sqrt(3.0));
+        Vec_2[(SPIN_*3) + XY_] = complex<double> ((1.0)/sqrt(3.0), 0.0);
+
+        for(int sigma=0;sigma<2;sigma++){
+            for(int alpha=0;alpha<3;alpha++){
+
+                for(int sigma_p=0;sigma_p<2;sigma_p++){
+                    for(int alpha_p=0;alpha_p<3;alpha_p++){
+
+                        AMat[(sigma*3) + alpha][(sigma_p*3) + alpha_p] = Vec_1[(sigma*3) + alpha]*
+                                Vec_2[(sigma_p*3) + alpha_p];
+                    }
+                }
+            }
+        }
+
+        if(opr_no==37){
+            //Dummy = Splus + Sz [Weird :)]
+            AMat=AMat0;
+            AMat[0][3]=(1.0*one);AMat[1][4]=(1.0*one);AMat[2][5]=(1.0*one);
+            AMat[0][0]=(0.5*one);AMat[1][1]=(0.5*one);AMat[2][2]=(0.5*one);
+            AMat[3][3]=(-0.5*one);AMat[4][4]=(-0.5*one);AMat[5][5]=(-0.5*one);
+        }
+
+        for(int site=0;site<basis.Length;site++){
+            Get_CdaggerC_type_Opr(AMat, One_point_oprts[opr_no][site], site); //Create this
+        }
+
+    }
 
 
 #endif
 
 
+}
+
+template <typename Basis_type>
+void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site){
 
 
+    int i_new, j_new, m_new;
+    int l,lp, max_up, min_up, min_dn, max_dn;
+    int sign_pow_up, sign_pow_dn;
+    double sign_FM;
+    int D_up, D_dn;
+    int nup_temp, ndn_temp;
+
+    OPR.value.clear();
+    OPR.rows.clear();
+    OPR.columns.clear();
+    OPR.nrows = basis.D_up_basis.size();
+    OPR.ncols = OPR.nrows;
+
+    bool check;
+    int SPIN_UP=0;
+    int SPIN_DN=1;
+
+    int value_;
+    double_type value_diagonal;
+
+
+    //Diagonal
+    for (int i=0;i<basis.D_up_basis.size();i++){
+        value_diagonal=zero;
+
+        for(int sigma=0;sigma<2;sigma++){
+            for(int gamma=0;gamma<3;gamma++){
+
+                for(int sigma_p=0;sigma_p<2;sigma_p++){
+                    for(int gamma_p=0;gamma_p<3;gamma_p++){
+
+                        //A[sigma,gamma][sigma_p,gamma_p]*c^{dagger}(sigma,gamma)*c(sigma_p,gamma_p)
+                        if(AMat[(sigma*3) + gamma][(sigma_p*3) + gamma_p] != zero){
+
+                            if( ((sigma*3) + gamma) == ((sigma_p*3) + gamma_p) ){
+                                assert(sigma == sigma_p);
+                                assert(gamma == gamma_p);
+                                if(sigma==SPIN_UP){value_=bit_value(basis.D_up_basis[i],gamma*basis.Length + site);}
+                                if(sigma==SPIN_DN){value_=bit_value(basis.D_dn_basis[i],gamma*basis.Length + site);}
+                                if(value_ != 0){
+                                    value_diagonal += AMat[(sigma*3) + gamma][(sigma_p*3) + gamma_p]*one;
+                                }
+                            }
+
+                        }
+
+                    }
+                }
+            }
+        }
+
+        OPR.value.push_back(value_diagonal*one);
+        OPR.rows.push_back(i);
+        OPR.columns.push_back(i);
+    }
+
+
+
+
+    //OFF-diagonal
+    for (int i=0;i<basis.D_up_basis.size();i++){
+
+        for(int sigma=0;sigma<2;sigma++){
+            for(int gamma=0;gamma<3;gamma++){
+
+                for(int sigma_p=0;sigma_p<2;sigma_p++){
+                    for(int gamma_p=0;gamma_p<3;gamma_p++){
+
+                        //A[sigma,gamma][sigma_p,gamma_p]*c^{dagger}(sigma,gamma)*c(sigma_p,gamma_p)
+                        if(AMat[(sigma*3) + gamma][(sigma_p*3) + gamma_p] != zero){
+
+                            if( ((sigma*3) + gamma) != ((sigma_p*3) + gamma_p) ){
+                                if(sigma==SPIN_UP && sigma_p==SPIN_UP){
+                                    check=(bit_value(basis.D_up_basis[i],gamma_p*basis.Length + site)==1);
+                                    check = (check &&
+                                             (bit_value(basis.D_up_basis[i],gamma*basis.Length + site)==0));
+                                }
+                                if(sigma==SPIN_DN && sigma_p==SPIN_DN){
+                                    check=(bit_value(basis.D_dn_basis[i],gamma_p*basis.Length + site)==1);
+                                    check = (check &&
+                                             (bit_value(basis.D_dn_basis[i],gamma*basis.Length + site)==0));
+                                }
+                                if(sigma==SPIN_UP && sigma_p==SPIN_DN){
+                                    check=(bit_value(basis.D_dn_basis[i],gamma_p*basis.Length + site)==1);
+                                    check = (check &&
+                                             (bit_value(basis.D_up_basis[i],gamma*basis.Length + site)==0));
+                                }
+                                if(sigma==SPIN_DN && sigma_p==SPIN_UP){
+                                    check=(bit_value(basis.D_up_basis[i],gamma_p*basis.Length + site)==1);
+                                    check = (check &&
+                                             (bit_value(basis.D_dn_basis[i],gamma*basis.Length + site)==0));
+                                }
+
+
+                                if(check)
+                                {
+
+                                    D_up = (int) (basis.D_up_basis[i]
+                                                  + ((1-sigma)*pow(2,gamma*basis.Length + site))
+                                                  - ((1-sigma_p)*pow(2,gamma_p*basis.Length + site)) );
+                                    D_dn = (int) (basis.D_dn_basis[i]
+                                                  + (sigma*pow(2,gamma*basis.Length + site))
+                                                  - (sigma_p*pow(2,gamma_p*basis.Length + site)) );
+
+                                    //i_new = Find_int_in_intarray(D_up,basis.D_up_basis);
+                                    //j_new = Find_int_in_intarray(D_dn,basis.D_dn_basis);
+
+                                    if(basis.Restricted==true){
+                                        nup_temp = __builtin_popcount(D_up);
+                                        ndn_temp = __builtin_popcount(D_dn);
+                                        // m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
+                                        //       basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
+                                        m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+                                    }
+                                    else{
+                                        i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                                        j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+                                        m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                                                basis.Nup_offsets[__builtin_popcount(D_up)].first;
+                                    }
+
+                                    //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,
+                                    //basis.D_dn_basis,__builtin_popcount(D_up),basis.Nup_offsets);
+
+                                    //m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+
+                                    l=gamma*basis.Length + site;
+                                    lp=gamma_p*basis.Length + site;
+
+                                    max_up = 3*basis.Length -1;
+                                    min_up = 0;
+                                    max_dn = 3*basis.Length -1;
+                                    min_dn = 0;
+
+                                    if(sigma==SPIN_UP && sigma_p==SPIN_DN){
+                                        sign_pow_up = one_bits_in_bw(max_up ,l,basis.D_up_basis[i]) ;
+                                        if(l != max_up){
+                                            sign_pow_up += bit_value(basis.D_up_basis[i],max_up);
+                                        }
+                                        sign_pow_dn = one_bits_in_bw(lp, min_dn, basis.D_dn_basis[i]);
+                                        if(lp != min_dn){
+                                            sign_pow_dn += bit_value(basis.D_dn_basis[i],min_dn);
+                                        }
+                                    }
+                                    if(sigma==SPIN_DN && sigma_p==SPIN_UP){
+                                        sign_pow_up = one_bits_in_bw(max_up ,lp,basis.D_up_basis[i]) ;
+                                        if(lp != max_up){
+                                            sign_pow_up += bit_value(basis.D_up_basis[i],max_up);
+                                        }
+                                        sign_pow_dn = one_bits_in_bw(l, min_dn, basis.D_dn_basis[i]);
+                                        if(l != min_dn){
+                                            sign_pow_dn += bit_value(basis.D_dn_basis[i],min_dn);
+                                        }
+                                    }
+                                    if(sigma==SPIN_UP && sigma_p==SPIN_UP){
+                                        sign_pow_dn=0;
+                                        sign_pow_up = one_bits_in_bw(l ,lp,basis.D_up_basis[i]);
+                                    }
+                                    if(sigma==SPIN_DN && sigma_p==SPIN_DN){
+                                        sign_pow_up=0;
+                                        sign_pow_dn = one_bits_in_bw(l ,lp,basis.D_dn_basis[i]);
+                                    }
+
+                                    //try this as well
+                                    /*
+                                    sign_pow_up = one_bits_in_bw(l,min_up, basis.D_up_basis[i]) + bit_value(basis.D_up_basis[i],min_up);
+                                    sign_pow_dn = one_bits_in_bw(max_dn,lp, basis.D_up_basis[i])+ bit_value(basis.D_dn_basis[i],max_dn);
+                                    */
+
+                                    sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn);
+
+                                    //assert(m_new<m);
+
+                                    OPR.value.push_back(sign_FM*AMat[(sigma*3) + gamma][(sigma_p*3) + gamma_p]*one);
+                                    OPR.rows.push_back(m_new);
+                                    OPR.columns.push_back(i);
+
+                                }
+                            }
+
+                        }
+
+                    }
+                }
+            }
+        }
+    }
 
 
 }
 
+
+template <typename Basis_type>
+void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site, int site_p){
+
+     //sum_{sigma,sigma_p,alpha,alpha_p} AMat[sigma,alpha][sigma_p,alpha_p]
+     //c_{sigma,alpha}^{dagger,site}*c_{sigma_p,alpha_p,site_p}
+    int i_new, j_new, m_new;
+    int l,lp, max_up, min_up, min_dn, max_dn;
+    int sign_pow_up, sign_pow_dn;
+    double sign_FM;
+    int D_up, D_dn;
+    int nup_temp, ndn_temp;
+
+    OPR.value.clear();
+    OPR.rows.clear();
+    OPR.columns.clear();
+    OPR.nrows = basis.D_up_basis.size();
+    OPR.ncols = OPR.nrows;
+
+    bool check;
+    int SPIN_UP=0;
+    int SPIN_DN=1;
+
+    int value_;
+    double_type value_diagonal;
+
+
+    //Diagonal
+    for (int i=0;i<basis.D_up_basis.size();i++){
+        value_diagonal=zero;
+
+        for(int sigma=0;sigma<2;sigma++){
+            for(int gamma=0;gamma<3;gamma++){
+
+                for(int sigma_p=0;sigma_p<2;sigma_p++){
+                    for(int gamma_p=0;gamma_p<3;gamma_p++){
+
+                        //A[sigma,gamma][sigma_p,gamma_p]*c^{dagger}(sigma,gamma)*c(sigma_p,gamma_p)
+                        if( AMat[(sigma*3) + gamma][(sigma_p*3) + gamma_p] != zero){
+
+                            if( ( ((sigma*3) + gamma) == ((sigma_p*3) + gamma_p) ) &&
+                                  (site == site_p)
+                                    ){
+                                assert(sigma == sigma_p);
+                                assert(gamma == gamma_p);
+                                if(sigma==SPIN_UP){value_=bit_value(basis.D_up_basis[i],gamma*basis.Length + site);}
+                                if(sigma==SPIN_DN){value_=bit_value(basis.D_dn_basis[i],gamma*basis.Length + site);}
+                                if(value_ != 0){
+                                    value_diagonal += AMat[(sigma*3) + gamma][(sigma_p*3) + gamma_p]*one;
+                                }
+                            }
+
+                        }
+
+                    }
+                }
+            }
+        }
+
+        OPR.value.push_back(value_diagonal*one);
+        OPR.rows.push_back(i);
+        OPR.columns.push_back(i);
+    }
+
+
+
+
+    //OFF-diagonal
+    for (int i=0;i<basis.D_up_basis.size();i++){
+
+        for(int sigma=0;sigma<2;sigma++){
+            for(int gamma=0;gamma<3;gamma++){
+
+                for(int sigma_p=0;sigma_p<2;sigma_p++){
+                    for(int gamma_p=0;gamma_p<3;gamma_p++){
+
+                        //A[sigma,gamma][sigma_p,gamma_p]*c^{dagger}(sigma,gamma,site)*c(sigma_p,gamma_p,site_p)
+                        if(AMat[(sigma*3) + gamma][(sigma_p*3) + gamma_p] != zero){
+
+                            if( ( ((sigma*3) + gamma) != ((sigma_p*3) + gamma_p) ) ||
+                                    (site != site_p)
+                                    ){
+                                if(sigma==SPIN_UP && sigma_p==SPIN_UP){
+                                    check=(bit_value(basis.D_up_basis[i],gamma_p*basis.Length + site_p)==1);
+                                    check = (check &&
+                                             (bit_value(basis.D_up_basis[i],gamma*basis.Length + site)==0));
+                                }
+                                if(sigma==SPIN_DN && sigma_p==SPIN_DN){
+                                    check=(bit_value(basis.D_dn_basis[i],gamma_p*basis.Length + site_p)==1);
+                                    check = (check &&
+                                             (bit_value(basis.D_dn_basis[i],gamma*basis.Length + site)==0));
+                                }
+                                if(sigma==SPIN_UP && sigma_p==SPIN_DN){
+                                    check=(bit_value(basis.D_dn_basis[i],gamma_p*basis.Length + site_p)==1);
+                                    check = (check &&
+                                             (bit_value(basis.D_up_basis[i],gamma*basis.Length + site)==0));
+                                }
+                                if(sigma==SPIN_DN && sigma_p==SPIN_UP){
+                                    check=(bit_value(basis.D_up_basis[i],gamma_p*basis.Length + site_p)==1);
+                                    check = (check &&
+                                             (bit_value(basis.D_dn_basis[i],gamma*basis.Length + site)==0));
+                                }
+
+
+                                if(check)
+                                {
+
+                                    D_up = (int) (basis.D_up_basis[i]
+                                                  + ((1-sigma)*pow(2,gamma*basis.Length + site))
+                                                  - ((1-sigma_p)*pow(2,gamma_p*basis.Length + site_p)) );
+                                    D_dn = (int) (basis.D_dn_basis[i]
+                                                  + (sigma*pow(2,gamma*basis.Length + site))
+                                                  - (sigma_p*pow(2,gamma_p*basis.Length + site_p)) );
+
+                                    //i_new = Find_int_in_intarray(D_up,basis.D_up_basis);
+                                    //j_new = Find_int_in_intarray(D_dn,basis.D_dn_basis);
+
+                                    if(basis.Restricted==true){
+                                        nup_temp = __builtin_popcount(D_up);
+                                        ndn_temp = __builtin_popcount(D_dn);
+                                        // m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
+                                        //       basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
+                                        m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+                                    }
+                                    else{
+                                        i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                                        j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+                                        m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                                                basis.Nup_offsets[__builtin_popcount(D_up)].first;
+                                    }
+
+                                    //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,
+                                    //basis.D_dn_basis,__builtin_popcount(D_up),basis.Nup_offsets);
+
+                                    //m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+
+                                    l=gamma*basis.Length + site;
+                                    lp=gamma_p*basis.Length + site_p;
+
+                                    max_up = 3*basis.Length -1;
+                                    min_up = 0;
+                                    max_dn = 3*basis.Length -1;
+                                    min_dn = 0;
+
+                                    if(sigma==SPIN_UP && sigma_p==SPIN_DN){
+                                        sign_pow_up = one_bits_in_bw(max_up ,l,basis.D_up_basis[i]) ;
+                                        if(l != max_up){
+                                            sign_pow_up += bit_value(basis.D_up_basis[i],max_up);
+                                        }
+                                        sign_pow_dn = one_bits_in_bw(lp, min_dn, basis.D_dn_basis[i]);
+                                        if(lp != min_dn){
+                                            sign_pow_dn += bit_value(basis.D_dn_basis[i],min_dn);
+                                        }
+                                    }
+                                    if(sigma==SPIN_DN && sigma_p==SPIN_UP){
+                                        sign_pow_up = one_bits_in_bw(max_up ,lp,basis.D_up_basis[i]) ;
+                                        if(lp != max_up){
+                                            sign_pow_up += bit_value(basis.D_up_basis[i],max_up);
+                                        }
+                                        sign_pow_dn = one_bits_in_bw(l, min_dn, basis.D_dn_basis[i]);
+                                        if(l != min_dn){
+                                            sign_pow_dn += bit_value(basis.D_dn_basis[i],min_dn);
+                                        }
+                                    }
+                                    if(sigma==SPIN_UP && sigma_p==SPIN_UP){
+                                        sign_pow_dn=0;
+                                        sign_pow_up = one_bits_in_bw(l ,lp,basis.D_up_basis[i]);
+                                    }
+                                    if(sigma==SPIN_DN && sigma_p==SPIN_DN){
+                                        sign_pow_up=0;
+                                        sign_pow_dn = one_bits_in_bw(l ,lp,basis.D_dn_basis[i]);
+                                    }
+
+                                    //try this as well
+                                    /*
+                                    sign_pow_up = one_bits_in_bw(l,min_up, basis.D_up_basis[i]) + bit_value(basis.D_up_basis[i],min_up);
+                                    sign_pow_dn = one_bits_in_bw(max_dn,lp, basis.D_up_basis[i])+ bit_value(basis.D_dn_basis[i],max_dn);
+                                    */
+
+                                    sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn);
+
+                                    //assert(m_new<m);
+
+                                    OPR.value.push_back(sign_FM*AMat[(sigma*3) + gamma][(sigma_p*3) + gamma_p]*one);
+                                    OPR.rows.push_back(m_new);
+                                    OPR.columns.push_back(i);
+
+                                }
+                            }
+
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
+
+}
+
+
+template <typename Basis_type>
+void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_ExcitonCoherence_Length(Mat_1_doub &vector_used){
+
+
+    Matrix_COO OPR_;
+    Mat_1_doub temp_vec;
+    double_type Num_, Den_, value_;
+
+    Mat_2_doub AMat, AMat0; //[sigma,alpha][sigma_p,beta]
+    AMat.resize(6);AMat0.resize(6);
+    for(int ind=0;ind<6;ind++){
+        AMat[ind].resize(6);
+        AMat0[ind].resize(6);
+    }
+    Mat_1_doub Vec_0, Vec_1, Vec_2;
+    Vec_0.resize(6); Vec_1.resize(6); Vec_2.resize(6);
+    int SPIN_UP=0;
+    int SPIN_DN=1;
+    int XZ_,YZ_,XY_;
+    XZ_=0;YZ_=1;XY_=2;
+
+    int Jz_SPIN_, Jz_SPIN_P_;
+    int SPIN_, SPIN_P_;
+    int BAR_SPIN_, BAR_SPIN_P_;
+
+    for(int type=0;type<2;type++){
+        if(type==0){
+            //a^{dagger}_{1/2, 1/2, site} a_{3/2, 1/2, site_p}
+            Jz_SPIN_=1;
+            Jz_SPIN_P_=1;
+            SPIN_=SPIN_UP;
+            SPIN_P_=SPIN_UP;
+            BAR_SPIN_=SPIN_DN;
+            BAR_SPIN_P_=SPIN_DN;
+        }
+        if(type==1){
+            //a^{dagger}_{1/2, -1/2, site} a_{3/2, -1/2, site_p}
+            Jz_SPIN_=-1;
+            Jz_SPIN_P_=-1;
+            SPIN_=SPIN_DN;
+            SPIN_P_=SPIN_DN;
+            BAR_SPIN_=SPIN_UP;
+            BAR_SPIN_P_=SPIN_UP;
+        }
+
+        //index = spin*3 + orb
+        Vec_1=Vec_0;
+        Vec_1[(BAR_SPIN_*3) + YZ_] = complex<double> ((1.0*Jz_SPIN_)/sqrt(3.0) , 0.0);
+        Vec_1[(BAR_SPIN_*3) + XZ_] = complex<double> (0.0, (1.0)/sqrt(3.0));
+        Vec_1[(SPIN_*3) + XY_] = complex<double> ((1.0)/sqrt(3.0), 0.0);
+
+
+        Vec_2=Vec_0;
+        Vec_2[(BAR_SPIN_P_*3) + YZ_] = complex<double> ((-1.0*Jz_SPIN_P_)/sqrt(6.0) , 0.0);
+        Vec_2[(BAR_SPIN_P_*3) + XZ_] = complex<double> (0.0, (1.0)/sqrt(6.0));
+        Vec_2[(SPIN_P_*3) + XY_] = complex<double> ((2.0)/sqrt(6.0), 0.0);
+
+        for(int sigma=0;sigma<2;sigma++){
+            for(int alpha=0;alpha<3;alpha++){
+
+                for(int sigma_p=0;sigma_p<2;sigma_p++){
+                    for(int alpha_p=0;alpha_p<3;alpha_p++){
+
+                        AMat[(sigma*3) + alpha][(sigma_p*3) + alpha_p] = Vec_1[(sigma*3) + alpha]*
+                                Vec_2[(sigma_p*3) + alpha_p];
+                    }
+                }
+            }
+        }
+
+
+        Num_=zero;
+        Den_=zero;
+        for(int site=0;site<basis.Length;site++){
+            for(int site_p=0;site_p<basis.Length;site_p++){
+        Get_CdaggerC_type_Opr(AMat, OPR_, site, site_p);
+
+        Matrix_COO_vector_multiplication("cx", OPR_, vector_used, temp_vec);
+        value_ = dot_product(temp_vec,vector_used);
+
+        Num_ += (pow( abs(site-site_p),2 )*1.0)*(value_*conj(value_));
+        Den_ += value_*conj(value_);
+        }
+        }
+
+        cout<<"Coherence Length, r_coh(m=";
+        if(Jz_SPIN_==1){
+            cout<<"1/2";
+        }
+        if(Jz_SPIN_==-1){
+            cout<<"-1/2";
+        }
+        //cout<<") = "<< sqrt(Num_.real()/ Den_.real())<<endl;
+        cout<<") = "<< Num_.real()<<"  "<< Den_.real()<<"   "<< sqrt(Num_.real()/ Den_.real())<<endl;
+    }
+
+
+}
+
+
+template <typename Basis_type>
+void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_Delta_Matrix(LANCZOS & lanczos){
+
+    double_type value =zero;
+    Mat_1_doub vec_out, vec_in;
+    Matrix_COO OPR_;
+    int site_=0;
+
+    cout<<scientific<<setprecision(4);
+
+    for(int opr_no=33;opr_no<=36;opr_no++){
+        cout<<"Matrix for "<<one_point_obs[opr_no]<<"[site="<<site_<<"] in eigenstates:"<<endl;
+
+        cout<<"------------------------------------------------------------------"<<endl;
+        for(int row=0;row<lanczos.Eig_vecs.size();row++){
+            for(int col=0;col<lanczos.Eig_vecs.size();col++){
+
+                OPR_ =  One_point_oprts[opr_no][site_];
+                vec_in = lanczos.Eig_vecs[col];
+                Matrix_COO_vector_multiplication("XX", OPR_, vec_in , vec_out);
+                value=dot_product(vec_out, lanczos.Eig_vecs[row]);
+                if(abs(value)<0.0001){
+                    value = zero;
+                }
+                cout<<value<<" ";
+            }
+            cout<<endl;
+        }
+
+        cout<<"------------------------------------------------------------------"<<endl;
+
+    }
+
+}
 
 template <typename Basis_type>
 void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_two_point_to_calculate(){
@@ -3245,10 +3939,10 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_two_point_to_calculate(){
             }
 
         }
-//HERE::
-   //     if(two_point_obs[opr_no]=="a^{\dagger}{1by2,1by2}a_{3by2,1by2}"){
+        //HERE::
+        //     if(two_point_obs[opr_no]=="a^{\dagger}{1by2,1by2}a_{3by2,1by2}"){
 
-     //   }
+        //   }
 
 
 
@@ -3272,7 +3966,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_Opr_for_Dynamics(LANCZOS 
 
 
 #ifdef USE_COMPLEX
-complex<double> iota_temp(0.0,1.0);
+        complex<double> iota_temp(0.0,1.0);
 
         if(Dyn_opr_string == "Sz"){
 
@@ -3371,7 +4065,7 @@ complex<double> iota_temp(0.0,1.0);
                 Oprs_local[site].rows.clear();
                 Oprs_local[site].columns.clear();
 
-              Oprs_local[site] = One_point_oprts[18][site];
+                Oprs_local[site] = One_point_oprts[18][site];
 
             }
             //local operators created ----------------------------------------------
@@ -3428,7 +4122,7 @@ complex<double> iota_temp(0.0,1.0);
                 Oprs_local[site].rows.clear();
                 Oprs_local[site].columns.clear();
 
-              Oprs_local[site] = One_point_oprts[19][site];
+                Oprs_local[site] = One_point_oprts[19][site];
 
             }
             //local operators created ----------------------------------------------

@@ -15,6 +15,8 @@
 //#include <bits/stdc++.h>
 
 
+void Normalize_vec(Mat_1_doub &vec_in);
+void value_multiply_vector(double value, Mat_1_doub &vec_in);
 double sign_of_double(double val);
 void swap(int &n1, int &n2);
 void reading_input_dos_trio(string inp_filename, Mat_1_trio_int &TRIO_VEC, Mat_1_doub &values_ );

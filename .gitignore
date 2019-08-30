@@ -1,2 +1,9 @@
 *LOCAL
 *.o
+*.inp
+SCS_Lanczos.config
+SCS_Lanczos.creator
+SCS_Lanczos.creator.user
+SCS_Lanczos.files
+SCS_Lanczos.includes
+lanczos
