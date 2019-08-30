@@ -3271,8 +3271,8 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMa
 template <typename Basis_type>
 void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site, int site_p){
 
-     //sum_{sigma,sigma_p,alpha,alpha_p} AMat[sigma,alpha][sigma_p,alpha_p]
-     //c_{sigma,alpha}^{dagger,site}*c_{sigma_p,alpha_p,site_p}
+    //sum_{sigma,sigma_p,alpha,alpha_p} AMat[sigma,alpha][sigma_p,alpha_p]
+    //c_{sigma,alpha}^{dagger,site}*c_{sigma_p,alpha_p,site_p}
     int i_new, j_new, m_new;
     int l,lp, max_up, min_up, min_dn, max_dn;
     int sign_pow_up, sign_pow_dn;
@@ -3308,7 +3308,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMa
                         if( AMat[(sigma*3) + gamma][(sigma_p*3) + gamma_p] != zero){
 
                             if( ( ((sigma*3) + gamma) == ((sigma_p*3) + gamma_p) ) &&
-                                  (site == site_p)
+                                    (site == site_p)
                                     ){
                                 assert(sigma == sigma_p);
                                 assert(gamma == gamma_p);
@@ -3519,15 +3519,27 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_ExcitonCoherence_Length(Mat_1_do
 
         //index = spin*3 + orb
         Vec_1=Vec_0;
+        Vec_2=Vec_0;
+
+
         Vec_1[(BAR_SPIN_*3) + YZ_] = complex<double> ((1.0*Jz_SPIN_)/sqrt(3.0) , 0.0);
         Vec_1[(BAR_SPIN_*3) + XZ_] = complex<double> (0.0, (1.0)/sqrt(3.0));
         Vec_1[(SPIN_*3) + XY_] = complex<double> ((1.0)/sqrt(3.0), 0.0);
 
-
-        Vec_2=Vec_0;
         Vec_2[(BAR_SPIN_P_*3) + YZ_] = complex<double> ((-1.0*Jz_SPIN_P_)/sqrt(6.0) , 0.0);
         Vec_2[(BAR_SPIN_P_*3) + XZ_] = complex<double> (0.0, (1.0)/sqrt(6.0));
         Vec_2[(SPIN_P_*3) + XY_] = complex<double> ((2.0)/sqrt(6.0), 0.0);
+
+
+        /*
+        Vec_1[(BAR_SPIN_P_*3) + YZ_] = complex<double> ((-1.0*Jz_SPIN_P_)/sqrt(6.0) , 0.0);
+        Vec_1[(BAR_SPIN_P_*3) + XZ_] = complex<double> (0.0, (-1.0)/sqrt(6.0));
+        Vec_1[(SPIN_P_*3) + XY_] = complex<double> ((2.0)/sqrt(6.0), 0.0);
+
+        Vec_2[(BAR_SPIN_*3) + YZ_] = complex<double> ((1.0*Jz_SPIN_)/sqrt(3.0) , 0.0);
+        Vec_2[(BAR_SPIN_*3) + XZ_] = complex<double> (0.0, (-1.0)/sqrt(3.0));
+        Vec_2[(SPIN_*3) + XY_] = complex<double> ((1.0)/sqrt(3.0), 0.0);
+        */
 
         for(int sigma=0;sigma<2;sigma++){
             for(int alpha=0;alpha<3;alpha++){
@@ -3543,19 +3555,25 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_ExcitonCoherence_Length(Mat_1_do
         }
 
 
+        cout<<"a^{dagger}(1/2,m)a(3/2,m):----------------------------------"<<endl;
         Num_=zero;
         Den_=zero;
         for(int site=0;site<basis.Length;site++){
             for(int site_p=0;site_p<basis.Length;site_p++){
-        Get_CdaggerC_type_Opr(AMat, OPR_, site, site_p);
+                Get_CdaggerC_type_Opr(AMat, OPR_, site, site_p);
 
-        Matrix_COO_vector_multiplication("cx", OPR_, vector_used, temp_vec);
-        value_ = dot_product(temp_vec,vector_used);
+                Matrix_COO_vector_multiplication("cx", OPR_, vector_used, temp_vec);
+                value_ = dot_product(temp_vec,vector_used);
 
-        Num_ += (pow( abs(site-site_p),2 )*1.0)*(value_*conj(value_));
-        Den_ += value_*conj(value_);
+                Num_ += (pow( abs(site-site_p),2 )*1.0)*(value_*conj(value_));
+                Den_ += value_*conj(value_);
+
+                cout<<value_<<" ";
+
+            }
+            cout<<endl;
         }
-        }
+        cout<<"-------------------------------------------------------------"<<endl;
 
         cout<<"Coherence Length, r_coh(m=";
         if(Jz_SPIN_==1){
