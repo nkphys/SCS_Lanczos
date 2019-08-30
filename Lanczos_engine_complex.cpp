@@ -936,7 +936,9 @@ void LANCZOS::Measure_two_point_observables_smartly(Mat_1_string one_point_obs, 
 }
 
 
-double LANCZOS::Measure_observable(Matrix_COO &OPR_, int state_no){}
+double LANCZOS::Measure_observable(Matrix_COO &OPR_, int state_no){
+    return 0.0;
+}
 
 void LANCZOS::Measure_four_point_observables(Hamiltonian_3_COO &Two_point_oprts, Mat_1_tetra_int sites_set, int state_no){
 
