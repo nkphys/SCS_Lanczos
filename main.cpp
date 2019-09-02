@@ -360,9 +360,9 @@ int main(int argc, char** argv){
 
 #ifndef USE_COMPLEX
     if (model_name=="2_orb_Hubbard_chain") {
-        bool PERFORM_VARIATIONAL_STATE_ANALYSIS=true;
+        bool PERFORM_VARIATIONAL_STATE_ANALYSIS=false;
         bool Read_Half_filling_Variational_states=false;
-        bool PERFORM_Nm2_Variational_Calculation=true;
+        bool PERFORM_Nm2_Variational_Calculation=false;
         bool Cheaper_SpinSpincorr=true;
 
 
