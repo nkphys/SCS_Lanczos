@@ -3475,7 +3475,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMa
 template <typename Basis_type>
 void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_ExcitonCoherence_Length(Mat_1_doub &vector_used){
 
-
+#ifdef USE_COMPLEX
     Matrix_COO OPR_;
     Mat_1_doub temp_vec;
     double_type Num_, Den_, value_;
@@ -3586,7 +3586,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_ExcitonCoherence_Length(Mat_1_do
         cout<<") = "<< Num_.real()<<"  "<< Den_.real()<<"   "<< sqrt(Num_.real()/ Den_.real())<<endl;
     }
 
-
+#endif
 }
 
 

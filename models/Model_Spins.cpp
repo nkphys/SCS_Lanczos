@@ -132,8 +132,8 @@ void MODEL_Spins::Add_connections(BASIS_Spins &basis){
 
 
                         Factor = sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
-                                     ((Val_site - (0.5*basis.TwoTimesSpin))*
-                                      (Val_site_new - (0.5*basis.TwoTimesSpin))  ) );
+                                       ((Val_site - (0.5*basis.TwoTimesSpin))*
+                                        (Val_site_new - (0.5*basis.TwoTimesSpin))  ) );
                         Factor = Factor*sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
                                               ((Val_site_p - (0.5*basis.TwoTimesSpin))*
                                                (Val_site_p_new - (0.5*basis.TwoTimesSpin))  ) );
@@ -149,9 +149,6 @@ void MODEL_Spins::Add_connections(BASIS_Spins &basis){
                 }
 
             }//site_p
-
-
-
 
         } // site
 
@@ -334,8 +331,8 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
 }
 
 
-/*
-void MODEL_1_orb_tJ::Read_parameters_for_dynamics(string filename){
+
+void MODEL_Spins::Read_parameters_for_dynamics(string filename){
 
     string dyn_momentum_, Dyn_Momentum_ = "k = ";
     string dyn_momentum_resolved_, Dyn_Momentum_Resolved_ = "Momentum_resolved = ";
@@ -381,6 +378,151 @@ void MODEL_1_orb_tJ::Read_parameters_for_dynamics(string filename){
 }
 
 
+
+void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis, int site_){
+
+    vector< int >().swap( Dyn_opr.columns );
+    vector< int >().swap( Dyn_opr.rows );
+    vector< double_type >().swap( Dyn_opr.value );
+    Dyn_opr.ncols = Hamil.ncols;
+    Dyn_opr.nrows = Hamil.nrows;
+
+    double_type value;
+    int Val_site, Val_site_new;
+    double Factor;
+    int i_new;
+
+
+    if(Dyn_opr_string=="Sz"){
+        for (int i=basis.D_min;i<basis.D_max + 1;i++){
+            value=zero;
+            //Sz[site]
+            value=one*
+                    ( ( (1.0*value_at_pos(i, site_, basis.BASE)) - (0.5*basis.TwoTimesSpin)) );
+
+
+            if(value!=zero){
+                Dyn_opr.value.push_back(value*one);
+                Dyn_opr.rows.push_back(i);
+                Dyn_opr.columns.push_back(i);
+            }
+        }
+    }
+    else if(Dyn_opr_string=="Sm"){
+
+        for (int i=basis.D_min;i<basis.D_max+1;i++){
+
+            value=zero;
+            Val_site = value_at_pos(i, site_, basis.BASE);
+
+            //Sm[site]:
+            //site cannot be in -Spin
+
+            if(Val_site != 0)
+            {
+                Val_site_new = Val_site - 1;
+                i_new = Updated_decimal_with_value_at_pos(i, site_, basis.BASE, Val_site_new);
+
+                Factor = sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                               ((Val_site - (0.5*basis.TwoTimesSpin))*
+                                (Val_site_new - (0.5*basis.TwoTimesSpin))  ) );
+
+                assert(i_new<i);
+
+                Dyn_opr.value.push_back(Factor*one);
+                Dyn_opr.rows.push_back(i_new);
+                Dyn_opr.columns.push_back(i);
+
+            } // if Sm possible
+        } // "i" i.e up_decimals
+
+    }
+    else{
+        cout<<"Dyn Opr: only Sz or Sm are allowed"<<endl;
+    }
+
+}
+
+
+void MODEL_Spins::Initialize_one_point_to_calculate_from_file(BASIS_Spins &basis){
+
+    One_point_oprts_onsite.resize(No_of_onepoint_obs);
+
+    for(int i=0;i<No_of_onepoint_obs;i++){
+        Read_matrix_from_file(One_point_strs[i],
+                              One_point_oprts_onsite[i],basis.BASE, basis.BASE);
+    }
+
+
+    int T_no_oprs=No_of_onepoint_obs;
+
+    One_point_oprts.resize(T_no_oprs);
+    for(int i=0;i<T_no_oprs;i++){
+        One_point_oprts[i].resize(basis.Length);
+    }
+
+
+    one_point_obs=One_point_strs;
+    for(int opr_no=0;opr_no<T_no_oprs;opr_no++){
+
+
+        for(int site=0;site<basis.Length;site++){
+            One_point_oprts[opr_no][site].nrows = basis.basis_size;
+            One_point_oprts[opr_no][site].ncols = One_point_oprts[opr_no][site].nrows;
+        }
+
+
+        //Remember OPR[l][m]=<l|OPR|m>
+        int j;
+        double_type value;
+
+
+        for(int site=0;site<basis.Length;site++){
+
+            One_point_oprts[opr_no][site].value.clear();
+            One_point_oprts[opr_no][site].rows.clear();
+            One_point_oprts[opr_no][site].columns.clear();
+
+            for(int col_local=0;col_local<basis.BASE;col_local++){
+                for(int row_local=0;row_local<basis.BASE;row_local++){
+
+                    if(One_point_oprts_onsite[opr_no][row_local][col_local] != zero){
+
+
+                        if(row_local !=col_local){
+                            for (int i=0;i<basis.basis_size;i++){
+                                if(value_at_pos(i, site, basis.BASE) == col_local){
+                                    j = Updated_decimal_with_value_at_pos(i, site, basis.BASE, row_local);
+                                    value = One_point_oprts_onsite[opr_no][row_local][col_local];
+
+                                    One_point_oprts[opr_no][site].value.push_back(value);
+                                    One_point_oprts[opr_no][site].rows.push_back(j);
+                                    One_point_oprts[opr_no][site].columns.push_back(i);
+                                }
+                            }
+                        }
+                        else{
+                            for (int i=0;i<basis.basis_size;i++){
+                                if(value_at_pos(i, site, basis.BASE) == col_local){
+                                    value = One_point_oprts_onsite[opr_no][row_local][col_local];
+                                    One_point_oprts[opr_no][site].value.push_back(value);
+                                    One_point_oprts[opr_no][site].rows.push_back(i);
+                                    One_point_oprts[opr_no][site].columns.push_back(i);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+}
+
+
+
+/*
 void MODEL_1_orb_tJ::Initialize_one_point_to_calculate(BASIS_1_orb_tJ &basis){
 
 //      int T_no_oprs=2;
@@ -397,267 +539,8 @@ void MODEL_1_orb_tJ::Initialize_one_point_to_calculate(BASIS_1_orb_tJ &basis){
 //        One_point_oprts[i].resize(basis.Length);
 //    }
 
-
-
-
-
-
-
 }
 
-void MODEL_1_orb_tJ::Initialize_one_point_to_calculate_from_file(BASIS_1_orb_tJ &basis){
-
-
-
-    One_point_oprts_onsite.resize(No_of_onepoint_obs);
-
-    for(int i=0;i<No_of_onepoint_obs;i++){
-        Read_matrix_from_file(One_point_strs[i],
-                              One_point_oprts_onsite[i],3,3);
-    }
-
-
-    int T_no_oprs=No_of_onepoint_obs;
-    int orb;
-    int spin;
-
-    One_point_oprts.resize(T_no_oprs);
-    for(int i=0;i<T_no_oprs;i++){
-        One_point_oprts[i].resize(basis.Length);
-    }
-
-
-    one_point_obs=One_point_strs;
-    for(int opr_no=0;opr_no<T_no_oprs;opr_no++){
-
-
-        for(int site=0;site<basis.Length;site++){
-            One_point_oprts[opr_no][site].nrows = basis.D_up_basis.size();
-            One_point_oprts[opr_no][site].ncols = One_point_oprts[opr_no][site].nrows;
-        }
-
-
-        //Remember OPR[l][m]=<l|OPR|m>
-        int m,j;
-        double_type value;
-
-
-        for(int site=0;site<basis.Length;site++){
-
-            One_point_oprts[opr_no][site].value.clear();
-            One_point_oprts[opr_no][site].rows.clear();
-            One_point_oprts[opr_no][site].columns.clear();
-
-
-            for (int i=0;i<basis.D_up_basis.size();i++){
-                j=i;
-
-                value=zero;
-
-                m=i;
-
-                if( (bit_value(basis.D_up_basis[i],site)==0)
-                        &&
-                        (bit_value(basis.D_dn_basis[j],site)==0)
-
-                        )
-                {
-                    value += One_point_oprts_onsite[opr_no][0][0];
-                }
-
-                if( (bit_value(basis.D_up_basis[i],site)==0)
-                        &&
-                        (bit_value(basis.D_dn_basis[j],site)==1)
-
-                        ){
-                    value +=One_point_oprts_onsite[opr_no][1][1];
-                }
-
-                if( (bit_value(basis.D_up_basis[i],site)==1)
-                        &&
-                        (bit_value(basis.D_dn_basis[j],site)==0)
-
-                        ){
-                    value +=One_point_oprts_onsite[opr_no][2][2];
-                }
-
-
-
-                if(value!=zero){
-                    One_point_oprts[opr_no][site].value.push_back(value);
-                    One_point_oprts[opr_no][site].rows.push_back(m);
-                    One_point_oprts[opr_no][site].columns.push_back(m);
-                }
-            }
-        }
-    }
-
-
-
-
-    H_Total.value.clear();
-    H_Total.nrows = basis.D_up_basis.size();
-    H_Total.ncols = H_Total.nrows;
-    H_Total=Hamil;
-
-    //H_KE Macro observable to measure
-    //H_KE
-    H_KE.value.clear();
-    H_KE.nrows = basis.D_up_basis.size();
-    H_KE.ncols = H_KE.nrows;
-
-
-    string time_evolution_type= "pump_probe_tJ_Ladder";
-    double_type phase;
-    double_type value;
-    int m,j;
-    int D_up,D_dn;
-    int i_new,j_new;
-    int m_new;
-    double sign_FM;
-    int sign_pow_up, sign_pow_dn;
-    int l,lp;
-    int nup_temp, ndn_temp;
-    int N1_temp,N2_temp;
-    complex<double> iota_(0.0,1.0);
-
-    for (int i=0;i<basis.D_up_basis.size();i++){
-
-        m=i;
-        j=i;
-        value=zero;
-
-
-        for(int site_p=0;site_p<basis.Length ;site_p++){
-
-            for(int site=site_p+1;site<basis.Length ;site++){
-
-
-                if(Hopping_mat[site_p][site]!=zero)
-
-                {
-
-                    //-----------
-                    phase=one;
-                    //----------------
-
-
-
-
-                    //---------------Hopping for up electrons-------------------//
-                    //there have to be one up electron in site
-                    //there have to be no up electron in site_p
-                    if(
-                            (bit_value(basis.D_up_basis[i], site)==1)
-                            &&
-                            (bit_value(basis.D_up_basis[i], site_p)==0)
-                            )
-                    {
-
-                        D_up = (int) (basis.D_up_basis[i] + pow(2, site_p)
-                                      - pow(2,site) );
-                        D_dn = basis.D_dn_basis[i];
-
-
-                        nup_temp = __builtin_popcount(D_up);
-                        ndn_temp = __builtin_popcount(D_dn);
-                        // m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
-                        //       basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
-                        m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
-
-                        N1_temp =0;
-                        N2_temp =0;
-
-                        N1_temp += bit_value(D_up,site) +
-                                bit_value(D_dn, site);
-                        N2_temp += bit_value(D_up,site_p) +
-                                bit_value(D_dn,site_p);
-
-                        l= site;
-                        lp= site_p;
-
-                        sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
-
-                        sign_FM = pow(-1.0, sign_pow_up);
-
-
-                        if(N1_temp <2 && N2_temp <2){
-                            assert(m_new<m);
-                            H_KE.value.push_back(1.0*sign_FM*((Hopping_mat[site_p][site]))*one*phase);
-                            H_KE.rows.push_back((m_new));
-                            H_KE.columns.push_back((m));
-                        }
-
-
-                    } // if up hopping possible
-
-
-                    //---------------Hopping for dn electrons-------------------//
-                    //there have to be one dn electron in site
-                    //there have to be no dn electron in site_p
-                    if(
-                            (bit_value(basis.D_dn_basis[j],site)==1)
-                            &&
-                            (bit_value(basis.D_dn_basis[j],site_p)==0)
-                            )
-                    {
-
-                        D_dn = (int) (basis.D_dn_basis[j] + pow(2,site_p)
-                                      - pow(2,site) );
-                        D_up = basis.D_up_basis[j];
-
-
-                        nup_temp = __builtin_popcount(D_up);
-                        ndn_temp = __builtin_popcount(D_dn);
-                        // m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
-                        //       basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
-                        m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
-
-                        N1_temp =0;
-                        N2_temp =0;
-
-                        N1_temp += bit_value(D_up,site) +
-                                bit_value(D_dn, site);
-                        N2_temp += bit_value(D_up,site_p) +
-                                bit_value(D_dn,site_p);
-
-
-
-                        l= site;
-                        lp= site_p;
-
-                        sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
-
-                        sign_FM = pow(-1.0, sign_pow_dn);
-
-
-                        if(N1_temp <2 && N2_temp <2){
-                            assert(m_new<m);
-                            H_KE.value.push_back(1.0*sign_FM*((Hopping_mat[site_p][site]))*one*phase);
-                            H_KE.rows.push_back((m_new));
-                            H_KE.columns.push_back((m));
-                        }
-
-                    } // if dn hopping possible
-
-
-                }//if hopping finite
-
-
-            }//site_p
-
-
-
-
-        } // site
-
-    } // "i" i.e up_decimals
-
-
-
-
-
-}
 
 void MODEL_1_orb_tJ::Initialize_two_point_to_calculate(BASIS_1_orb_tJ &basis){
     two_point_obs.resize(1);

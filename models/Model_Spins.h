@@ -43,18 +43,18 @@ public:
     Mat_2_doub Jpm_Exchange_mat;
 
 
-
 void Read_parameters(BASIS_Spins &basis, string filename);
 void Add_diagonal_terms(BASIS_Spins &basis);
 void Add_non_diagonal_terms(BASIS_Spins &basis);
 void Add_connections(BASIS_Spins &basis);
+void Read_parameters_for_dynamics(string filename);
+void Initialize_Opr_for_Dynamics(BASIS_Spins &basis, int site);
+void Initialize_one_point_to_calculate_from_file(BASIS_Spins &basis);
 
-//void Read_parameters_for_dynamics(string filename);
+
 //void Initialize_one_point_to_calculate(BASIS_1_orb_tJ &basis);
-//void Initialize_one_point_to_calculate_from_file(BASIS_1_orb_tJ &basis);
 //void Initialize_two_point_to_calculate(BASIS_1_orb_tJ &basis);
 //void Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR, int site1, int site2, BASIS_1_orb_tJ &basis);
-//void Initialize_Opr_for_Dynamics(BASIS_1_orb_tJ &basis);
 
 };
 

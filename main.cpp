@@ -73,6 +73,36 @@ int main(int argc, char** argv){
         _LANCZOS.Write_full_spectrum();
         Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS.txt");
 
+        _MODEL.Initialize_one_point_to_calculate_from_file(_BASIS);
+        _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0);
+
+
+
+        cout<<"Dynamics startedXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+
+        if(Do_Dynamics){
+
+            int site_=0;
+            _MODEL.Read_parameters_for_dynamics(inp_filename);
+
+            LANCZOS _LANCZOS_Dynamics;
+            _LANCZOS_Dynamics.Dynamics_performed=true;
+            _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
+            _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
+            _LANCZOS_Dynamics.GS_energy=_LANCZOS.GS_energy;
+
+            _MODEL.Initialize_Opr_for_Dynamics(_BASIS, site_);
+            _LANCZOS_Dynamics.Get_Dynamics_seed(_MODEL.Dyn_opr);
+
+            cout<<"size of seed = "<<_LANCZOS_Dynamics.Dynamics_seed.size()<<endl;
+            _LANCZOS_Dynamics.omega_sign=1.0;
+            _LANCZOS_Dynamics.file_dynamics_out = _LANCZOS_Dynamics.file_dynamics_out +".txt";
+            _LANCZOS_Dynamics.Perform_LANCZOS(_MODEL.Hamil);
+
+            //-----------------------
+
+        }
+
 
     }
 
@@ -108,7 +138,7 @@ int main(int argc, char** argv){
         // cout<<"_LANCZOS.Eig_vec done"<<endl;
 
 
-        //assert(true==false);
+        assert(true==false);
 
         double_type overlap_temp;
 
@@ -133,7 +163,6 @@ int main(int argc, char** argv){
 
             overlap_temp = dot_product(_MODEL.STATE_RVB, _MODEL.STATE_TPS);
             cout<<"<STATE_RVB|STATE_TPS> = "<<overlap_temp<<endl;
-
         }
 
 
@@ -375,7 +404,7 @@ int main(int argc, char** argv){
         _MODEL.Read_parameters(_BASIS, inp_filename);
         _BASIS.Construct_basis();
 
-        _MODEL.Read_parameters_for_variational_state(_BASIS, inp_filename);
+        // _MODEL.Read_parameters_for_variational_state(_BASIS, inp_filename);
 
         _MODEL.Add_diagonal_terms(_BASIS);
         _MODEL.Add_non_diagonal_terms(_BASIS);
@@ -431,46 +460,54 @@ int main(int argc, char** argv){
         if(Cheaper_SpinSpincorr==true){
 
             Matrix_COO OPR_;
-            double sum_;
+            for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
+                cout<<"Spin-Spin correlations for state = "<<state_<<endl;
 
-            Mat_1_string opr_type_;
-            opr_type_.push_back("SzSz");
-            opr_type_.push_back("SpSm");
-            opr_type_.push_back("SmSp");
+                double sum_;
 
-            Mat_2_doub Corr_;
-            Corr_.resize(_BASIS.Length);
-            for(int site1=0;site1<_BASIS.Length;site1++){
-                Corr_[site1].resize(_BASIS.Length);
-            }
+                Mat_1_string opr_type_;
+                opr_type_.push_back("SzSz");
+                opr_type_.push_back("SpSm");
+                opr_type_.push_back("SmSp");
 
-            for(int type=0;type<3;type++){
-                sum_=0.0;
-                cout<<opr_type_[type]<<": "<<endl;
-
+                Mat_2_doub Corr_;
+                Corr_.resize(_BASIS.Length);
                 for(int site1=0;site1<_BASIS.Length;site1++){
-                    for(int site2=site1;site2<_BASIS.Length;site2++){
-                        OPR_.columns.clear();
-                        OPR_.rows.clear();
-                        OPR_.value.clear();
-                        _MODEL.Initialize_two_point_operator_sites_specific(opr_type_[type] , OPR_, site1, site2, _BASIS);
-                        Corr_[site1][site2]=_LANCZOS.Measure_observable(OPR_, 0);
-                        if(site1 != site2){
-                            Corr_[site2][site1]=Corr_[site1][site2];
+                    Corr_[site1].resize(_BASIS.Length);
+                }
+
+                for(int type=0;type<3;type++){
+                    sum_=0.0;
+                    cout<<opr_type_[type]<<": "<<endl;
+
+                    for(int site1=0;site1<_BASIS.Length;site1++){
+                        for(int site2=site1;site2<_BASIS.Length;site2++){
+                            OPR_.columns.clear();
+                            OPR_.rows.clear();
+                            OPR_.value.clear();
+                            _MODEL.Initialize_two_point_operator_sites_specific(opr_type_[type] , OPR_, site1, site2, _BASIS);
+                            Corr_[site1][site2]=_LANCZOS.Measure_observable(OPR_, state_);
+                            if(site1 != site2){
+                                Corr_[site2][site1]=Corr_[site1][site2];
+                            }
+                            OPR_.columns.clear();
+                            OPR_.rows.clear();
+                            OPR_.value.clear();
                         }
-                        OPR_.columns.clear();
-                        OPR_.rows.clear();
-                        OPR_.value.clear();
                     }
-                }
-                for(int site1=0;site1<_BASIS.Length;site1++){
-                    for(int site2=0;site2<_BASIS.Length;site2++){
-                        cout<< Corr_[site1][site2]<<" ";
-                        sum_ +=Corr_[site1][site2];
+                    for(int site1=0;site1<_BASIS.Length;site1++){
+                        for(int site2=0;site2<_BASIS.Length;site2++){
+                            cout<< Corr_[site1][site2]<<" ";
+                            sum_ +=Corr_[site1][site2];
+                        }
+                        cout<<endl;
                     }
-                    cout<<endl;
+                    cout<<"sum = "<<sum_<<endl;
                 }
-                cout<<"sum = "<<sum_<<endl;
+
+                vector< int >().swap( OPR_.columns );
+                vector< int >().swap( OPR_.rows );
+                vector< double_type >().swap( OPR_.value );
             }
         }
         else{
@@ -1495,37 +1532,37 @@ int main(int argc, char** argv){
 
 #ifdef USE_COMPLEX
 
-    if(false){
-        //--UPDATING Lanczos Eig vecs with phase---------//
-        complex<double> a_;
-        //double _PI_ = 3.14159265358979;
-        Mat_1_Complex_doub Phases;
-        Phases.resize(15);
+        if(false){
+            //--UPDATING Lanczos Eig vecs with phase---------//
+            complex<double> a_;
+            //double _PI_ = 3.14159265358979;
+            Mat_1_Complex_doub Phases;
+            Phases.resize(15);
 
-        //Only works for specific value U=20, H_mag = 0.000001, lambda_SOC = 0.002, Random_seed_generator = 321
+            //Only works for specific value U=20, H_mag = 0.000001, lambda_SOC = 0.002, Random_seed_generator = 321
 
-        a_=complex <double>(-0.408147,0.00907139);Phases[0]=conj(a_);
-        a_=complex <double>(0.432517,0.559401);Phases[1]=conj(a_);
-        a_=complex <double>(-0.418029,0.27432);Phases[2]=conj(a_);
-        a_=complex <double>(0.206927,0.286673);Phases[3]=conj(a_);
-        a_=complex <double>(-0.406994,0.578235);Phases[4]=conj(a_);
-        a_=complex <double>(0.0377325,-0.706099);Phases[5]=conj(a_);
-        a_=complex <double>(0.205799,0.202436);Phases[6]=conj(a_);
-        a_=complex <double>(0.259928,-0.239557);Phases[7]=conj(a_);
-        a_=complex <double>(-0.281476,0.648669);Phases[8]=conj(a_);
-        a_=complex <double>(0.342784,-0.364005);Phases[9]=conj(a_);
-        a_=complex <double>(-0.499813,0.0117241);Phases[10]=conj(a_);
-        a_=complex <double>(-0.014609,0.816366);Phases[11]=conj(a_);
-        a_=complex <double>(-0.391111,0.31158);Phases[12]=conj(a_);
-        a_=complex <double>(0.487954,0.10909);Phases[13]=conj(a_);
-        a_=complex <double>(0.113232,0.566138);Phases[14]=conj(a_);
+            a_=complex <double>(-0.408147,0.00907139);Phases[0]=conj(a_);
+            a_=complex <double>(0.432517,0.559401);Phases[1]=conj(a_);
+            a_=complex <double>(-0.418029,0.27432);Phases[2]=conj(a_);
+            a_=complex <double>(0.206927,0.286673);Phases[3]=conj(a_);
+            a_=complex <double>(-0.406994,0.578235);Phases[4]=conj(a_);
+            a_=complex <double>(0.0377325,-0.706099);Phases[5]=conj(a_);
+            a_=complex <double>(0.205799,0.202436);Phases[6]=conj(a_);
+            a_=complex <double>(0.259928,-0.239557);Phases[7]=conj(a_);
+            a_=complex <double>(-0.281476,0.648669);Phases[8]=conj(a_);
+            a_=complex <double>(0.342784,-0.364005);Phases[9]=conj(a_);
+            a_=complex <double>(-0.499813,0.0117241);Phases[10]=conj(a_);
+            a_=complex <double>(-0.014609,0.816366);Phases[11]=conj(a_);
+            a_=complex <double>(-0.391111,0.31158);Phases[12]=conj(a_);
+            a_=complex <double>(0.487954,0.10909);Phases[13]=conj(a_);
+            a_=complex <double>(0.113232,0.566138);Phases[14]=conj(a_);
 
-        for(int state_=0;state_<Phases.size();state_++){
-            value_multiply_vector(Phases[state_], _LANCZOS.Eig_vecs[state_]);
-            Normalize_vec(_LANCZOS.Eig_vecs[state_]);
+            for(int state_=0;state_<Phases.size();state_++){
+                value_multiply_vector(Phases[state_], _LANCZOS.Eig_vecs[state_]);
+                Normalize_vec(_LANCZOS.Eig_vecs[state_]);
+            }
+
         }
-
-    }
 
 
         //-----------DONE--------------------------------//

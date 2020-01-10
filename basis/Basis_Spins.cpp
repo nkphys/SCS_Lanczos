@@ -12,7 +12,7 @@ void BASIS_Spins::Construct_basis(){
     //NOTES:
     /*
     B is Base. We choose B=2S+1.
-    D = \sum_{i=0}^{L-1} V_{i} B^{i}, where V_{i} \in {0,1,2,...,B}
+    D = \sum_{i=0}^{L-1} V_{i} B^{i}, where V_{i} \in {0,1,2,...,B-1}
     */
     //---------------------------------//
 

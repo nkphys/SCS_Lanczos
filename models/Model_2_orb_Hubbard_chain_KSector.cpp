@@ -148,6 +148,12 @@ void MODEL_2_orb_Hubb_chain_KSector::Add_diagonal_terms(BASIS_2_orb_Hubb_chain_K
 void MODEL_2_orb_Hubb_chain_KSector::Add_non_diagonal_terms(BASIS_2_orb_Hubb_chain_KSector &basis){
 
 
+    bool PAIRHOPPINGINCLUDED = false;
+    if(!PAIRHOPPINGINCLUDED){
+        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+        cout<<"  ---------- PAIR HOPPING is switched OFF --------- "<<endl;
+        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+    }
     cout<<"Started Hamiltonian construction: Non Diagonal"<<endl;
     assert(basis.D_up_basis.size()==basis.D_dn_basis.size());
 
@@ -377,6 +383,7 @@ void MODEL_2_orb_Hubb_chain_KSector::Add_non_diagonal_terms(BASIS_2_orb_Hubb_cha
         //Pair hopping: P_i\gamma = c_i\gamma\dn c_i\gamma\dn
         //there have to be pair present at i,gamma_p
         //there have to nothing at i,gamma
+        if(PAIRHOPPINGINCLUDED){
         repeating_rows=false;
         for(int gamma=0;gamma<2;gamma++){
             for(int gamma_p=gamma+1;gamma_p<2;gamma_p++){
@@ -540,6 +547,8 @@ void MODEL_2_orb_Hubb_chain_KSector::Add_non_diagonal_terms(BASIS_2_orb_Hubb_cha
                 } // site
             } //gamma_p
         } //gamma
+
+    }//If Pair-hopping included!!
 
         if(m%1000 ==1){
             //cout<<"done "<<m<<" basis"<<endl;

@@ -225,6 +225,7 @@ void MODEL_3_orb_Hubb_chain::Add_non_diagonal_terms(BASIS_3_orb_Hubb_chain &basi
 
 void MODEL_3_orb_Hubb_chain::Add_connections(BASIS_3_orb_Hubb_chain &basis){
 
+    double Hopp_connection;
     double value;
     int m;
     int D_up,D_dn;
@@ -265,6 +266,15 @@ void MODEL_3_orb_Hubb_chain::Add_connections(BASIS_3_orb_Hubb_chain &basis){
 
                                     )
                             { // nearest neighbour
+                                if(neigh==1){
+                                    Hopp_connection = Hopping_mat_NN[gamma_p][gamma];}
+                                else if(neigh==-1){
+                                    Hopp_connection = Hopping_mat_NN[gamma][gamma_p];
+                                }
+                                else{
+                                    cout <<" Only nearest neighbout allowed "<<endl;
+                                    assert(abs(neigh)==1);
+                                }
 
                                 //---------------Hopping for up electrons-------------------//
                                 //there have to be one up electron in gamma, site
@@ -292,11 +302,9 @@ void MODEL_3_orb_Hubb_chain::Add_connections(BASIS_3_orb_Hubb_chain &basis){
 
                                     sign_FM = pow(-1.0, sign_pow_up);
 
-
-
                                     if((Hopping_mat_NN[gamma_p][gamma])!=0){
                                         assert(m_new<m);
-                                        Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one);
+                                        Hamil.value.push_back(-1.0*sign_FM*(Hopp_connection)*one);
                                         Hamil.rows.push_back((m_new));
                                         Hamil.columns.push_back((m));
                                     }
@@ -334,7 +342,7 @@ void MODEL_3_orb_Hubb_chain::Add_connections(BASIS_3_orb_Hubb_chain &basis){
 
                                     if((Hopping_mat_NN[gamma_p][gamma])!=0){
                                         assert(m_new<m);
-                                        Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one);
+                                        Hamil.value.push_back(-1.0*sign_FM*(Hopp_connection)*one);
                                         Hamil.rows.push_back((m_new));
                                         Hamil.columns.push_back((m));}
 
