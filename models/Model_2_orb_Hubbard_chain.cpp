@@ -146,6 +146,13 @@ void MODEL_2_orb_Hubb_chain::Add_diagonal_terms(BASIS_2_orb_Hubb_chain &basis){
 void MODEL_2_orb_Hubb_chain::Add_non_diagonal_terms(BASIS_2_orb_Hubb_chain &basis){
 
 
+    bool PAIRHOPPINGINCLUDED = false;
+    if(!PAIRHOPPINGINCLUDED){
+        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+        cout<<"  ---------- PAIR HOPPING is switched OFF --------- "<<endl;
+        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+    }
+
     cout<<"Started Hamiltonian construction: Non Diagonal"<<endl;
 
     Hamil.nrows = basis.D_up_basis.size()*basis.D_dn_basis.size();
@@ -218,47 +225,49 @@ void MODEL_2_orb_Hubb_chain::Add_non_diagonal_terms(BASIS_2_orb_Hubb_chain &basi
                         //there have to be pair present at i,gamma_p
                         //there have to nothing at i,gamma
 
-                        if(
-                                ((bit_value(basis.D_dn_basis[j],gamma*basis.Length + site)==0)
-                                 &&
-                                 (bit_value(basis.D_up_basis[i],gamma*basis.Length + site)==0)
-                                 )
-                                &&
-                                ((bit_value(basis.D_up_basis[i],gamma_p*basis.Length + site)==1)
-                                 &&
-                                 (bit_value(basis.D_dn_basis[j],gamma_p*basis.Length + site)==1)
-                                 )
+                        if(PAIRHOPPINGINCLUDED){
+                            if(
+                                    ((bit_value(basis.D_dn_basis[j],gamma*basis.Length + site)==0)
+                                     &&
+                                     (bit_value(basis.D_up_basis[i],gamma*basis.Length + site)==0)
+                                     )
+                                    &&
+                                    ((bit_value(basis.D_up_basis[i],gamma_p*basis.Length + site)==1)
+                                     &&
+                                     (bit_value(basis.D_dn_basis[j],gamma_p*basis.Length + site)==1)
+                                     )
 
-                                )
-                        {
+                                    )
+                            {
 
-                            D_up = (int) (basis.D_up_basis[i] - pow(2,gamma_p*basis.Length + site)
-                                          + pow(2,gamma*basis.Length + site) );
-                            D_dn = (int) (basis.D_dn_basis[j] - pow(2,gamma_p*basis.Length + site)
-                                          + pow(2,gamma*basis.Length + site) );
+                                D_up = (int) (basis.D_up_basis[i] - pow(2,gamma_p*basis.Length + site)
+                                              + pow(2,gamma*basis.Length + site) );
+                                D_dn = (int) (basis.D_dn_basis[j] - pow(2,gamma_p*basis.Length + site)
+                                              + pow(2,gamma*basis.Length + site) );
 
-                            i_new = Find_int_in_intarray(D_up,basis.D_up_basis);
-                            j_new = Find_int_in_intarray(D_dn,basis.D_dn_basis);
+                                i_new = Find_int_in_intarray(D_up,basis.D_up_basis);
+                                j_new = Find_int_in_intarray(D_dn,basis.D_dn_basis);
 
-                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+                                m_new = basis.D_dn_basis.size()*i_new + j_new;
 
-                            l=gamma*basis.Length + site;
-                            lp=gamma_p*basis.Length + site;
+                                l=gamma*basis.Length + site;
+                                lp=gamma_p*basis.Length + site;
 
-                            sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
-                            sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
-                            sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn);
-
-
-
-                            assert(m_new<m);
-                            Hamil.value.push_back(sign_FM*J_H*one);
-                            Hamil.rows.push_back((m_new));
-                            Hamil.columns.push_back((m));
+                                sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+                                sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+                                sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn);
 
 
-                        } //Pair-Hopping
 
+                                assert(m_new<m);
+                                Hamil.value.push_back(sign_FM*J_H*one);
+                                Hamil.rows.push_back((m_new));
+                                Hamil.columns.push_back((m));
+
+
+                            } //Pair-Hopping
+
+                        }
 
                     } // site
                 } //gamma_p
@@ -1886,111 +1895,111 @@ void MODEL_2_orb_Hubb_chain::Create_Anzatz_basis_2Holes(BASIS_2_orb_Hubb_chain &
 
 
     if(basis.Length==6){
-    No_of_classes = 36;
-    No_of_states = No_of_classes*basis.Length*2;
+        No_of_classes = 36;
+        No_of_states = No_of_classes*basis.Length*2;
 
-    States_in_class.resize(No_of_classes);
-    variational_2holes_classes_contruction_strings.resize(No_of_classes);
+        States_in_class.resize(No_of_classes);
+        variational_2holes_classes_contruction_strings.resize(No_of_classes);
 
-    States_in_class[0]=12;
-    variational_2holes_classes_contruction_strings[0]="AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 3 4 D S NOS2 4 5 AC S NOS2 5 0";
-    States_in_class[1]=12;
-    variational_2holes_classes_contruction_strings[1]="AC S NOS1 0 1 AC S NOS2 1 2 D S NOS1 3 4 AC S NOS1 4 5 AC S NOS2 5 0";
-    States_in_class[2]=12;
-    variational_2holes_classes_contruction_strings[2]="AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 3 4 AC S NOS2 4 5 D S NOS1 5 0";
-    States_in_class[3]=12;
-    variational_2holes_classes_contruction_strings[3]="AC S NOS1 0 1 AC S NOS2 1 2 D S NOS1 3 4 D S NOS1 4 5 D S NOS1 5 0";
-    States_in_class[4]=12;
-    variational_2holes_classes_contruction_strings[4]="D S NOS2 0 1 AC S NOS2 1 2 AC S NOS1 3 4 D S NOS2 4 5 D S NOS2 5 0";
-    States_in_class[5]=12;
-    variational_2holes_classes_contruction_strings[5]="D S NOS2 0 1 AC S NOS2 1 2 D S NOS1 3 4 AC S NOS1 4 5 D S NOS2 5 0";
-    States_in_class[6]=12;
-    variational_2holes_classes_contruction_strings[6]="D S NOS2 0 1 AC S NOS2 1 2 D S NOS1 3 4 D S NOS1 4 5 AC S NOS1 5 0";
-    States_in_class[7]=12;
-    variational_2holes_classes_contruction_strings[7]="D S NOS2 0 1 AC S NOS2 1 2 AC S NOS1 3 4 AC S NOS2 4 5 AC S NOS1 5 0";
-    States_in_class[8]=12;
-    variational_2holes_classes_contruction_strings[8]="AC S NOS2 0 1 D S NOS1 1 2 D S NOS1 3 4 AC S NOS1 4 5 D S NOS2 5 0";
-    States_in_class[9]=12;
-    variational_2holes_classes_contruction_strings[9]="AC S NOS2 0 1 D S NOS1 1 2 D S NOS1 3 4 D S NOS1 4 5 AC S NOS1 5 0";
-    States_in_class[10]=12;
-    variational_2holes_classes_contruction_strings[10]="AC S NOS2 0 1 D S NOS1 1 2 AC S NOS1 3 4 D S NOS2 4 5 D S NOS2 5 0";
-    States_in_class[11]=12;
-    variational_2holes_classes_contruction_strings[11]="AC S NOS2 0 1 D S NOS1 1 2 AC S NOS1 3 4 AC S NOS2 4 5 AC S NOS1 5 0";
-    States_in_class[12]=12;
-    variational_2holes_classes_contruction_strings[12]="D S NOS1 0 1 D S NOS1 1 2 D S NOS1 3 4 D S NOS1 4 5 D S NOS1 5 0";
-    States_in_class[13]=12;
-    variational_2holes_classes_contruction_strings[13]="D S NOS1 0 1 D S NOS1 1 2 AC S NOS1 3 4 AC S NOS2 4 5 D S NOS1 5 0";
-    States_in_class[14]=12;
-    variational_2holes_classes_contruction_strings[14]="D S NOS1 0 1 D S NOS1 1 2 D S NOS1 3 4 AC S NOS1 4 5 AC S NOS2 5 0";
-    States_in_class[15]=12;
-    variational_2holes_classes_contruction_strings[15]="D S NOS1 0 1 D S NOS1 1 2 AC S NOS1 3 4 D S NOS2 4 5 AC S NOS2 5 0";
-    States_in_class[16]=12;
-    variational_2holes_classes_contruction_strings[16]="AC S NOS2 0 1 AC S NOS1 1 3 AC S NOS2 2 4 D S NOS1 4 5 AC S NOS1 5 0";
-    States_in_class[17]=12;
-    variational_2holes_classes_contruction_strings[17]="AC S NOS2 0 1 AC S NOS1 1 3 AC S NOS2 2 4 AC S NOS1 4 5 D S NOS2 5 0";
-    States_in_class[18]=12;
-    variational_2holes_classes_contruction_strings[18]="D S NOS1 0 1 AC S NOS1 1 3 AC S NOS2 2 4 D S NOS1 4 5 D S NOS1 5 0";
-    States_in_class[19]=12;
-    variational_2holes_classes_contruction_strings[19]="D S NOS1 0 1 AC S NOS1 1 3 AC S NOS2 2 4 AC S NOS1 4 5 AC S NOS2 5 0";
-    States_in_class[20]=12;
-    variational_2holes_classes_contruction_strings[20]="AC S NOS2 0 1 D S NOS1 1 3 AC S NOS1 3 4 D S NOS2 4 5 D S NOS2 5 0";
-    States_in_class[21]=12;
-    variational_2holes_classes_contruction_strings[21]="AC S NOS2 0 1 D S NOS1 1 3 D S NOS1 3 4 AC S NOS1 4 5 D S NOS2 5 0";
-    States_in_class[22]=12;
-    variational_2holes_classes_contruction_strings[22]="AC S NOS2 0 1 D S NOS1 1 3 D S NOS1 3 4 D S NOS1 4 5 AC S NOS1 5 0";
-    States_in_class[23]=12;
-    variational_2holes_classes_contruction_strings[23]="AC S NOS2 0 1 D S NOS1 1 3 AC S NOS1 3 4 AC S NOS2 4 5 AC S NOS1 5 0";
-    States_in_class[24]=12;
-    variational_2holes_classes_contruction_strings[24]="D S NOS1 0 1 D S NOS1 1 3 D S NOS1 3 4 D S NOS1 4 5 D S NOS1 5 0";
-    States_in_class[25]=12;
-    variational_2holes_classes_contruction_strings[25]="D S NOS1 0 1 D S NOS1 1 3 AC S NOS1 3 4 AC S NOS2 4 5 D S NOS1 5 0";
-    States_in_class[26]=12;
-    variational_2holes_classes_contruction_strings[26]="D S NOS1 0 1 D S NOS1 1 3 D S NOS1 3 4 AC S NOS1 4 5 AC S NOS2 5 0";
-    States_in_class[27]=12;
-    variational_2holes_classes_contruction_strings[27]="D S NOS1 0 1 D S NOS1 1 3 AC S NOS1 3 4 D S NOS2 4 5 AC S NOS2 5 0";
-    States_in_class[28]=12;
-    variational_2holes_classes_contruction_strings[28]="D S NOS2 0 1 AC S NOS2 1 3 AC S NOS1 3 4 D S NOS2 4 5 D S NOS2 5 0";
-    States_in_class[29]=12;
-    variational_2holes_classes_contruction_strings[29]="D S NOS2 0 1 AC S NOS2 1 3 D S NOS1 3 4 AC S NOS1 4 5 D S NOS2 5 0";
-    States_in_class[30]=12;
-    variational_2holes_classes_contruction_strings[30]="D S NOS2 0 1 AC S NOS2 1 3 AC S NOS1 3 4 AC S NOS2 4 5 AC S NOS1 5 0";
-    States_in_class[31]=12;
-    variational_2holes_classes_contruction_strings[31]="D S NOS2 0 1 AC S NOS2 1 3 D S NOS1 3 4 D S NOS1 4 5 AC S NOS1 5 0";
-    States_in_class[32]=12;
-    variational_2holes_classes_contruction_strings[32]="AC S NOS1 0 1 AC S NOS2 1 3 D S NOS1 3 4 AC S NOS1 4 5 AC S NOS2 5 0";
-    States_in_class[33]=12;
-    variational_2holes_classes_contruction_strings[33]="AC S NOS1 0 1 AC S NOS2 1 3 AC S NOS1 3 4 D S NOS2 4 5 AC S NOS2 5 0";
-    States_in_class[34]=12;
-    variational_2holes_classes_contruction_strings[34]="AC S NOS1 0 1 AC S NOS2 1 3 AC S NOS1 3 4 AC S NOS2 4 5 D S NOS1 5 0";
-    States_in_class[35]=12;
-    variational_2holes_classes_contruction_strings[35]="AC S NOS1 0 1 AC S NOS2 1 3 D S NOS1 3 4 D S NOS1 4 5 D S NOS1 5 0";
+        States_in_class[0]=12;
+        variational_2holes_classes_contruction_strings[0]="AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 3 4 D S NOS2 4 5 AC S NOS2 5 0";
+        States_in_class[1]=12;
+        variational_2holes_classes_contruction_strings[1]="AC S NOS1 0 1 AC S NOS2 1 2 D S NOS1 3 4 AC S NOS1 4 5 AC S NOS2 5 0";
+        States_in_class[2]=12;
+        variational_2holes_classes_contruction_strings[2]="AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 3 4 AC S NOS2 4 5 D S NOS1 5 0";
+        States_in_class[3]=12;
+        variational_2holes_classes_contruction_strings[3]="AC S NOS1 0 1 AC S NOS2 1 2 D S NOS1 3 4 D S NOS1 4 5 D S NOS1 5 0";
+        States_in_class[4]=12;
+        variational_2holes_classes_contruction_strings[4]="D S NOS2 0 1 AC S NOS2 1 2 AC S NOS1 3 4 D S NOS2 4 5 D S NOS2 5 0";
+        States_in_class[5]=12;
+        variational_2holes_classes_contruction_strings[5]="D S NOS2 0 1 AC S NOS2 1 2 D S NOS1 3 4 AC S NOS1 4 5 D S NOS2 5 0";
+        States_in_class[6]=12;
+        variational_2holes_classes_contruction_strings[6]="D S NOS2 0 1 AC S NOS2 1 2 D S NOS1 3 4 D S NOS1 4 5 AC S NOS1 5 0";
+        States_in_class[7]=12;
+        variational_2holes_classes_contruction_strings[7]="D S NOS2 0 1 AC S NOS2 1 2 AC S NOS1 3 4 AC S NOS2 4 5 AC S NOS1 5 0";
+        States_in_class[8]=12;
+        variational_2holes_classes_contruction_strings[8]="AC S NOS2 0 1 D S NOS1 1 2 D S NOS1 3 4 AC S NOS1 4 5 D S NOS2 5 0";
+        States_in_class[9]=12;
+        variational_2holes_classes_contruction_strings[9]="AC S NOS2 0 1 D S NOS1 1 2 D S NOS1 3 4 D S NOS1 4 5 AC S NOS1 5 0";
+        States_in_class[10]=12;
+        variational_2holes_classes_contruction_strings[10]="AC S NOS2 0 1 D S NOS1 1 2 AC S NOS1 3 4 D S NOS2 4 5 D S NOS2 5 0";
+        States_in_class[11]=12;
+        variational_2holes_classes_contruction_strings[11]="AC S NOS2 0 1 D S NOS1 1 2 AC S NOS1 3 4 AC S NOS2 4 5 AC S NOS1 5 0";
+        States_in_class[12]=12;
+        variational_2holes_classes_contruction_strings[12]="D S NOS1 0 1 D S NOS1 1 2 D S NOS1 3 4 D S NOS1 4 5 D S NOS1 5 0";
+        States_in_class[13]=12;
+        variational_2holes_classes_contruction_strings[13]="D S NOS1 0 1 D S NOS1 1 2 AC S NOS1 3 4 AC S NOS2 4 5 D S NOS1 5 0";
+        States_in_class[14]=12;
+        variational_2holes_classes_contruction_strings[14]="D S NOS1 0 1 D S NOS1 1 2 D S NOS1 3 4 AC S NOS1 4 5 AC S NOS2 5 0";
+        States_in_class[15]=12;
+        variational_2holes_classes_contruction_strings[15]="D S NOS1 0 1 D S NOS1 1 2 AC S NOS1 3 4 D S NOS2 4 5 AC S NOS2 5 0";
+        States_in_class[16]=12;
+        variational_2holes_classes_contruction_strings[16]="AC S NOS2 0 1 AC S NOS1 1 3 AC S NOS2 2 4 D S NOS1 4 5 AC S NOS1 5 0";
+        States_in_class[17]=12;
+        variational_2holes_classes_contruction_strings[17]="AC S NOS2 0 1 AC S NOS1 1 3 AC S NOS2 2 4 AC S NOS1 4 5 D S NOS2 5 0";
+        States_in_class[18]=12;
+        variational_2holes_classes_contruction_strings[18]="D S NOS1 0 1 AC S NOS1 1 3 AC S NOS2 2 4 D S NOS1 4 5 D S NOS1 5 0";
+        States_in_class[19]=12;
+        variational_2holes_classes_contruction_strings[19]="D S NOS1 0 1 AC S NOS1 1 3 AC S NOS2 2 4 AC S NOS1 4 5 AC S NOS2 5 0";
+        States_in_class[20]=12;
+        variational_2holes_classes_contruction_strings[20]="AC S NOS2 0 1 D S NOS1 1 3 AC S NOS1 3 4 D S NOS2 4 5 D S NOS2 5 0";
+        States_in_class[21]=12;
+        variational_2holes_classes_contruction_strings[21]="AC S NOS2 0 1 D S NOS1 1 3 D S NOS1 3 4 AC S NOS1 4 5 D S NOS2 5 0";
+        States_in_class[22]=12;
+        variational_2holes_classes_contruction_strings[22]="AC S NOS2 0 1 D S NOS1 1 3 D S NOS1 3 4 D S NOS1 4 5 AC S NOS1 5 0";
+        States_in_class[23]=12;
+        variational_2holes_classes_contruction_strings[23]="AC S NOS2 0 1 D S NOS1 1 3 AC S NOS1 3 4 AC S NOS2 4 5 AC S NOS1 5 0";
+        States_in_class[24]=12;
+        variational_2holes_classes_contruction_strings[24]="D S NOS1 0 1 D S NOS1 1 3 D S NOS1 3 4 D S NOS1 4 5 D S NOS1 5 0";
+        States_in_class[25]=12;
+        variational_2holes_classes_contruction_strings[25]="D S NOS1 0 1 D S NOS1 1 3 AC S NOS1 3 4 AC S NOS2 4 5 D S NOS1 5 0";
+        States_in_class[26]=12;
+        variational_2holes_classes_contruction_strings[26]="D S NOS1 0 1 D S NOS1 1 3 D S NOS1 3 4 AC S NOS1 4 5 AC S NOS2 5 0";
+        States_in_class[27]=12;
+        variational_2holes_classes_contruction_strings[27]="D S NOS1 0 1 D S NOS1 1 3 AC S NOS1 3 4 D S NOS2 4 5 AC S NOS2 5 0";
+        States_in_class[28]=12;
+        variational_2holes_classes_contruction_strings[28]="D S NOS2 0 1 AC S NOS2 1 3 AC S NOS1 3 4 D S NOS2 4 5 D S NOS2 5 0";
+        States_in_class[29]=12;
+        variational_2holes_classes_contruction_strings[29]="D S NOS2 0 1 AC S NOS2 1 3 D S NOS1 3 4 AC S NOS1 4 5 D S NOS2 5 0";
+        States_in_class[30]=12;
+        variational_2holes_classes_contruction_strings[30]="D S NOS2 0 1 AC S NOS2 1 3 AC S NOS1 3 4 AC S NOS2 4 5 AC S NOS1 5 0";
+        States_in_class[31]=12;
+        variational_2holes_classes_contruction_strings[31]="D S NOS2 0 1 AC S NOS2 1 3 D S NOS1 3 4 D S NOS1 4 5 AC S NOS1 5 0";
+        States_in_class[32]=12;
+        variational_2holes_classes_contruction_strings[32]="AC S NOS1 0 1 AC S NOS2 1 3 D S NOS1 3 4 AC S NOS1 4 5 AC S NOS2 5 0";
+        States_in_class[33]=12;
+        variational_2holes_classes_contruction_strings[33]="AC S NOS1 0 1 AC S NOS2 1 3 AC S NOS1 3 4 D S NOS2 4 5 AC S NOS2 5 0";
+        States_in_class[34]=12;
+        variational_2holes_classes_contruction_strings[34]="AC S NOS1 0 1 AC S NOS2 1 3 AC S NOS1 3 4 AC S NOS2 4 5 D S NOS1 5 0";
+        States_in_class[35]=12;
+        variational_2holes_classes_contruction_strings[35]="AC S NOS1 0 1 AC S NOS2 1 3 D S NOS1 3 4 D S NOS1 4 5 D S NOS1 5 0";
 
-        }
+    }
 
 
 
     if(basis.Length==4){
-    No_of_classes = 7;
-    No_of_states = No_of_classes*basis.Length*2;
+        No_of_classes = 7;
+        No_of_states = No_of_classes*basis.Length*2;
 
-    States_in_class.resize(No_of_classes);
-    variational_2holes_classes_contruction_strings.resize(No_of_classes);
+        States_in_class.resize(No_of_classes);
+        variational_2holes_classes_contruction_strings.resize(No_of_classes);
 
-    States_in_class[0]=16;
-    variational_2holes_classes_contruction_strings[0]="D S NOS1 0 2 D S NOS1 2 3 D S NOS1 3 0";
-    States_in_class[1]=16;
-    variational_2holes_classes_contruction_strings[1]="D S NOS1 0 2 AC S NOS1 2 3 AC S NOS2 3 0";
-    States_in_class[2]=16;
-    variational_2holes_classes_contruction_strings[2]="AC S NOS2 0 2 D S NOS1 2 3 AC S NOS1 3 0";
-    States_in_class[3]=16;
-    variational_2holes_classes_contruction_strings[3]="D S NOS1 0 1 D S NOS1 2 3 D S NOS2 3 0";
-    States_in_class[4]=16;
-    variational_2holes_classes_contruction_strings[4]="AC S NOS2 0 1 D S NOS1 2 3 AC S NOS1 3 0";
-    States_in_class[5]=16;
-    variational_2holes_classes_contruction_strings[5]="AC S NOS2 0 1 AC S NOS1 2 3 D S NOS2 3 0";
-    States_in_class[6]=16;
-    variational_2holes_classes_contruction_strings[6]="AC S NOS1 0 2 AC S NOS2 1 3 D S NOS1 3 0";
-        }
+        States_in_class[0]=16;
+        variational_2holes_classes_contruction_strings[0]="D S NOS1 0 2 D S NOS1 2 3 D S NOS1 3 0";
+        States_in_class[1]=16;
+        variational_2holes_classes_contruction_strings[1]="D S NOS1 0 2 AC S NOS1 2 3 AC S NOS2 3 0";
+        States_in_class[2]=16;
+        variational_2holes_classes_contruction_strings[2]="AC S NOS2 0 2 D S NOS1 2 3 AC S NOS1 3 0";
+        States_in_class[3]=16;
+        variational_2holes_classes_contruction_strings[3]="D S NOS1 0 1 D S NOS1 2 3 D S NOS2 3 0";
+        States_in_class[4]=16;
+        variational_2holes_classes_contruction_strings[4]="AC S NOS2 0 1 D S NOS1 2 3 AC S NOS1 3 0";
+        States_in_class[5]=16;
+        variational_2holes_classes_contruction_strings[5]="AC S NOS2 0 1 AC S NOS1 2 3 D S NOS2 3 0";
+        States_in_class[6]=16;
+        variational_2holes_classes_contruction_strings[6]="AC S NOS1 0 2 AC S NOS2 1 3 D S NOS1 3 0";
+    }
 
     int temp_int;
 
