@@ -1,24 +1,24 @@
 Model = SpinOnly
 ------------------------------------------
 PBC = true
-Length = 4
-TwoTimesSpin = 9
-H_mag = 0 0 0
-Dz_anisotropy = 0.0 0.0 0.0
-LongRangeExchangeZZ file = input_files/Jzz_longrange_Lx2Ly2.txt
-LongRangeExchangePM file = input_files/Jpm_longrange_Lx2Ly2.txt
+Length = 10
+TwoTimesSpin = 4
+H_mag = 0 0 -0.005
+D_anisotropy = 0 0 -0.008
+LongRangeExchangeZZ file = input_files/Jzz_longrange_L10_cluster.txt
+LongRangeExchangePM file = input_files/Jpm_longrange_L10_cluster.txt
 ----------------------------------------
 
-No_of_onepoint_obs = 2
-One_point_oprt_path_1 = nup.txt
-One_point_oprt_path_2 = n.txt
+No_of_onepoint_obs = 1
+One_point_oprt_path_1 = Sz_S2.txt
+One_point_oprt_path_2 = Sm.txt
 
 
 --------------------------------------
 FourPointObservablesSites file = fourpoint.txt
 -------------------------------------
-Lanc_Error = -10e-15
-max_steps = 200
+Lanc_Error = -10e-10
+max_steps = 100
 file_eval_spectrum = out0.txt
 save_all_Krylov_space_vecs = false
 get_overlap_bw_eigstates_and_K_vecs = false
@@ -36,15 +36,15 @@ file_out_local_obs_for_states_to_look = local_obs_for_state_no
 --------------------------------------
 
 ----------------------------------
-Perform_Dynamics = false
+Perform_Dynamics = true
 eta = 0.05
 check_omega = 0.05
-omega_max = 20.0
-omega_min = 0.02
+omega_max = 40.0
+omega_min = 0.0
 d_omega = 0.001
-Opr_for_Dynamics = J
+Opr_for_Dynamics = Sm
 Momentum_resolved = false
 k = 0.4
-file_dynamics_out = J_1orbHubb_U0_L12_n2.txt
+file_dynamics_out = Dyn_Sm_Dz-0p0_L10cluster
 ---------------------------------
 

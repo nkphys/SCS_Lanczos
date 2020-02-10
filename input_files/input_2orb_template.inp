@@ -1,16 +1,16 @@
 Model = 2_orb_Hubbard_chain
 ------------------------------------------
-PBC = true
-Length = 6
-Ndown = 6
-Nup = 6
+PBC = false
+Length = 2
+Ndown = 0
+Nup = 4
 CFS = 0.0 0.0
 
 Hopping_mat[0][orb] = 1.0 0.0
 Hopping_mat[1][orb] = 0.0 1.0
-U = U_VALUE
-JHund = JHUND_VALUE
-Uprime = UPRIME_VALUE
+U = 10.0
+JHund = 2.5
+Uprime = 5.0
 Dz_Anisotropy = 0.0
 H_mag = 0
 ----------------------------------------
@@ -18,11 +18,11 @@ H_mag = 0
 Lanc_Error = -10e-6
 max_steps = 400
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = false
+save_all_Krylov_space_vecs = true
 get_overlap_bw_eigstates_and_K_vecs = true
-lanczos_reorthogonalization = false
+lanczos_reorthogonalization = true
 Get_Full_Spectrum = true
-need_few_eig_vecs = false
+need_few_eig_vecs = true
 few = 6
 ----------------------------------------
 Get_overlap_with_basis = false
