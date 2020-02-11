@@ -757,7 +757,8 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_1_doub & vecG){
     //}
 
 
-    for(int i=0;i<EVALS.size();i++){
+    EVALS.resize(eigs_.size());
+    for(int i=0;i<eigs_.size();i++){
         EVALS[i]=eigs_[i];
     }
 

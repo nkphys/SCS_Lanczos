@@ -8,6 +8,13 @@ extern "C" void dsyev_(char * , char * , int * , double * , int *, double *, dou
 #ifndef USE_COMPLEX
 
 
+double reading_pair(string double_no_str){
+
+    double value;
+    value = atof(double_no_str.c_str());
+    return value;
+}
+
 void Normalize_vec(Mat_1_doub &vec_in){
 
     double val;
@@ -113,10 +120,13 @@ void Print_Matrix(Mat_2_doub &A){
 
 }
 
-void Read_matrix_from_file(string filepath,
-                           Mat_2_doub &Mat, int row, int column){
+void Read_matrix_from_file(string filepath, Mat_2_doub &Mat, int row, int column){
 
     ifstream infile(filepath.c_str());
+
+    if(!infile.is_open()){
+        cout<<filepath<<" not present"<<endl;
+        }
 
     Mat.resize(row);
     for(int i=0;i<row;i++){

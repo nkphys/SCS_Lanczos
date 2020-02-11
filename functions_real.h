@@ -15,6 +15,7 @@
 //#include <bits/stdc++.h>
 
 
+double reading_pair(string double_no_str);
 void Normalize_vec(Mat_1_doub &vec_in);
 void value_multiply_vector(double value, Mat_1_doub &vec_in);
 double sign_of_double(double val);
@@ -33,8 +34,7 @@ int Find_int_in_part_of_intarray(int num, Mat_1_int &array, int min_i, int max_i
 int Find_int_in_intarray_smartly(int num,Mat_1_int &array,Mat_1_int &partition_indices,Mat_1_int &vals_at_partitions);
 void Print_Matrix_COO(Matrix_COO &A);
 void Print_Matrix(Mat_2_doub &A);
-void Read_matrix_from_file(string filepath,
-                         Mat_2_doub &Mat, int row, int column);
+void Read_matrix_from_file(string filepath, Mat_2_doub &Mat, int row, int column);
 void Print_vector_in_file(Mat_1_doub vec, string filename);
 void Print_file_in_vector(Mat_1_doub &vec, string filename , int rows);
 void Diagonalize(Matrix_COO &X, double & EG, Mat_1_doub & vecG);

@@ -16,10 +16,12 @@
 #include "models/Model_1_orb_Hubbard_chain.h"
 #include "models/Model_1_orb_tJ.h"
 #include "basis/Basis_1_orb_Hubbard_chain.h"
+#include "basis/Basis_1_orb_Hubbard_GC.h"
 #include "basis/Basis_1_orb_tJ.h"
 #include "basis/Basis_Spins.h"
 #include "models/Model_Spins.h"
 #include "models/Model_3_orb_Hubbard_chain_GC.h"
+#include "models/Model_1_orb_Hubbard_GC.h"
 #include "basis/Basis_3_orb_Hubbard_chain_GC.h"
 #include "basis/Basis_3_orb_Hubbard_chain_GC_restricted.h"
 #include "Lanczos_engine.h"
@@ -27,6 +29,7 @@
 
 //Remember "cpp" files for templated class over basis need to be included in this code
 #include "models/Model_3_orb_Hubbard_chain_GC.cpp"
+#include "models/Model_1_orb_Hubbard_GC.cpp"
 
 
 
@@ -48,7 +51,7 @@ int main(int argc, char** argv){
     cout<<"Do_Dynamics ="<<Do_Dynamics<<endl;
 
 
-    bool DO_FULL_DIAGONALIZATION=false;
+    bool DO_FULL_DIAGONALIZATION=true;
 
 
     if(model_name=="SpinOnly"){
@@ -2395,6 +2398,183 @@ int main(int argc, char** argv){
     }
 
 #endif
+
+    //=======================================================================================================================================================================================================//
+    //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+    //=======================================================================================================================================================================================================//
+
+
+    if (model_name=="1_orb_Hubbard_GC") {
+
+
+        BASIS_1_orb_Hubbard_GC _BASIS;
+        MODEL_1_orb_Hubbard_GC<BASIS_1_orb_Hubbard_GC> _MODEL(_BASIS);
+
+
+        _MODEL.Read_parameters(inp_filename);
+        _BASIS.Construct_basis();
+        cout<<"Basis contructed"<<endl;
+        _MODEL.Add_diagonal_terms();
+        cout<<"Diagonal terms added"<<endl;
+        _MODEL.Add_connections();
+        cout<<"Connections added"<<endl;
+
+
+
+        cout<<"Size of Hilbert space = "<<_MODEL.Hamil.nrows<<endl;
+        cout<<"Sparsity = "<<(1.0*_MODEL.Hamil.value.size())/(1.0*_MODEL.Hamil.nrows*_MODEL.Hamil.nrows)<<endl;
+        cout<<scientific<<setprecision(16);
+        //Print_Matrix_COO(_MODEL.Hamil);
+
+        LANCZOS _LANCZOS;
+        _LANCZOS.Dynamics_performed=false;
+
+
+
+        if(DO_FULL_DIAGONALIZATION==true && (_MODEL.Hamil.nrows<400)){
+
+            Mat_1_real Evals_temp;
+            Mat_1_doub vecG;
+            Diagonalize(_MODEL.Hamil, Evals_temp, vecG);
+            cout<<"GS energy from ED(without Lanczos) = "<<Evals_temp[0]<<endl;
+            cout<<"All eigenvalues using EG------------------------------"<<endl;
+            cout<<"-------------------------------------------------------"<<endl;
+            for(int i=0;i<Evals_temp.size();i++){
+                cout<<i<<"  "<<Evals_temp[i]<<endl;
+            }
+            cout<<"-------------------------------------------------------"<<endl;
+            cout<<"-------------------------------------------------------"<<endl;
+        }
+
+        _LANCZOS.Read_Lanczos_parameters(inp_filename);
+        _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
+        _LANCZOS.Write_full_spectrum();
+
+        cout<<scientific<<setprecision(6);
+        _MODEL.Calculate_one_point_observables(_LANCZOS.Eig_vec);
+        _MODEL.Calculate_two_point_observables(_LANCZOS.Eig_vec);
+
+
+
+
+
+        bool Dynamics_SPDOS = true;
+        bool Above_mu = true;
+        bool Below_mu= true;
+
+
+        if(Do_Dynamics && Dynamics_SPDOS){
+
+
+            vector< int >().swap( _MODEL.Hamil.columns );
+            vector< int >().swap( _MODEL.Hamil.rows );
+            vector< double_type >().swap( _MODEL.Hamil.value );
+
+            Mat_1_trio_int TRIO_VEC;
+            Mat_1_doub values_;
+            reading_input_dos_trio(inp_filename, TRIO_VEC, values_ );
+
+
+            if(Below_mu){
+                //----------BELOW CHEMICAL POTENTIAL-------
+                BASIS_1_orb_Hubbard_GC _BASIS_Nm1;
+                MODEL_1_orb_Hubbard_GC<BASIS_1_orb_Hubbard_GC> _MODEL_Nm1(_BASIS_Nm1);
+
+
+                _MODEL_Nm1.Read_parameters(inp_filename);
+
+                _BASIS_Nm1.N_total = _BASIS.N_total-1;
+                _BASIS_Nm1.Construct_basis();
+                cout<<"Basis contructed"<<endl;
+
+                _MODEL_Nm1.Add_diagonal_terms();
+                cout<<"Diagonal terms added"<<endl;
+
+                _MODEL_Nm1.Add_connections();
+                cout<<"Connections added"<<endl;
+
+
+                cout<<"Size of Hilbert space = "<<_MODEL_Nm1.Hamil.nrows<<endl;
+                cout<<scientific<<setprecision(6);
+
+                _MODEL_Nm1.Read_parameters_for_dynamics(inp_filename);
+
+
+                LANCZOS _LANCZOS_Dynamics_DOS;
+                _LANCZOS_Dynamics_DOS.Dynamics_performed=true;
+                _LANCZOS_Dynamics_DOS.Read_Lanczos_parameters(inp_filename);
+                _LANCZOS_Dynamics_DOS.GS_energy=_LANCZOS.GS_energy;
+
+                _MODEL.Get_c_on_GS(_LANCZOS, _BASIS_Nm1, TRIO_VEC, values_);
+                _LANCZOS_Dynamics_DOS.Get_Dynamics_seed(_MODEL.State_c_on_GS);
+
+
+                _LANCZOS_Dynamics_DOS.omega_sign=-1.0;
+                _LANCZOS_Dynamics_DOS.file_dynamics_out = _LANCZOS_Dynamics_DOS.file_dynamics_out + "_below_mu.txt";
+
+                // assert(false);
+                _LANCZOS_Dynamics_DOS.Perform_LANCZOS(_MODEL_Nm1.Hamil);
+
+
+                vector< int >().swap( _MODEL_Nm1.Hamil.columns );
+                vector< int >().swap( _MODEL_Nm1.Hamil.rows );
+                vector< double_type >().swap( _MODEL_Nm1.Hamil.value );
+
+
+                //-----------------------
+            }
+
+            if(Above_mu){
+                //----------ABOVE CHEMICAL POTENTIAL-------
+                BASIS_1_orb_Hubbard_GC _BASIS_Np1;
+                MODEL_1_orb_Hubbard_GC<BASIS_1_orb_Hubbard_GC> _MODEL_Np1(_BASIS_Np1);
+
+                _MODEL_Np1.Read_parameters(inp_filename);
+
+                _BASIS_Np1.N_total = _BASIS.N_total+1;
+                _BASIS_Np1.Construct_basis();
+
+                cout<<"Size of Hilbert space = "<<_BASIS_Np1.D_up_basis.size()<<endl;
+                cout<<scientific<<setprecision(6);
+
+                cout<<"Diagonal part started"<<endl;
+                _MODEL_Np1.Add_diagonal_terms();
+                cout<<"Diagonal part done"<<endl;
+
+                cout<<"Connections started"<<endl;
+                _MODEL_Np1.Add_connections();
+                cout<<"Connections done"<<endl;
+
+                cout<<"Size of Hilbert space = "<<_MODEL_Np1.Hamil.nrows<<endl;
+                cout<<scientific<<setprecision(1);
+                // Print_Matrix_COO(_MODEL.Hamil);
+                cout<<scientific<<setprecision(6);
+
+                _MODEL_Np1.Read_parameters_for_dynamics(inp_filename);
+
+                LANCZOS _LANCZOS_Dynamics_DOS2;
+                _LANCZOS_Dynamics_DOS2.Dynamics_performed=true;
+                _LANCZOS_Dynamics_DOS2.Read_Lanczos_parameters(inp_filename);
+                _LANCZOS_Dynamics_DOS2.GS_energy=_LANCZOS.GS_energy;
+
+                _MODEL.Get_cdagger_on_GS(_LANCZOS, _BASIS_Np1, TRIO_VEC, values_ );
+                _LANCZOS_Dynamics_DOS2.Get_Dynamics_seed(_MODEL.State_cdagger_on_GS);
+
+                _LANCZOS_Dynamics_DOS2.omega_sign=1.0;
+                _LANCZOS_Dynamics_DOS2.file_dynamics_out = _LANCZOS_Dynamics_DOS2.file_dynamics_out + "_above_mu.txt";
+                _LANCZOS_Dynamics_DOS2.Perform_LANCZOS(_MODEL_Np1.Hamil);
+                //----------------------------------------
+
+                vector< int >().swap( _MODEL_Np1.Hamil.columns );
+                vector< int >().swap( _MODEL_Np1.Hamil.rows );
+                vector< double_type >().swap( _MODEL_Np1.Hamil.value );
+            }
+
+        }
+
+    }
+
+
 
     //=======================================================================================================================================================================================================//
     //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//

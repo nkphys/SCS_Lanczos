@@ -138,7 +138,7 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
 
         if(save_all_Krylov_space_vecs==true){
             Krylov_space_vecs.push_back(Kvector_n);
-            //cout<<"Overlarp b/w 0th and last Krylov vector : "<<dot_product(Krylov_space_vecs[0],Krylov_space_vecs[lanc_iter])<<endl;
+            //cout<<"Overlap b/w 0th and last Krylov vector : "<<dot_product(Krylov_space_vecs[0],Krylov_space_vecs[lanc_iter])<<endl;
         }
 
         Evals_Tri_all.resize(lanc_iter+1);
@@ -161,35 +161,25 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
 
         cout<<"Time to operate Hamiltonian : "<<double( clock() - oprt_SB_time ) / (double)CLOCKS_PER_SEC<<endl;//cout<<"here"<<endl;
 
-        temp3_type_double = dot_product(Kvector_n, Kvector_np1);
-        temp2_type_double = dot_product(Kvector_n, Kvector_n).real();
+//        temp3_type_double = dot_product(Kvector_n, Kvector_np1);
+//        temp2_type_double = dot_product(Kvector_n, Kvector_n).real();
+//        temp4_type_double = temp3_type_double/temp2_type_double;
 
-
-        temp4_type_double = temp3_type_double/temp2_type_double;
-
+        temp4_type_double = dot_product(Kvector_n, Kvector_np1);
 
         A.push_back(temp4_type_double);
-
+        assert(A[lanc_iter].imag()<0.000000001);
 
         Subtract(Kvector_np1, A[lanc_iter], Kvector_n);	//
 
         if(lanc_iter!=0){
-
             Subtract(Kvector_np1, sqrt(B2[lanc_iter]), Kvector_nm1);
-
         }
 
-
-        //Normalizaton of Knp1, added by myself, not included in std. Lanczos
-        tmpnrm_type_double=dot_product(Kvector_np1,Kvector_np1).real();
-        tmpnrm=sqrt(tmpnrm_type_double);
-        for(int i=0;i<Kvector_np1.size();i++){
-            Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm));//*1.0e-10;
-        }
 
 
         if(save_all_Krylov_space_vecs==true){
-            cout<<"Overlarp b/w 0th and Kvector_np1 : "<<dot_product(Krylov_space_vecs[0],Kvector_np1)<<endl;
+            cout<<"Overlap b/w 0th and Kvector_np1 : "<<dot_product(Krylov_space_vecs[0],Kvector_np1)<<endl;
         }
 
 
@@ -210,15 +200,23 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
                 }
                 temp_dot.clear();
 
-                //Normalizaton of Knp1, added by myself, not included in std. Lanczos
-                tmpnrm_type_double2=dot_product(Kvector_np1,Kvector_np1).real();
-                tmpnrm2=sqrt(tmpnrm_type_double2);
-               for(int i=0;i<Kvector_np1.size();i++){
-                  Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm2));//*1.0e-10;
-                }
+                //Normalizaton of Knp1, added by myself, not included in std. Lanczos 
+//                tmpnrm_type_double2=dot_product(Kvector_np1,Kvector_np1).real();
+//                tmpnrm2=sqrt(tmpnrm_type_double2);
+//               for(int i=0;i<Kvector_np1.size();i++){
+//                  Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm2));//*1.0e-10;
+//                }
+//               tmpnrm=tmpnrm2;
 
                cout<<"Reorthogonalization performed"<<endl;
             }
+        }
+
+        //Normalizaton of Knp1, added by myself, not included in std. Lanczos
+        tmpnrm_type_double=dot_product(Kvector_np1,Kvector_np1).real();
+        tmpnrm=sqrt(tmpnrm_type_double);
+        for(int i=0;i<Kvector_np1.size();i++){
+            Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm));//*1.0e-10;
         }
 
         if(save_all_Krylov_space_vecs==true){
@@ -285,7 +283,7 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
     cout<<"Perform_LANCZOS: "<<"Energy(GS)"<<" is "<<scientific<<setprecision(20)<< "Energy = "<<E0<<"   "<<"Lanczos_error = "<<diff_E<<endl;
 
 
-    cout<<"Perform_LANCZOS: "<<"LANCZOS(pass 2) STARTING FOR SUPERBLOCK Eigenvector, "<<", Size of Matrix(SB) = "<<Hamil.ncols<<endl<<endl;
+    cout<<"Perform_LANCZOS: "<<"LANCZOS(pass 2) STARTING FOR Eigenvectors, "<<", Size of Matrix(SB) = "<<Hamil.ncols<<endl<<endl;
 
     Lanc_iter_done=lanc_iter;
 
@@ -306,8 +304,6 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
         Eig_vecs.resize(states_to_look.size());
         for(int Ts=0;Ts<states_to_look.size();Ts++){
 
-
-
             temp_Target_state=states_to_look[Ts];
             srand(seed_lanczos);
 
@@ -324,14 +320,11 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
 
                 }
 
+
                 tmpnrm_type_double=dot_product(Kvector_n,Kvector_n).real();
                 tmpnrm=sqrt(tmpnrm_type_double);
-
-
                 for(int j=0;j<Hamil.nrows;j++){
-
                     Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
-
                 }
             }
             else{
@@ -380,7 +373,6 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
                 //Normalizaton of Knp1 , not included in std. Lanczos
                 tmpnrm_type_double = dot_product(Kvector_np1,Kvector_np1).real(); //new
                 tmpnrm=sqrt(tmpnrm_type_double);
-
                 for(int i=0;i<Kvector_np1.size();i++){
                     Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm));
                 }

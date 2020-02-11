@@ -174,15 +174,7 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
         }
 
 
-        //Normalizaton of Knp1 , added by myself, not included in std. Lanczos
-        tmpnrm_type_double=dot_product(Kvector_np1,Kvector_np1);
 
-        tmpnrm=sqrt(tmpnrm_type_double);
-
-
-        for(int i=0;i<Kvector_np1.size();i++){
-            Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm));//*1.0e-10;
-        }
 
 
         if(save_all_Krylov_space_vecs==true){
@@ -207,12 +199,19 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
                 temp_dot.clear();
 
                 //Normalizaton of Knp1, added by myself, not included in std. Lanczos
-                tmpnrm_type_double2=dot_product(Kvector_np1,Kvector_np1);
-                tmpnrm2=sqrt(tmpnrm_type_double2);
-               for(int i=0;i<Kvector_np1.size();i++){
-                  Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm2));//*1.0e-10;
-                }
+//                tmpnrm_type_double2=dot_product(Kvector_np1,Kvector_np1);
+//                tmpnrm2=sqrt(tmpnrm_type_double2);
+//               for(int i=0;i<Kvector_np1.size();i++){
+//                  Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm2));//*1.0e-10;
+//                }
             }
+        }
+
+        //Normalizaton of Knp1 , added by myself, not included in std. Lanczos
+        tmpnrm_type_double=dot_product(Kvector_np1,Kvector_np1);
+        tmpnrm=sqrt(tmpnrm_type_double);
+        for(int i=0;i<Kvector_np1.size();i++){
+            Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm));//*1.0e-10;
         }
 
         if(save_all_Krylov_space_vecs==true){
