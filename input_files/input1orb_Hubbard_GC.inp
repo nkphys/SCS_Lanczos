@@ -1,0 +1,89 @@
+Model = 1_orb_Hubbard_GC
+------------------------------------------
+Length = 12
+N_Total = 2
+CFS_SITE_RESOLVED = true 0 -0.6 0 0 -0.6 0 0 -0.6 0 0 -0.6 0
+LongRangeHopping_file = Hopping_2x2_Dice_SOC_0p5.txt
+U = 5.00
+H_mag = 0.0
+
+----------------------------------------
+Random_seed_generator = 1
+--------------------------------------
+
+Lanc_Error = 10e-6
+max_steps = 400
+file_eval_spectrum = Tri_evals_OBC_GC.txt
+save_all_Krylov_space_vecs = false
+get_overlap_bw_eigstates_and_K_vecs = false
+lanczos_reorthogonalization = false
+Get_Full_Spectrum = true
+need_few_eig_vecs = false
+Get_overlap_with_basis = false
+States_to_look = 24 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+overlap_out_file = out0.txt
+calculate_local_obs_for_states_to_look = false
+calculate_local_obs_for_states_to_look_for_first_n_basis = 4000
+file_out_local_obs_for_states_to_look = local_obs_for_state_no
+Read_the_seed = false
+seed_file = seed_GSold.txt
+--------------------------------------
+
+
+----------------------------------
+Perform_Dynamics = true
+check_omega = 2.0
+Opr_for_Dynamics = Delta_SOC
+Momentum_resolved = false
+k = 0.0
+file_dynamics_out = spinup_site1
+Dynamics_dos_operators = 1 1.0 0.0 0 0 1
+---------------------------------------------------
+#xz
+#orb=0
+
+#yz
+#orb=1
+
+#xy
+#orb=2
+
+#j_3by2_m3by2
+#2 0.707106 0.0 0 1 0 0.0 -0.707106 1 1 0
+
+#j_3by2_3by2
+#2 0.707106 0.0 0 0 0 0.0 0.707106 1 0 0
+
+#j_3by2_1by2
+#3 -0.4082482 0.0 1 1 0 0.0 0.4082482 0 1 0 0.8164965 0.0 2 0 0
+
+#j_3by2_m1by2
+#3 0.4082482 0.0 1 0 0 0.0 0.4082482 0 0 0 0.8164965 0.0 2 1 0
+
+#j_1by2_1by2
+#3 0.57735 0.0 1 1 0 0.0 -0.5773502 0 1 0 0.577350 0.0 2 0 0
+
+#j_1by2_m1by2
+#3 -0.57735 0.0 1 0 0 0.0 -0.5773502 0 0 0 0.577350 0.0 2 1 0
+-------------------------------------------------------
+#2 1.0 0.0 0 0 1 1.0 0.0 0 1 1
+#no_of_orps real imag orb spin site ...
+#upspin=0, downspin=1
+---------------------------------
+
+---------------For both RIXS and std. dynamics---------
+eta = 0.05
+omega_max = 10.0
+omega_min = -10.0
+d_omega = 0.002
+--------------------------------------
+
+----------------------------------------
+Perform_RIXS = false
+Gamma = 0.2
+No_of_intermediate_states(n) = 100
+Light_polarization_in = 1 0 0
+Light_polarization_in = 0 1 0
+Incident_energy = 0.1
+----------------------------------------
+
