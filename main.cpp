@@ -51,7 +51,7 @@ int main(int argc, char** argv){
     cout<<"Do_Dynamics ="<<Do_Dynamics<<endl;
 
 
-    bool DO_FULL_DIAGONALIZATION=true;
+    bool DO_FULL_DIAGONALIZATION=false;
 
 
     if(model_name=="SpinOnly"){
@@ -1475,7 +1475,7 @@ int main(int argc, char** argv){
     if (model_name=="3_orb_Hubbard_chain_GC" && Restricted_Basis==false) {
 
 
-        bool Dynamics_SPDOS = false;
+        bool Dynamics_SPDOS = true;
         bool Above_mu = true;
         bool Below_mu= true;
 
@@ -1529,8 +1529,8 @@ int main(int argc, char** argv){
         _LANCZOS.Write_full_spectrum();
         Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS.txt");
 
-        _MODEL.Initialize_one_point_to_calculate();
-        _MODEL.Initialize_two_point_to_calculate();
+       // _MODEL.Initialize_one_point_to_calculate();
+       // _MODEL.Initialize_two_point_to_calculate();
 
 
 #ifdef USE_COMPLEX
@@ -1574,10 +1574,10 @@ int main(int argc, char** argv){
 
         for(int i=0;i<_LANCZOS.states_to_look.size();i++){
             cout<<"===================FOR STATE NO "<<i<<"============================="<<endl;
-            _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, i);
-            cout<<"Energy = "<<_LANCZOS.Evals_Tri_all[_LANCZOS.Evals_Tri_all.size()-1][i]<<endl;
+           // _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, i);
+           // cout<<"Energy = "<<_LANCZOS.Evals_Tri_all[_LANCZOS.Evals_Tri_all.size()-1][i]<<endl;
             //_LANCZOS.Measure_two_point_observables(_MODEL.two_point_obs, _MODEL.Two_point_oprts, _BASIS.Length, i, _MODEL.PBC);
-            _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs,_MODEL.One_point_oprts, _BASIS.Length, i,"3_orb_Hubbard_chain_GC");
+           // _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs,_MODEL.One_point_oprts, _BASIS.Length, i,"3_orb_Hubbard_chain_GC");
             cout<<"============================================================================"<<endl;
         }
 

@@ -578,8 +578,13 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_one_point_observables(Mat_1_d
             Get_CdaggerC_type_Opr(AMat[obs_no], OPR_, site);
             Matrix_COO_vector_multiplication("cx", OPR_, Vec_, Vec_temp_);
             value_ = dot_product(Vec_temp_,Vec_);
-
+#ifdef USE_COMPLEX
             cout<<one_point_obs[obs_no]<<"["<<site<<"] = "<<value_.real() << "  "<<value_.imag()<<endl;
+#endif
+#ifndef USE_COMPLEX
+            cout<<one_point_obs[obs_no]<<"["<<site<<"] = "<<value_<<endl;
+#endif
+
         }
 
         cout<<endl;
