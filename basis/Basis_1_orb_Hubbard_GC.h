@@ -32,6 +32,7 @@ public:
 
 
 void Construct_basis();
+void Print_basis(int basis_index);
 void clear();
 };
 

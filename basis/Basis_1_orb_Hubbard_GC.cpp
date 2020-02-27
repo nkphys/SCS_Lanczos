@@ -122,29 +122,26 @@ void BASIS_1_orb_Hubbard_GC::Construct_basis(){
         string value_string;
         for(int basis_index=0;basis_index<D_up_basis.size();basis_index++){
             cout<<"basis = "<<basis_index<<" XXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
-            for(int orb_no=2;orb_no>=0;orb_no--){
                 for(int site=0;site<Length;site++){
-                    up_el=bit_value(D_up_basis[basis_index],orb_no*Length + site);
-                    dn_el=bit_value(D_dn_basis[basis_index],orb_no*Length + site);
+                    up_el=bit_value(D_up_basis[basis_index], site);
+                    dn_el=bit_value(D_dn_basis[basis_index], site);
                     if(up_el==1 && dn_el==1){
                         value_string="ud";
                     }
                     else if(up_el==1 && dn_el==0){
-                        value_string ="up";
+                        value_string ="u ";
                     }
                     else if(up_el==0 && dn_el==1){
-                        value_string="dn";
+                        value_string="d ";
                     }
                     else{
-                        value_string="00";
+                        value_string="0 ";
                     }
 
                     cout<<value_string<<" ";
                 }
-                cout<<endl;
-            }
+                cout<<endl;            
             cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
-
         }
 
     }
@@ -158,6 +155,32 @@ void BASIS_1_orb_Hubbard_GC::Construct_basis(){
     cout<<"BOUNDARY CONDITIONS ARE DECIDED BY LONG RANGE HOPPING MATRIX"<<endl;
 }
 
+
+void BASIS_1_orb_Hubbard_GC::Print_basis(int basis_index){
+
+    int up_el, dn_el;
+    string value_string;
+
+    for(int site=0;site<Length;site++){
+        up_el=bit_value(D_up_basis[basis_index], site);
+        dn_el=bit_value(D_dn_basis[basis_index], site);
+        if(up_el==1 && dn_el==1){
+            value_string="ud";
+        }
+        else if(up_el==1 && dn_el==0){
+            value_string ="u ";
+        }
+        else if(up_el==0 && dn_el==1){
+            value_string="d ";
+        }
+        else{
+            value_string="0 ";
+        }
+
+        cout<<value_string<<" ";
+    }
+
+}
 
 void BASIS_1_orb_Hubbard_GC::clear(){
     D_up_basis.clear();

@@ -389,7 +389,7 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
             for(int bi=0;bi<Eig_vecs[0].size();bi++){
                 outfile_overlap<<bi;
                 for(int Ts=0;Ts<Eig_vecs.size();Ts++){
-                    outfile_overlap<<"  "<<Overlaps_bare[Ts][bi].first;
+                    outfile_overlap<<"  "<<Overlaps_bare[Ts][bi].first<<"   "<<Overlaps[Ts][bi].first;
                 }
                 for(int Ts=0;Ts<Eig_vecs.size();Ts++){
                     outfile_overlap<<"  "<<Overlaps_bare[Ts][bi].second;

@@ -2499,6 +2499,18 @@ int main(int argc, char** argv){
         _MODEL.Calculate_two_point_observables(_LANCZOS.Eig_vec);
 
 
+        // Only following basis are printed.
+        Mat_1_int Temp_index;
+        Temp_index.push_back(149); Temp_index.push_back(774); Temp_index.push_back(145); Temp_index.push_back(150);
+        Temp_index.push_back(205); Temp_index.push_back(135); Temp_index.push_back(714); Temp_index.push_back(789);
+        Temp_index.push_back(414); Temp_index.push_back(509); Temp_index.push_back(718); Temp_index.push_back(788);
+
+        for(int basis_index=0;basis_index<Temp_index.size();basis_index++){
+         cout<<"---------BASIS INDEX = "<<Temp_index[basis_index]<<"--------------"<<endl;
+        _BASIS.Print_basis(Temp_index[basis_index]);
+        cout<<endl;
+        cout<<"--------------------------------------------"<<endl<<endl;
+        }
 
 
 
