@@ -1529,8 +1529,8 @@ int main(int argc, char** argv){
         _LANCZOS.Write_full_spectrum();
         Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS.txt");
 
-       // _MODEL.Initialize_one_point_to_calculate();
-       // _MODEL.Initialize_two_point_to_calculate();
+        _MODEL.Initialize_one_point_to_calculate();
+        _MODEL.Initialize_two_point_to_calculate();
 
 
 #ifdef USE_COMPLEX
@@ -1574,11 +1574,13 @@ int main(int argc, char** argv){
 
         for(int i=0;i<_LANCZOS.states_to_look.size();i++){
             cout<<"===================FOR STATE NO "<<i<<"============================="<<endl;
-           // _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, i);
-           // cout<<"Energy = "<<_LANCZOS.Evals_Tri_all[_LANCZOS.Evals_Tri_all.size()-1][i]<<endl;
+            _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, i);
+            // cout<<"Energy = "<<_LANCZOS.Evals_Tri_all[_LANCZOS.Evals_Tri_all.size()-1][i]<<endl;
             //_LANCZOS.Measure_two_point_observables(_MODEL.two_point_obs, _MODEL.Two_point_oprts, _BASIS.Length, i, _MODEL.PBC);
-           // _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs,_MODEL.One_point_oprts, _BASIS.Length, i,"3_orb_Hubbard_chain_GC");
+            _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs,_MODEL.One_point_oprts, _BASIS.Length, i,"3_orb_Hubbard_chain_GC");
             cout<<"============================================================================"<<endl;
+
+            _LANCZOS.Measure_macro_observables(_MODEL.macro_obs, _MODEL.Macro_oprts, i);
         }
 
         //_MODEL.Get_Delta_Matrix(_LANCZOS);
@@ -1595,6 +1597,64 @@ int main(int argc, char** argv){
 
             Print_vector_in_file(_LANCZOS.Eig_vecs[state_], file_name_state);
         }
+
+
+
+        //------------EXACT DIAGONALIZATION---------------------//
+
+
+
+
+        Mat_1_real Eigen_ED;
+        Mat_2_doub vecs;
+        if(_MODEL.Hamil.nrows>800){
+            DO_FULL_DIAGONALIZATION=false;
+        }
+        if(DO_FULL_DIAGONALIZATION==true){
+
+            string fl_ED_out = "EXACT_RESULTS.txt";
+            ofstream file_ED_out(fl_ED_out.c_str());
+            cout<<"-----------------------------------------------------------------------"<<endl;
+            cout<<"AFTER THIS EXACT DIAGONALIZATION RESULTS ARE WRITTEN IN EXACT_RESULTS.txt-------------------"<<endl;
+
+            file_ED_out<<"//*****************Exact Diagonalization Energies**************//"<<endl;
+            file_ED_out<<"//------------------------------------------------------------//"<<endl;
+            Diagonalize(_MODEL.Hamil, Eigen_ED, vecs);
+            for(int i=0;i<Eigen_ED.size();i++){
+                file_ED_out<<i<<"   "<<scientific<<setprecision(6)<<Eigen_ED[i]<<endl;
+            }
+
+            Mat_2_doub Dummy_Eig_vecs;
+            Dummy_Eig_vecs = _LANCZOS.Eig_vecs;
+
+            _LANCZOS.Eig_vecs.clear();
+            _LANCZOS.Eig_vecs.resize(_MODEL.Hamil.nrows);
+            for(int s_=0;s_<_MODEL.Hamil.nrows;s_++){
+                _LANCZOS.Eig_vecs[s_] = vecs[s_];
+            }
+
+                cout<<endl;
+            for(int i=0;i<_MODEL.Hamil.nrows;i++){
+                cout<<"===================FOR STATE NO "<<i<<"============================="<<endl;
+                _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, i);
+                // cout<<"Energy = "<<_LANCZOS.Evals_Tri_all[_LANCZOS.Evals_Tri_all.size()-1][i]<<endl;
+                //_LANCZOS.Measure_two_point_observables(_MODEL.two_point_obs, _MODEL.Two_point_oprts, _BASIS.Length, i, _MODEL.PBC);
+                _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs,_MODEL.One_point_oprts, _BASIS.Length, i,"3_orb_Hubbard_chain_GC");
+                cout<<"============================================================================"<<endl;
+                _LANCZOS.Measure_macro_observables(_MODEL.macro_obs, _MODEL.Macro_oprts, i);
+
+                cout<<endl<<endl<<endl;
+            }
+
+            _LANCZOS.Eig_vecs = Dummy_Eig_vecs;
+
+
+        }
+
+
+
+        cout<<"-----------------------------------------------------------------------"<<endl;
+        //------------------------------------------------------//
 
 
         // for(int i=0;i<19;i++){
@@ -1737,22 +1797,6 @@ int main(int argc, char** argv){
                 //----------------------------------------
             }
 
-        }
-
-
-
-        Mat_1_real Eigen_ED;
-        Mat_1_doub vecG;
-        if(_MODEL.Hamil.nrows<700){
-            DO_FULL_DIAGONALIZATION=true;
-        }
-        if(DO_FULL_DIAGONALIZATION==true){
-            cout<<"//*****************Exact Diagonalization Energies**************//"<<endl;
-            cout<<"//------------------------------------------------------------//"<<endl;
-            Diagonalize(_MODEL.Hamil, Eigen_ED, vecG);
-            for(int i=0;i<Eigen_ED.size();i++){
-                cout<<i<<"   "<<Eigen_ED[i]<<endl;
-            }
         }
 
 

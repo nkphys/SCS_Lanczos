@@ -16,6 +16,28 @@ using namespace std;
 template <typename Basis_type>
 void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_diagonal_terms(){
 
+
+    //----------------MACRO OPRS INITIALIZATION-------------------//
+    macro_obs.clear();
+    Macro_oprts.clear();
+
+
+    macro_obs.push_back("Hopping");macro_obs.push_back("CFS");
+    macro_obs.push_back("InterOrbRepulsion");
+    macro_obs.push_back("IntraOrbRepulsion");
+    macro_obs.push_back("Hunds_zz");
+    macro_obs.push_back("Hunds_pm_mp");
+    macro_obs.push_back("PairHopping");
+    assert(macro_obs.size()==(num_PairHopping+1));
+
+    Macro_oprts.resize(num_PairHopping+1);
+    for(int type_=num_Hopping;type_<=num_PairHopping;type_++){
+        Macro_oprts[type_].nrows = basis.D_up_basis.size();
+        Macro_oprts[type_].ncols = Macro_oprts[type_].nrows;
+    }
+
+    //---------------------------------------------------------------------//
+
     Hamil.nrows = basis.D_up_basis.size();
     Hamil.ncols = Hamil.nrows;
 
@@ -27,9 +49,10 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_diagonal_terms(){
     int sign_pow_up;
     double sign_FM;
 
+
     //Remember H[l][m]=<l|H|m>
     int m,j;
-    double value;
+    double value1, value2, value3, value4, value5, value;
     for (int i=0;i<basis.D_up_basis.size();i++){
 
         m=i;
@@ -37,13 +60,14 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_diagonal_terms(){
 
         value=0;
         //intra-orbital coulomb repulsion:
-        value+=U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
+        value1=U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
 
+        value2=0;
         //inter-orbital coulomb repulsion:
         for(int gamma=0;gamma<3;gamma++){
             for(int gamma_p=gamma+1;gamma_p<3;gamma_p++){
                 for(int site=0;site<basis.Length;site++){
-                    value+=(U_p - (J_H*0.5))*
+                    value2+=(U_p - (J_H*0.5))*
                             ( ( bit_value(basis.D_up_basis[i],gamma*basis.Length + site) +
                                 bit_value(basis.D_dn_basis[j],gamma*basis.Length + site) )*
                               ( bit_value(basis.D_up_basis[i],gamma_p*basis.Length + site) +
@@ -53,11 +77,12 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_diagonal_terms(){
             }
         }
 
+        value3=0;
         //SzSz Hunds coupling:
         for(int gamma=0;gamma<3;gamma++){
             for(int gamma_p=gamma+1;gamma_p<3;gamma_p++){
                 for(int site=0;site<basis.Length;site++){
-                    value+=0.25*(-J_H*2.0)*
+                    value3+=0.25*(-J_H*2.0)*
                             ( ( bit_value(basis.D_up_basis[i],gamma*basis.Length + site) -
                                 bit_value(basis.D_dn_basis[j],gamma*basis.Length + site) )*
                               ( bit_value(basis.D_up_basis[i],gamma_p*basis.Length + site) -
@@ -68,10 +93,11 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_diagonal_terms(){
         }
 
 
+        value4=0;
         //Crystal Field Splitting (CFE):
         for(int gamma=0;gamma<3;gamma++){
             for(int site=0;site<basis.Length;site++){
-                value+=(CFS_SITE_RESOLVED_[site][gamma])*
+                value4+=(CFS_SITE_RESOLVED_[site][gamma])*
                         ( ( bit_value(basis.D_up_basis[i],gamma*basis.Length + site) +
                             bit_value(basis.D_dn_basis[j],gamma*basis.Length + site) )
                           );
@@ -80,10 +106,11 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_diagonal_terms(){
 
 
 
+        value5=0;
         //magnetic Field * [Sz]
         for(int gamma=0;gamma<3;gamma++){
             for(int site=0;site<basis.Length;site++){
-                value+=0.5*(H_field[site])*
+                value5+=0.5*(H_field[site])*
                         ( ( bit_value(basis.D_up_basis[i],gamma*basis.Length + site) -
                             bit_value(basis.D_dn_basis[j],gamma*basis.Length + site) )
                           );
@@ -91,10 +118,34 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_diagonal_terms(){
         }
 
 
+        value=value1+value2+value3+value4+value5;
         if(value!=0){
             Hamil.value.push_back(value*one);
             Hamil.rows.push_back(m);
             Hamil.columns.push_back(m);
+        }
+
+        //Macro_oprs
+        if(value1!=0){
+            Macro_oprts[num_IntraOrbRepulsion].value.push_back(value1*one);
+            Macro_oprts[num_IntraOrbRepulsion].rows.push_back(m);
+            Macro_oprts[num_IntraOrbRepulsion].columns.push_back(m);
+        }
+        if(value2!=0){
+            Macro_oprts[num_InterOrbRepulsion].value.push_back(value2*one);
+            Macro_oprts[num_InterOrbRepulsion].rows.push_back(m);
+            Macro_oprts[num_InterOrbRepulsion].columns.push_back(m);
+        }
+        if(value3!=0){
+            Macro_oprts[num_Hunds_zz].value.push_back(value3*one);
+            Macro_oprts[num_Hunds_zz].rows.push_back(m);
+            Macro_oprts[num_Hunds_zz].columns.push_back(m);
+
+        }
+        if(value4!=0){
+            Macro_oprts[num_CFS].value.push_back(value4*one);
+            Macro_oprts[num_CFS].rows.push_back(m);
+            Macro_oprts[num_CFS].columns.push_back(m);
         }
 
     }
@@ -186,6 +237,12 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_non_diagonal_terms(){
                         Hamil.rows.push_back(m_new);
                         Hamil.columns.push_back(m);
 
+                        Macro_oprts[num_Hunds_pm_mp].value.push_back(sign_FM*(0.5*(-J_H*2.0))*one);
+                        Macro_oprts[num_Hunds_pm_mp].rows.push_back(m_new);
+                        Macro_oprts[num_Hunds_pm_mp].columns.push_back(m);
+
+
+
                     } // if SpSm possible
 
 
@@ -251,6 +308,11 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_non_diagonal_terms(){
                         Hamil.value.push_back(sign_FM*J_H*one);
                         Hamil.rows.push_back((m_new));
                         Hamil.columns.push_back((m));
+
+                        Macro_oprts[num_PairHopping].value.push_back(sign_FM*J_H*one);
+                        Macro_oprts[num_PairHopping].rows.push_back((m_new));
+                        Macro_oprts[num_PairHopping].columns.push_back((m));
+
 
 
                     } //Pair-Hopping
@@ -535,6 +597,11 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_connections(){
                                         Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
                                         Hamil.rows.push_back((m_new));
                                         Hamil.columns.push_back((m));
+
+                                        Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
+                                        Macro_oprts[num_Hopping].rows.push_back((m_new));
+                                        Macro_oprts[num_Hopping].columns.push_back((m));
+
                                     }
                                 }
                                 else{
@@ -547,6 +614,12 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_connections(){
                                         Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
                                         Hamil.rows.push_back((m_new));
                                         Hamil.columns.push_back((m));
+
+                                        Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
+                                        Macro_oprts[num_Hopping].rows.push_back((m_new));
+                                        Macro_oprts[num_Hopping].columns.push_back((m));
+
+
                                     }
                                 }
 
@@ -612,6 +685,12 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_connections(){
                                         Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
                                         Hamil.rows.push_back((m_new));
                                         Hamil.columns.push_back((m));
+
+                                        Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
+                                        Macro_oprts[num_Hopping].rows.push_back((m_new));
+                                        Macro_oprts[num_Hopping].columns.push_back((m));
+
+
                                     }
                                 }
                                 else{
@@ -624,6 +703,12 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_connections(){
                                         Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
                                         Hamil.rows.push_back((m_new));
                                         Hamil.columns.push_back((m));
+
+                                        Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
+                                        Macro_oprts[num_Hopping].rows.push_back((m_new));
+                                        Macro_oprts[num_Hopping].columns.push_back((m));
+
+
                                     }
                                 }
 

@@ -29,6 +29,8 @@ public:
     Mat_1_real H_field;
     double lambda_SOC;
 
+    Mat_1_string macro_obs;
+    Hamiltonian_1_COO Macro_oprts;
     Matrix_COO Hamil;
     bool Calculate_observables_onepoint;
     Mat_1_string one_point_obs;
@@ -42,6 +44,9 @@ public:
     bool PBC,TBC;
     Mat_1_doub State_c_on_GS;
     Mat_1_doub State_cdagger_on_GS;
+
+    enum {num_Hopping, num_CFS, num_InterOrbRepulsion, num_IntraOrbRepulsion
+                   , num_Hunds_zz, num_Hunds_pm_mp, num_PairHopping};
 
     void Read_parameters(string filename);
     void Read_parameters_for_dynamics(string filename);
@@ -61,7 +66,6 @@ public:
     void Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site);
     void Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site, int site_p);
     void Get_ExcitonCoherence_Length(Mat_1_doub &vector_used);
-
 
 private:
     Basis_type& basis;

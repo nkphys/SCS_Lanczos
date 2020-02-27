@@ -4,13 +4,13 @@
 #define PI 3.14159265
 using namespace std;
 //#define USE_COMPLEX
-#ifdef USE_COMPLEX
+//#ifdef USE_COMPLEX
 
 
 void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
 
 
-   // Print_Matrix_COO(Hamil);
+    // Print_Matrix_COO(Hamil);
 
     int seed_lanczos=Random_seed_value;
     int lanc_iter=0;
@@ -46,71 +46,57 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
         states_to_look.clear();
         states_to_look.push_back(0);
     }
-
-
-
+    Mat_1_int dummy_states_to_look;
 
     srand(seed_lanczos);
-
     double tmpnrm_type_double,tmpnrm_type_double2;
     double tmpnrm,tmpnrm2;
     if(Dynamics_performed==false){
 
         if(Read_the_seed==false){
             for(int j=0;j<Hamil.nrows;j++){
-
+#ifdef USE_COMPLEX
                 temp1_type_double.real((rand()%RAND_MAX));
                 temp1_type_double.imag((rand()%RAND_MAX));
-
+#endif
+#ifndef USE_COMPLEX
+                temp1_type_double = (rand()%RAND_MAX);
+#endif
                 temp1_type_double=(temp1_type_double)*(1.0/(RAND_MAX*1.0));
-
                 Kvector_n.push_back(temp1_type_double);
-
             }
 
-            tmpnrm_type_double=dot_product(Kvector_n,Kvector_n).real();
+            tmpnrm_type_double=Norm(Kvector_n);
             tmpnrm=sqrt(tmpnrm_type_double);
 
-
             for(int j=0;j<Hamil.nrows;j++){
-
                 Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
-
             }
         }
         else{
             ifstream infile_seed(seed_file_in.c_str());
-
+            cout<<"Seed for Lanczos is being read from "<<seed_file_in<<endl;
             for(int j=0;j<Hamil.nrows;j++){
-                infile_seed>>tmpnrm;
-                joker_double.real(tmpnrm);
 
-                infile_seed>>tmpnrm;
-                joker_double.imag(tmpnrm);
-
+#ifdef USE_COMPLEX
+                infile_seed>>tmpnrm;joker_double.real(tmpnrm);infile_seed>>tmpnrm;joker_double.imag(tmpnrm);
+#endif
+#ifndef USE_COMPLEX
+                infile_seed>>joker_double;
+#endif
                 Kvector_n.push_back(joker_double);
             }
-
         }
-
-
     }
     else{
         Kvector_n=Dynamics_seed;
-
-        tmpnrm_type_double=dot_product(Kvector_n,Kvector_n).real();
+        tmpnrm_type_double=Norm(Kvector_n);
         tmpnrm=sqrt(tmpnrm_type_double);
-
-
         for(int j=0;j<Hamil.nrows;j++){
-
             Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
-
         }
         norm_dynamics=tmpnrm_type_double;
     }
-
-
 
 
     E0_old=0;
@@ -144,8 +130,7 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
         Evals_Tri_all.resize(lanc_iter+1);
         clock_t Lanc_time = clock();
 
-        temp1 = sqrt(dot_product(Kvector_n,Kvector_n).real());//*1.0e-10;
-
+        temp1 = sqrt(Norm(Kvector_n));//*1.0e-10;
         Norms.push_back(temp1);
         if(lanc_iter==0){B2.push_back(0);}
         else{
@@ -156,27 +141,20 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
 
         Matrix_COO_vector_multiplication("U", Hamil, Kvector_n, Kvector_np1); // saved in K_vector_np1
 
-
-
-
         cout<<"Time to operate Hamiltonian : "<<double( clock() - oprt_SB_time ) / (double)CLOCKS_PER_SEC<<endl;//cout<<"here"<<endl;
-
-//        temp3_type_double = dot_product(Kvector_n, Kvector_np1);
-//        temp2_type_double = dot_product(Kvector_n, Kvector_n).real();
-//        temp4_type_double = temp3_type_double/temp2_type_double;
 
         temp4_type_double = dot_product(Kvector_n, Kvector_np1);
 
         A.push_back(temp4_type_double);
+
+#ifdef USE_COMPLEX
         assert(A[lanc_iter].imag()<0.000000001);
+#endif
 
-        Subtract(Kvector_np1, A[lanc_iter], Kvector_n);	//
-
+        Subtract(Kvector_np1, A[lanc_iter], Kvector_n);
         if(lanc_iter!=0){
             Subtract(Kvector_np1, sqrt(B2[lanc_iter]), Kvector_nm1);
         }
-
-
 
         if(save_all_Krylov_space_vecs==true){
             cout<<"Overlap b/w 0th and Kvector_np1 : "<<dot_product(Krylov_space_vecs[0],Kvector_np1)<<endl;
@@ -200,20 +178,12 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
                 }
                 temp_dot.clear();
 
-                //Normalizaton of Knp1, added by myself, not included in std. Lanczos 
-//                tmpnrm_type_double2=dot_product(Kvector_np1,Kvector_np1).real();
-//                tmpnrm2=sqrt(tmpnrm_type_double2);
-//               for(int i=0;i<Kvector_np1.size();i++){
-//                  Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm2));//*1.0e-10;
-//                }
-//               tmpnrm=tmpnrm2;
-
-               cout<<"Reorthogonalization performed"<<endl;
+                cout<<"Reorthogonalization performed"<<endl;
             }
         }
 
         //Normalizaton of Knp1, added by myself, not included in std. Lanczos
-        tmpnrm_type_double=dot_product(Kvector_np1,Kvector_np1).real();
+        tmpnrm_type_double=Norm(Kvector_np1);
         tmpnrm=sqrt(tmpnrm_type_double);
         for(int i=0;i<Kvector_np1.size();i++){
             Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm));//*1.0e-10;
@@ -228,7 +198,15 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
         }
         else{
             Evals_Tri_all[lanc_iter].resize(A.size());
-            Diagonalize(A,B2,Evals_Tri_all,red_eig_vecs,lanc_iter,few_,states_to_look);
+
+            dummy_states_to_look.clear();
+            for(int i_temp=0;i_temp<states_to_look.size();i_temp++){
+                if(states_to_look[i_temp]<=lanc_iter){
+                    dummy_states_to_look.push_back(states_to_look[i_temp]);
+                }
+            }
+
+            Diagonalize(A,B2,Evals_Tri_all,red_eig_vecs,lanc_iter,dummy_states_to_look.size(),dummy_states_to_look);
             red_eig_vec=red_eig_vecs[0];
             E0=Evals_Tri_all[lanc_iter][0];
         }
@@ -239,7 +217,7 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
             cout<<"iter = "<<lanc_iter<<" diff_E = "<<diff_E<<" E0 = "<<E0<<" E0_old = "<<E0_old<<endl;
             GS_energy=E0;
         }
-        if(lanc_iter==0){if(dot_product(Kvector_np1,Kvector_np1)==zero){diff_E = 0;}}
+        if(lanc_iter==0){if(Norm(Kvector_np1)==zero){diff_E = 0;}}
         //cout<<"Energy for lanc_iter("<<lanc_iter<<") is "<<E0<<endl;
 
         if(get_overlap_bw_eigstates_and_K_vecs ==true){
@@ -278,21 +256,14 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
 
     }
 
-
     cout<<"Perform_LANCZOS: "<<"NO. of iterations required to get convergence in LANCZOS(pass 1) = "<<lanc_iter<<endl;
     cout<<"Perform_LANCZOS: "<<"Energy(GS)"<<" is "<<scientific<<setprecision(20)<< "Energy = "<<E0<<"   "<<"Lanczos_error = "<<diff_E<<endl;
-
-
     cout<<"Perform_LANCZOS: "<<"LANCZOS(pass 2) STARTING FOR Eigenvectors, "<<", Size of Matrix(SB) = "<<Hamil.ncols<<endl<<endl;
 
     Lanc_iter_done=lanc_iter;
-
     Kvector_n.clear();	Kvector_nm1.clear(); Kvector_np1.clear();
 
-
     if(Dynamics_performed==false){
-
-
         if(Get_Full_Spectrum == false){
             red_eig_vecs.clear();
             red_eig_vecs.resize(1);
@@ -305,23 +276,25 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
         for(int Ts=0;Ts<states_to_look.size();Ts++){
 
             temp_Target_state=states_to_look[Ts];
+            if(Ts==0){
+                assert(temp_Target_state==0);
+            }
             srand(seed_lanczos);
-
 
             if(Read_the_seed==false){
                 for(int j=0;j<Hamil.nrows;j++){
-
+#ifdef USE_COMPLEX
                     temp1_type_double.real((rand()%RAND_MAX));
                     temp1_type_double.imag((rand()%RAND_MAX));
-
+#endif
+#ifndef USE_COMPLEX
+                    temp1_type_double = (rand()%RAND_MAX);
+#endif
                     temp1_type_double=(temp1_type_double)*(1.0/(RAND_MAX*1.0));
-
                     Kvector_n.push_back(temp1_type_double);
-
                 }
 
-
-                tmpnrm_type_double=dot_product(Kvector_n,Kvector_n).real();
+                tmpnrm_type_double=Norm(Kvector_n);
                 tmpnrm=sqrt(tmpnrm_type_double);
                 for(int j=0;j<Hamil.nrows;j++){
                     Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
@@ -329,26 +302,21 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
             }
             else{
                 ifstream infile_seed(seed_file_in.c_str());
-
                 for(int j=0;j<Hamil.nrows;j++){
-                    infile_seed>>tmpnrm;
-                    joker_double.real(tmpnrm);
-
-                    infile_seed>>tmpnrm;
-                    joker_double.imag(tmpnrm);
-
+#ifdef USE_COMPLEX
+                    infile_seed>>tmpnrm;joker_double.real(tmpnrm);infile_seed>>tmpnrm;joker_double.imag(tmpnrm);
+#endif
+#ifndef USE_COMPLEX
+                    infile_seed>>joker_double;
+#endif
                     Kvector_n.push_back(joker_double);
                 }
-
             }
 
-
             Eig_vecs[Ts].clear();
-
             for(int j=0;j<Hamil.nrows;j++){
                 Eig_vecs[Ts].push_back(0);
             }
-
 
             if(save_all_Krylov_space_vecs==true){
                 for(int lanc_iter2=0;lanc_iter2<lanc_iter;lanc_iter2=lanc_iter2+1){
@@ -357,46 +325,34 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
 
             }
             else{
-            for(int lanc_iter2=0;lanc_iter2<lanc_iter;lanc_iter2=lanc_iter2+1){
+                for(int lanc_iter2=0;lanc_iter2<lanc_iter;lanc_iter2=lanc_iter2+1){
+                    Subtract(Eig_vecs[Ts], (-1.0*(red_eig_vecs[Ts][lanc_iter2])), Kvector_n);
 
-                Subtract(Eig_vecs[Ts], (-1.0*(red_eig_vecs[Ts][lanc_iter2])), Kvector_n);
-                //cout<<"NOrm = "<<Norms[lanc_iter2]<<endl<<endl;
+                    // saved in K_vector_np1
+                    Matrix_COO_vector_multiplication("U", Hamil, Kvector_n, Kvector_np1);
 
-                // saved in K_vector_np1
-                Matrix_COO_vector_multiplication("U", Hamil, Kvector_n, Kvector_np1);
+                    Subtract(Kvector_np1, A[lanc_iter2], Kvector_n);
+                    if(lanc_iter2!=0){
+                        Subtract(Kvector_np1, sqrt(B2[lanc_iter2]), Kvector_nm1);
+                    }
 
-                Subtract(Kvector_np1, A[lanc_iter2], Kvector_n);	//
-                if(lanc_iter2!=0){
-                    Subtract(Kvector_np1, sqrt(B2[lanc_iter2]), Kvector_nm1);
+                    //Normalizaton of Knp1 , not included in std. Lanczos
+                    tmpnrm_type_double = Norm(Kvector_np1); //new
+                    tmpnrm=sqrt(tmpnrm_type_double);
+                    for(int i=0;i<Kvector_np1.size();i++){
+                        Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm));
+                    }
+                    Kvector_nm1=Kvector_n;
+                    Kvector_n=Kvector_np1;
                 }
-
-                //Normalizaton of Knp1 , not included in std. Lanczos
-                tmpnrm_type_double = dot_product(Kvector_np1,Kvector_np1).real(); //new
-                tmpnrm=sqrt(tmpnrm_type_double);
-                for(int i=0;i<Kvector_np1.size();i++){
-                    Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm));
-                }
-
-
-                Kvector_nm1=Kvector_n;
-                Kvector_n=Kvector_np1;
-
-            }
             }
 
-            double norm_ev=dot_product(Eig_vecs[Ts], Eig_vecs[Ts]).real();
+            double norm_ev=Norm(Eig_vecs[Ts]);
             for(int j=0;j<Hamil.nrows;j++){
-
                 Eig_vecs[Ts][j] = (Eig_vecs[Ts][j]/(sqrt(norm_ev)));
-
-
             }
 
             Kvector_n.clear();Kvector_nm1.clear();Kvector_np1.clear();
-
-
-
-
         }
 
         Eig_vec=Eig_vecs[0];
@@ -413,30 +369,21 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
 
                 for(int bi=0;bi<Eig_vecs[0].size();bi++){
 
-                    Overlaps[Ts][bi].first=( Eig_vecs[Ts][bi]*conj(Eig_vecs[Ts][bi]) ).real() ;
+                    Overlaps[Ts][bi].first=abs( Eig_vecs[Ts][bi])*abs( Eig_vecs[Ts][bi]) ;
                     Overlaps[Ts][bi].second=bi;
                 }
                 cout<<"sorting for state = "<<states_to_look[Ts]<<endl;
                 sort(Overlaps[Ts].begin(), Overlaps[Ts].end(), comp_greater_pair_double_int);
             }
 
-
-
-
             for(int Ts=0;Ts<Eig_vecs.size();Ts++){
-
                 Overlaps_bare[Ts].resize(Eig_vecs[0].size());
                 for(int bi=0;bi<Eig_vecs[0].size();bi++){
-
-
                     bi_new = Overlaps[Ts][bi].second;
                     Overlaps_bare[Ts][bi].first=Eig_vecs[Ts][bi_new];
                     Overlaps_bare[Ts][bi].second=bi_new;
                 }
-
             }
-
-
 
             ofstream outfile_overlap(overlap_out_file.c_str());
             for(int bi=0;bi<Eig_vecs[0].size();bi++){
@@ -447,7 +394,6 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
                 for(int Ts=0;Ts<Eig_vecs.size();Ts++){
                     outfile_overlap<<"  "<<Overlaps_bare[Ts][bi].second;
                 }
-
                 outfile_overlap<<endl;
             }
 
@@ -480,7 +426,6 @@ sort(numbers.begin(), numbers.end(), comp);
     }
 
     else{
-
         string out = file_dynamics_out;
         ofstream file_out(out.c_str());
         double omega =omega_min;
@@ -494,8 +439,6 @@ sort(numbers.begin(), numbers.end(), comp);
             omega=omega+d_omega;
         }
         file_out<<"# sum response = "<<sum_response<<endl;
-
-
     }
     B2.clear();A.clear(); red_eig_vec.clear();Norms.clear();
 
@@ -512,48 +455,17 @@ void LANCZOS::Measure_macro_observables(Mat_1_string macro_obs, Hamiltonian_1_CO
 
     double_type value;
     Mat_1_doub temp_vec;
-
-    /*
-    for(int opr_no=0;opr_no<one_point_obs.size();opr_no++){
-
-        for(int site=0;site<T_sites;site++){
-
-            value=0;
-            for(int i=0;i<Krylov_space_vecs.size();i++){
-
-                Matrix_COO_vector_multiplication("U", One_point_oprts[opr_no][site], Krylov_space_vecs[i], temp_vec);
-
-                for(int j=0;j<Krylov_space_vecs.size();j++){
-                    value = value + dot_product(Krylov_space_vecs[j],temp_vec)*red_eig_vecs[state][j]*red_eig_vecs[state][i];
-                }
-
-            }
-
-            cout<<one_point_obs[opr_no]<<"["<<site<<"]  "<<value<<endl;
+    double_type sum_;
 
 
-        }
-
-    }
-    */
-
-    //Faster way:
-
+    sum_=zero;
     for(int opr_no=0;opr_no<macro_obs.size();opr_no++){
-
-
         Matrix_COO_vector_multiplication("U", Macro_oprts[opr_no], Eig_vecs[state_no], temp_vec);
-
         value = dot_product(Eig_vecs[state_no],temp_vec);
-
         cout<<macro_obs[opr_no]<<" =  "<<value<<endl;
-
-
-
-
+        sum_ += value;
     }
-
-
+    cout<<"TOTAL OF MACRO-OBSERVABLES : "<<sum_<<endl;
 }
 
 
@@ -572,17 +484,9 @@ void LANCZOS::Measure_KE(Matrix_COO &Macro_oprt, int state_no){
         vector_used=Eig_vecs[state_no];
     }
 
-
-    //Faster way:
-
-        Matrix_COO_vector_multiplication("U", Macro_oprt, vector_used, temp_vec);
-
-        value = dot_product(vector_used,temp_vec).real();
-
-        cout<<value<<"#KE"<<endl;
-
-
-
+    Matrix_COO_vector_multiplication("U", Macro_oprt, vector_used, temp_vec);
+    value = dot_product(vector_used,temp_vec);
+    cout<<value<<"#KE"<<endl;
 
 }
 
@@ -600,14 +504,9 @@ void LANCZOS::Measure_Total_Energy(Matrix_COO &Macro_oprt, int state_no){
         vector_used=Eig_vecs[state_no];
     }
 
-
-    //Faster way:
-
-        Matrix_COO_vector_multiplication("U", Macro_oprt, vector_used, temp_vec);
-
-        value = dot_product(vector_used,temp_vec).real();
-
-        cout<<value<<"#TE"<<endl;
+    Matrix_COO_vector_multiplication("U", Macro_oprt, vector_used, temp_vec);
+    value = dot_product(vector_used,temp_vec);
+    cout<<value<<"#TE"<<endl;
 
 }
 
@@ -616,56 +515,61 @@ void LANCZOS::Measure_Total_Energy(Matrix_COO &Macro_oprt, int state_no){
 
 void LANCZOS::Time_evolution_type1(Matrix_COO &Hamil, double dt_, double &Energy_){
 
-time_evolution_order=3;
-complex<double> iota_(0.0,1.0);
-Mat_1_doub temp_vec,temp_vec2,temp_vec3;
+#ifdef USE_COMPLEX
+    time_evolution_order=3;
+    complex<double> iota_(0.0,1.0);
+    Mat_1_doub temp_vec,temp_vec2,temp_vec3;
 
-if(time_evolution_order==1){
+    if(time_evolution_order==1){
 
-Matrix_COO_vector_multiplication("U", Hamil, Evolving_State, temp_vec);
-Subtract(Evolving_State, iota_*dt_*(-1.0), temp_vec);
+        Matrix_COO_vector_multiplication("U", Hamil, Evolving_State, temp_vec);
+        Subtract(Evolving_State, iota_*dt_*(-1.0), temp_vec);
 
-}
+    }
 
-if(time_evolution_order==2){
+    if(time_evolution_order==2){
 
-Matrix_COO_vector_multiplication("U", Hamil, Evolving_State, temp_vec);
-Matrix_COO_vector_multiplication("U", Hamil, temp_vec, temp_vec2);
-Subtract(Evolving_State, iota_*dt_*(-1.0), temp_vec);
-Subtract(Evolving_State, 0.5*dt_*dt_*(-1.0), temp_vec2);
+        Matrix_COO_vector_multiplication("U", Hamil, Evolving_State, temp_vec);
+        Matrix_COO_vector_multiplication("U", Hamil, temp_vec, temp_vec2);
+        Subtract(Evolving_State, iota_*dt_*(-1.0), temp_vec);
+        Subtract(Evolving_State, 0.5*dt_*dt_*(-1.0), temp_vec2);
 
-}
+    }
 
-if(time_evolution_order==3){
+    if(time_evolution_order==3){
 
-Matrix_COO_vector_multiplication("U", Hamil, Evolving_State, temp_vec);
-Matrix_COO_vector_multiplication("U", Hamil, temp_vec, temp_vec2);
-Matrix_COO_vector_multiplication("U", Hamil, temp_vec2, temp_vec3);
-Subtract(Evolving_State, iota_*dt_*(-1.0), temp_vec);
-Subtract(Evolving_State, 0.5*dt_*dt_*(-1.0)*one, temp_vec2);
-Subtract(Evolving_State, iota_*(1/6.0)*dt_*dt_*dt_*(-1.0), temp_vec3);
+        Matrix_COO_vector_multiplication("U", Hamil, Evolving_State, temp_vec);
+        Matrix_COO_vector_multiplication("U", Hamil, temp_vec, temp_vec2);
+        Matrix_COO_vector_multiplication("U", Hamil, temp_vec2, temp_vec3);
+        Subtract(Evolving_State, iota_*dt_*(-1.0), temp_vec);
+        Subtract(Evolving_State, 0.5*dt_*dt_*(-1.0)*one, temp_vec2);
+        Subtract(Evolving_State, iota_*(1/6.0)*dt_*dt_*dt_*(-1.0), temp_vec3);
 
-}
+    }
 
-//Normalizing it every time-----------------
-double norm_ev=dot_product(Evolving_State, Evolving_State).real();
-for(int j=0;j<Hamil.nrows;j++){
-    Evolving_State[j] = (Evolving_State[j]/(sqrt(norm_ev)));
-}
-//---------------------------------
+    //Normalizing it every time-----------------
+    double norm_ev=dot_product(Evolving_State, Evolving_State).real();
+    for(int j=0;j<Hamil.nrows;j++){
+        Evolving_State[j] = (Evolving_State[j]/(sqrt(norm_ev)));
+    }
+    //---------------------------------
 
-Matrix_COO_vector_multiplication("U", Hamil, Evolving_State, temp_vec);
-Energy_=dot_product(Evolving_State,temp_vec).real();
+    Matrix_COO_vector_multiplication("U", Hamil, Evolving_State, temp_vec);
+    Energy_=dot_product(Evolving_State,temp_vec).real();
 
-temp_vec.clear();
-temp_vec2.clear();
+    temp_vec.clear();
+    temp_vec2.clear();
+#endif
+
+#ifndef USE_COMPLEX
+    cout<<"TIME EVOLUTION WORKS ONLY IF USE_COMPLEX IS USED"<<endl;
+    assert(false);
+#endif
 }
 
 void LANCZOS::Measure_one_point_observables(Mat_1_string one_point_obs, Hamiltonian_2_COO &One_point_oprts, int T_sites, int state_no){
 
     cout<<"One-point Measurement is started after completing Lanczos algorithm"<<endl;
-    //Krylov_space_vecs
-
 
     double_type value;
     Mat_1_doub temp_vec;
@@ -678,87 +582,17 @@ void LANCZOS::Measure_one_point_observables(Mat_1_string one_point_obs, Hamilton
         vector_used=Eig_vecs[state_no];
     }
 
-    complex<double> sz;
-    complex<double> jz_eff(0,0);
-    complex<double> n_up(0,0);
-    complex<double> n_dn(0,0);
-
-    /*
-    for(int opr_no=0;opr_no<one_point_obs.size();opr_no++){
-
-        for(int site=0;site<T_sites;site++){
-
-            value=0;
-            for(int i=0;i<Krylov_space_vecs.size();i++){
-
-                Matrix_COO_vector_multiplication("U", One_point_oprts[opr_no][site], Krylov_space_vecs[i], temp_vec);
-
-                for(int j=0;j<Krylov_space_vecs.size();j++){
-                    value = value + dot_product(Krylov_space_vecs[j],temp_vec)*red_eig_vecs[state][j]*red_eig_vecs[state][i];
-                }
-
-            }
-
-            cout<<one_point_obs[opr_no]<<"["<<site<<"]  "<<value<<endl;
-
-
-        }
-
-    }
-    */
-
-
-    //Faster way:
-
     One_point_observables_values.resize(One_point_oprts.size());
     for(int opr_no=0;opr_no<One_point_oprts.size();opr_no++){
         One_point_observables_values[opr_no].resize(T_sites);
 
         for(int site=0;site<T_sites;site++){
-
             Matrix_COO_vector_multiplication("cx", One_point_oprts[opr_no][site], vector_used, temp_vec);
-
             value = dot_product(temp_vec,vector_used);
-
             cout<<one_point_obs[opr_no]<<"["<<site<<"]  "<<value<<endl;
             One_point_observables_values[opr_no][site]=value;
-
-            if(one_point_obs[opr_no]=="n_3by2_3by2"){
-                jz_eff += (3.0/2.0)*value;
-
-            }
-            if(one_point_obs[opr_no]=="n_3by2_m3by2"){
-                jz_eff += (-3.0/2.0)*value;
-
-            }
-            if(one_point_obs[opr_no]=="n_3by2_1by2" || one_point_obs[opr_no]=="n_1by2_1by2"){
-                jz_eff += (1.0/2.0)*value;
-
-            }
-            if(one_point_obs[opr_no]=="n_3by2_m1by2" || one_point_obs[opr_no]=="n_1by2_m1by2"){
-                jz_eff += (-1.0/2.0)*value;
-
-            }
-
-            if((one_point_obs[opr_no]=="n_0_up" || one_point_obs[opr_no]=="n_1_up") || one_point_obs[opr_no]=="n_2_up"  ){
-                n_up += (1.0)*value;
-
-            }
-            if((one_point_obs[opr_no]=="n_0_dn" || one_point_obs[opr_no]=="n_1_dn") || one_point_obs[opr_no]=="n_2_dn"  ){
-                n_dn += (1.0)*value;
-
-            }
-
-
-
-
         }
-
     }
-
-    cout<<"Jz_eff_total = "<<jz_eff<<endl;
-    cout<<"N_total = "<<n_up + n_dn <<endl;
-    cout<<"Sz_total = "<<0.5*(n_up - n_dn) <<endl;
 
     vector_used.clear();
 
@@ -767,15 +601,11 @@ void LANCZOS::Measure_one_point_observables(Mat_1_string one_point_obs, Hamilton
 
 void LANCZOS::Measure_two_point_observables_smartly(Mat_1_string one_point_obs, Hamiltonian_2_COO &One_point_oprts, int T_sites, int state_no, string _model_){
     cout<<"Two-point Measurement is done smartly = "<<states_to_look[state_no]<<endl;
-    //Krylov_space_vecs
 
-
-    double_type value,value1,value2;
+    double_type value;
     Mat_1_doub temp_vec, temp_vec2;
-    string mult_type;
     Mat_3_doub corr;
-    Matrix_COO TEMP_COO, TEMP_COO2;
-    Matrix_COO TEMP_COO3, TEMP_COO4;
+    Matrix_COO TEMP_COO;
     Mat_1_doub vector_used;
 
     if(state_no==-121){
@@ -795,141 +625,93 @@ void LANCZOS::Measure_two_point_observables_smartly(Mat_1_string one_point_obs, 
         }
     }
 
-
-
     for(int opr_no=0;opr_no<one_point_obs.size();opr_no++){
-    cout<<"("<<one_point_obs[opr_no]<<"(i)|gs>)^\\dagger "<<one_point_obs[opr_no]<<"(j)|gs>"<<endl;
-    for(int site=0;site<T_sites;site++){
-
-        for(int site2=0;site2<T_sites;site2++){
-
-            if(site2>=site){
-                value=zero;
-
-
-                //TEMP_COO = Dagger(Sz[site2]);
-                TEMP_COO = (One_point_oprts[opr_no][site]);
-                Matrix_COO_vector_multiplication("Full", One_point_oprts[opr_no][site2], vector_used, temp_vec);
-                Matrix_COO_vector_multiplication("Full", TEMP_COO, vector_used, temp_vec2);
-
-                value = dot_product(temp_vec2,temp_vec);
-
-
-                corr[0][site][site2]=value;
-                corr[0][site2][site]=value;
-
-                cout<<value<<"  ";
-
+        cout<<"("<<one_point_obs[opr_no]<<"(i)|gs>)^\\dagger "<<one_point_obs[opr_no]<<"(j)|gs>"<<endl;
+        for(int site=0;site<T_sites;site++){
+            for(int site2=0;site2<T_sites;site2++){
+                if(site2>=site){
+                    value=zero;
+                    //TEMP_COO = Dagger(Sz[site2]);
+                    TEMP_COO = (One_point_oprts[opr_no][site]);
+                    Matrix_COO_vector_multiplication("Full", One_point_oprts[opr_no][site2], vector_used, temp_vec);
+                    Matrix_COO_vector_multiplication("Full", TEMP_COO, vector_used, temp_vec2);
+                    value = dot_product(temp_vec2,temp_vec);
+                    corr[0][site][site2]=value;
+                    corr[0][site2][site]=value;
+                    cout<<value<<"  ";
+                }
+                else{
+                    cout<<zero<<"  ";
+                }
             }
-            else{
-                cout<<zero<<"  ";
+            cout<<endl;
+        }
+
+        double_type sum_all;
+        sum_all=zero;
+        for(int site=0;site<T_sites;site++){
+            for(int site2=0;site2<T_sites;site2++){
+                sum_all = sum_all + corr[0][site][site2];
             }
         }
-        cout<<endl;
+        cout<<"sum_all = "<<sum_all<<endl;
 
     }
 
-    double_type sum_all;
-    sum_all=zero;
-    for(int site=0;site<T_sites;site++){
-        for(int site2=0;site2<T_sites;site2++){
-            sum_all = sum_all + corr[0][site][site2];
-        }
-    }
-    cout<<"sum_all = "<<sum_all<<endl;
 
-}
-
-
+#ifdef USE_COMPLEX
     if(_model_=="3_orb_Hubbard_chain_GC"){
 
-    for(int opr_no=14;opr_no<=32;opr_no++){
-
-   cout<<"("<<one_point_obs[opr_no]<<"(i)|gs>)^\\dagger "<<one_point_obs[opr_no]<<"(j)|gs>"<<endl;
-    for(int site=0;site<T_sites;site++){
-
-        for(int site2=0;site2<T_sites;site2++){
-
-            if(site2>=site){
-                value=zero;
-
-
-                //TEMP_COO = Dagger(Sz[site2]);
-                TEMP_COO = (One_point_oprts[opr_no][site]);
-                Matrix_COO_vector_multiplication("Full", One_point_oprts[opr_no][site2], Eig_vecs[state_no], temp_vec);
-                Matrix_COO_vector_multiplication("Full", TEMP_COO, Eig_vecs[state_no], temp_vec2);
-
-                value = dot_product(temp_vec2,temp_vec);
-
-
-                corr[0][site][site2]=value;
-                corr[0][site2][site]=value;
-
-                cout<<value<<"  ";
-
-            }
-            else{
-                cout<<zero<<"  ";
-            }
-        }
-        cout<<endl;
-
-    }
-
-
-    double_type sum_all=zero;
-    for(int site=0;site<T_sites;site++){
-        for(int site2=0;site2<T_sites;site2++){
-            sum_all = sum_all + corr[0][site][site2];
-        }
-    }
-    cout<<"sum_all = "<<sum_all<<endl;
-}
-
-
-
-
-
-    double Total_excitons, Frenkel_excitons;
-
-    cout<<"--------<n_{1/2,1/2}(site)> - <n_{1/2,1/2}(site)n_{3/2,1/2}(site2)>--------------------"<<endl;
-
-    Frenkel_excitons=0;
-    Total_excitons=0;
-    //n_{3/2,1/2}=8, n_{1/2,1/2}=10
-    for(int site=0;site<T_sites;site++){
-
-        Matrix_COO_vector_multiplication("Full", One_point_oprts[10][site], Eig_vecs[state_no], temp_vec);
-        value1 = dot_product(temp_vec, Eig_vecs[state_no]);
-
-        for(int site2=0;site2<T_sites;site2++){
-
-                Matrix_COO_vector_multiplication("Full", One_point_oprts[8][site2], Eig_vecs[state_no], temp_vec);
-                Matrix_COO_vector_multiplication("Full", One_point_oprts[10][site], temp_vec, temp_vec2);
-
-                value = dot_product(temp_vec2, Eig_vecs[state_no]);
-
-                Total_excitons = Total_excitons + value1.real() - value.real();
-                if(site == site2){
-                  Frenkel_excitons = Frenkel_excitons + value1.real() - value.real();
+        for(int opr_no=14;opr_no<=32;opr_no++){
+            cout<<"("<<one_point_obs[opr_no]<<"(i)|gs>)^\\dagger "<<one_point_obs[opr_no]<<"(j)|gs>"<<endl;
+            for(int site=0;site<T_sites;site++){
+                for(int site2=0;site2<T_sites;site2++){
+                    if(site2>=site){
+                        value=zero;
+                        //TEMP_COO = Dagger(Sz[site2]);
+                        TEMP_COO = (One_point_oprts[opr_no][site]);
+                        Matrix_COO_vector_multiplication("Full", One_point_oprts[opr_no][site2], Eig_vecs[state_no], temp_vec);
+                        Matrix_COO_vector_multiplication("Full", TEMP_COO, Eig_vecs[state_no], temp_vec2);
+                        value = dot_product(temp_vec2,temp_vec);
+                        corr[0][site][site2]=value;
+                        corr[0][site2][site]=value;
+                        cout<<value<<"  ";
+                    }
+                    else{
+                        cout<<zero<<"  ";
+                    }
                 }
-                cout<<value1 - value<<"  ";
+                cout<<endl;
+            }
 
 
+            double_type sum_all=zero;
+            for(int site=0;site<T_sites;site++){
+                for(int site2=0;site2<T_sites;site2++){
+                    sum_all = sum_all + corr[0][site][site2];
+                }
+            }
+            cout<<"sum_all = "<<sum_all<<endl;
         }
-        cout<<endl;
-
     }
+#endif
 
-    cout<<"Frenkel_Exc/Total_Excitons = "<<Frenkel_excitons/Total_excitons<<"   " <<Frenkel_excitons<<"  "<<Total_excitons<<endl;
+
 
 }
 
-}
 
+double_type LANCZOS::Measure_observable(Matrix_COO &OPR_, int state_no){
 
-double LANCZOS::Measure_observable(Matrix_COO &OPR_, int state_no){
-    return 0.0;
+    double_type value;
+    string mult_type="not_U";
+    Mat_1_doub temp_vec;
+
+    Matrix_COO_vector_multiplication(mult_type, OPR_, Eig_vecs[state_no], temp_vec);
+    value = dot_product(Eig_vecs[state_no],temp_vec);
+
+    return value;
+
 }
 
 void LANCZOS::Measure_four_point_observables(Hamiltonian_3_COO &Two_point_oprts, Mat_1_tetra_int sites_set, int state_no){
@@ -956,7 +738,7 @@ void LANCZOS::Measure_four_point_observables(Hamiltonian_3_COO &Two_point_oprts,
             else{
                 Matrix_COO_temp=Dagger(Two_point_oprts[2][sites_set[set].fourth][sites_set[set].second]);
                 Matrix_COO_vector_multiplication("x",Matrix_COO_temp ,
-                        Eig_vecs[state_no], temp_vec2);
+                                                 Eig_vecs[state_no], temp_vec2);
 
                 Matrix_COO_temp.columns.clear();
                 Matrix_COO_temp.rows.clear();
@@ -971,7 +753,7 @@ void LANCZOS::Measure_four_point_observables(Hamiltonian_3_COO &Two_point_oprts,
             else{
                 Matrix_COO_temp=Dagger(Two_point_oprts[2][sites_set[set].first][sites_set[set].third]);
                 Matrix_COO_vector_multiplication("x", Matrix_COO_temp,
-                        Eig_vecs[state_no], temp_vec1);
+                                                 Eig_vecs[state_no], temp_vec1);
 
                 Matrix_COO_temp.columns.clear();
                 Matrix_COO_temp.rows.clear();
@@ -982,8 +764,8 @@ void LANCZOS::Measure_four_point_observables(Hamiltonian_3_COO &Two_point_oprts,
             value = dot_product(temp_vec2,temp_vec1);
 
             cout<< "<GS|cdup["<<sites_set[set].first<<"]"<<"cdup["<<sites_set[set].second<<"]"
-                   <<"cup["<<sites_set[set].third<<"]"<<"cup["<<sites_set[set].fourth<<"]|GS> = "
-                  << (value*(one*(-1.0)))<<endl;
+                <<"cup["<<sites_set[set].third<<"]"<<"cup["<<sites_set[set].fourth<<"]|GS> = "
+               << (value*(one*(-1.0)))<<endl;
 
 
         }
@@ -998,8 +780,6 @@ void LANCZOS::Measure_four_point_observables(Hamiltonian_3_COO &Two_point_oprts,
 void LANCZOS::Measure_two_point_observables(Mat_1_string two_point_obs, Hamiltonian_3_COO &Two_point_oprts, int T_sites,  int state_no, bool PBC_check){
 
     cout<<"Two-point Measurement is started after completing Lanczos algorithm for state_no = "<<states_to_look[state_no]<<endl;
-    //Krylov_space_vecs
-
 
     double_type value,value1,value2;
     Mat_1_doub temp_vec;
@@ -1119,6 +899,7 @@ void LANCZOS::Write_full_spectrum(){
 }
 
 void LANCZOS::Read_Lanczos_parameters(string filename){
+
     omega_sign =1.0;
 
     string random_seed_generator_, Random_Seed_Generator_ = "Random_seed_generator = ";
@@ -1333,7 +1114,8 @@ void LANCZOS::Get_Dynamics_seed(Matrix_COO &Opr){
 
     Matrix_COO_vector_multiplication("not_U", Opr, Eig_vec, Dynamics_seed);
 
-    double tmpnrm_type_double=(dot_product(Dynamics_seed,Dynamics_seed)).real();
+    double tmpnrm_type_double;
+    tmpnrm_type_double=Norm(Dynamics_seed);
     Numerator_Dynamics=tmpnrm_type_double;
     double tmpnrm;
     tmpnrm=sqrt(tmpnrm_type_double);
@@ -1348,11 +1130,11 @@ void LANCZOS::Get_Dynamics_seed(Matrix_COO &Opr){
 void LANCZOS::Get_Dynamics_seed(Mat_1_doub vec_){
 
     Dynamics_seed=vec_;
-    double tmpnrm_type_double=(dot_product(Dynamics_seed,Dynamics_seed)).real();
+    double tmpnrm_type_double;
+    tmpnrm_type_double=Norm(Dynamics_seed);
     Numerator_Dynamics=tmpnrm_type_double;
     double tmpnrm;
     tmpnrm=sqrt(tmpnrm_type_double);
-
 
     for(int j=0;j<vec_.size();j++){
         Dynamics_seed[j] = (Dynamics_seed[j]*(1.0/(tmpnrm)));
@@ -1364,4 +1146,4 @@ void LANCZOS::Get_Dynamics_seed(Mat_1_doub vec_){
 
 
 
-#endif
+//#endif

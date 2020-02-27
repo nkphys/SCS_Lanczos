@@ -536,6 +536,22 @@ complex<double> dot_product(Mat_1_doub &vec1, Mat_1_doub &vec2){
 
 }
 
+double Norm(Mat_1_doub &vec1){
+    complex<double> temp;
+    complex<double> temp1=zero;
+
+    for(int i=0;i<vec1.size();i++){
+        temp1 = temp1 + (vec1[i])*(conj(vec1[i])); //<vec1|vec1>
+    }
+
+    temp = temp1;
+
+    assert(temp.imag()<1e-6);
+
+    return temp.real();
+
+}
+
 void Matrix_COO_vector_multiplication(string COO_type, Matrix_COO & A,Mat_1_doub &u,Mat_1_doub &v){
 
     v.clear();
@@ -588,11 +604,7 @@ Matrix_COO Dagger(Matrix_COO &A){
 
         i=i+1;
     }
-
-
-
     return B;
-
 }
 
 
@@ -773,6 +785,74 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_1_doub & vecG){
 
 }
 
+
+void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_2_doub & vecs){
+
+    Mat_1_real eigs_;
+    Matrix< complex<double> > Ham_;
+    Ham_.resize(X.nrows,X.ncols);
+
+    for(int i=0;i<X.nrows;i++){
+        for(int j=i;j<X.ncols;j++){
+            Ham_(i,j) = complex<double>(0.0,0.0);
+        }
+    }
+
+    for(int i=0;i<X.value.size();i++){
+        int r=X.rows[i];
+        int c=X.columns[i];
+       Ham_(r,c) = X.value[i];
+       Ham_(c,r) = X.value[i];
+    }
+
+    char jobz='V';
+    char uplo='L'; //WHY ONLY 'L' WORKS?
+    int n=Ham_.n_row();
+    int lda=Ham_.n_col();
+    vector< complex<double> > work(3);
+    vector<double> rwork(3*n -2);
+    int info;
+    int lwork= -1;
+
+    eigs_.resize(Ham_.n_row());
+    fill(eigs_.begin(),eigs_.end(),0);
+    // query:
+    zheev_(&jobz,&uplo,&n,&(Ham_(0,0)),&lda,&(eigs_[0]),&(work[0]),&lwork,&(rwork[0]),&info);
+    //lwork = int(real(work[0]))+1;
+    lwork = int((work[0]).real());
+    work.resize(lwork);
+    // real work:
+    zheev_(&jobz,&uplo,&n,&(Ham_(0,0)),&lda,&(eigs_[0]),&(work[0]),&lwork,&(rwork[0]),&info);
+    if (info!=0) {
+        std::cerr<<"info="<<info<<"\n";
+        perror("diag: zheev: failed with info!=0.\n");
+    }
+
+    // Ham_.print();
+
+    //  for(int i=0;i<eigs_.size();i++){
+    //    cout<<eigs_[i]<<endl;
+    //}
+
+
+    EVALS.resize(eigs_.size());
+    for(int i=0;i<eigs_.size();i++){
+        EVALS[i]=eigs_[i];
+    }
+
+    eigs_.clear();
+    vecs.clear();
+    vecs.resize(X.nrows);
+    for(int j=0;j<vecs.size();j++){
+        vecs[j].resize(vecs.size());
+    for(int i=0;i<X.nrows;i++){
+        vecs[j][i] =Ham_(i,j);//mat[i*X.nrows];
+    }
+    }
+
+    Ham_.clear();
+
+}
 
 
 

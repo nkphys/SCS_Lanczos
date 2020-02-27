@@ -145,6 +145,26 @@ void Read_matrix_from_file(string filepath, Mat_2_doub &Mat, int row, int column
 
 }
 
+Matrix_COO Dagger(Matrix_COO &A){
+
+    Matrix_COO B;
+    B.nrows=A.nrows;
+    B.ncols = A.ncols;
+    int i=0;
+    B.value.resize(A.value.size());
+    B.rows.resize(A.rows.size());
+    B.columns.resize(A.columns.size());
+    while(i<A.value.size()){
+
+        B.value[i] = A.value[i];
+        B.rows[i] = A.columns[i];
+        B.columns[i] = A.rows[i];
+
+        i=i+1;
+    }
+    return B;
+}
+
 void Direct_product_of_Mat_2_trio_int(Mat_2_trio_int MAT1_, Mat_1_doub values1_,
                                       Mat_2_trio_int MAT2_, Mat_1_doub values2_,
                                       Mat_2_trio_int &MAT_RESULT_, Mat_1_doub &values_result_){
@@ -548,6 +568,19 @@ double dot_product(Mat_1_doub &vec1, Mat_1_doub &vec2){
 
     temp = temp1;
 
+    return temp;
+
+}
+
+double Norm(Mat_1_doub &vec1){
+    double temp;
+    double temp1=zero;
+
+    for(int i=0;i<vec1.size();i++){
+        temp1 = temp1 + (vec1[i])*((vec1[i])); //<vec1|vec1>
+    }
+
+    temp = temp1;
     return temp;
 
 }
@@ -1051,6 +1084,72 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_1_doub & vecG){
     vecG.resize(X.nrows);
     for(int i=0;i<X.nrows;i++){
         vecG[i] = Ham_(i,0);//mat[i*X.nrows];
+    }
+
+    Ham_.clear();
+}
+
+void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_2_doub & vecs){
+
+    Mat_1_real eigs_;
+    Matrix<double> Ham_;
+    Ham_.resize(X.nrows,X.ncols);
+
+    for(int i=0;i<X.nrows;i++){
+        for(int j=i;j<X.ncols;j++){
+            Ham_(i,j) = 0.0;
+        }
+    }
+
+    for(int i=0;i<X.value.size();i++){
+        int r=X.rows[i];
+        int c=X.columns[i];
+       Ham_(r,c) = X.value[i];
+       Ham_(c,r) = X.value[i];
+    }
+
+    char jobz='V';
+    char uplo='L'; //WHY ONLY 'L' WORKS?
+    int n=Ham_.n_row();
+    int lda=Ham_.n_col();
+    vector<double> work(3);
+    int info;
+    int lwork= -1;
+
+    eigs_.resize(Ham_.n_row());
+    fill(eigs_.begin(),eigs_.end(),0);
+    // query:
+    dsyev_(&jobz,&uplo,&n,&(Ham_(0,0)),&lda,&(eigs_[0]),&(work[0]),&lwork,&info);
+    //lwork = int(real(work[0]))+1;
+    lwork = int((work[0]));
+    work.resize(lwork);
+    // real work:
+    dsyev_(&jobz,&uplo,&n,&(Ham_(0,0)),&lda,&(eigs_[0]),&(work[0]),&lwork,&info);
+    if (info!=0) {
+        std::cerr<<"info="<<info<<"\n";
+        perror("diag: zheev: failed with info!=0.\n");
+    }
+
+    // Ham_.print();
+
+    //  for(int i=0;i<eigs_.size();i++){
+    //    cout<<eigs_[i]<<endl;
+    //}
+
+
+    EVALS.resize(X.nrows);
+    for(int i=0;i<EVALS.size();i++){
+        EVALS[i]=eigs_[i];
+    }
+    eigs_.clear();
+
+    vecs.clear();
+    vecs.resize(X.nrows);
+    for(int j=0;j<vecs.size();j++){
+        vecs[j].resize(vecs.size());
+    for(int i=0;i<X.nrows;i++){
+        vecs[j][i] =Ham_(i,j);//mat[i*X.nrows];
+    }
     }
 
     Ham_.clear();

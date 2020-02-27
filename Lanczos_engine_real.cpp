@@ -302,6 +302,9 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
 
 
             temp_Target_state=states_to_look[Ts];
+            if(Ts==0){
+                assert(temp_Target_state==0);
+            }
             srand(seed_lanczos);
 
 
@@ -731,8 +734,8 @@ void LANCZOS::Measure_two_point_observables(Mat_1_string two_point_obs, Hamilton
 
 
 
-double LANCZOS::Measure_observable(Matrix_COO &OPR_, int state_no){
-    double value;
+double_type LANCZOS::Measure_observable(Matrix_COO &OPR_, int state_no){
+    double_type value;
     string mult_type="not_U";
     Mat_1_doub temp_vec;
 
