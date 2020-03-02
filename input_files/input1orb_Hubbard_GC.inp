@@ -1,9 +1,9 @@
 Model = 1_orb_Hubbard_GC
 ------------------------------------------
-Length = 12
-N_Total = 2
-CFS_SITE_RESOLVED = true 0 -0.6 0 0 -0.6 0 0 -0.6 0 0 -0.6 0
-LongRangeHopping_file = Hopping_2x2_Dice_SOC_0p5.txt
+Length = 8
+N_Total = 8
+CFS_SITE_RESOLVED = true 0 0 0 0 0 0 0 0
+LongRangeHopping_file = Hopping_chain_TB_L8.txt
 U = 5.00
 H_mag = 0.0
 
@@ -11,27 +11,33 @@ H_mag = 0.0
 Random_seed_generator = 1
 --------------------------------------
 
-Lanc_Error = 10e-6
-max_steps = 400
+Lanc_Error = -10e-10
+max_steps = 150
 file_eval_spectrum = Tri_evals_OBC_GC.txt
-save_all_Krylov_space_vecs = false
-get_overlap_bw_eigstates_and_K_vecs = false
-lanczos_reorthogonalization = false
+save_all_Krylov_space_vecs = true
+get_overlap_bw_eigstates_and_K_vecs = true
+lanczos_reorthogonalization = true
 Get_Full_Spectrum = true
-need_few_eig_vecs = false
-Get_overlap_with_basis = false
-States_to_look = 24 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+need_few_eig_vecs = true
+Get_overlap_with_basis = true
+States_to_look = 1 0
 overlap_out_file = out0.txt
-calculate_local_obs_for_states_to_look = false
+calculate_local_obs_for_states_to_look = true
 calculate_local_obs_for_states_to_look_for_first_n_basis = 4000
 file_out_local_obs_for_states_to_look = local_obs_for_state_no
 Read_the_seed = false
 seed_file = seed_GSold.txt
 --------------------------------------
 
+Static_Finite_Temperature = true
+Number_of_Random_States = 300
+Number_of_LowKrylov_States_used = 100
+Temperature = 0.2
+
+
 
 ----------------------------------
-Perform_Dynamics = true
+Perform_Dynamics = false
 check_omega = 2.0
 Opr_for_Dynamics = Delta_SOC
 Momentum_resolved = false

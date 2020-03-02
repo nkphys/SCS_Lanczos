@@ -2519,7 +2519,7 @@ int main(int argc, char** argv){
 
 
         // Only following basis are printed.
-        Mat_1_int Temp_index;
+      /*  Mat_1_int Temp_index;
         Temp_index.push_back(149); Temp_index.push_back(774); Temp_index.push_back(145); Temp_index.push_back(150);
         Temp_index.push_back(205); Temp_index.push_back(135); Temp_index.push_back(714); Temp_index.push_back(789);
         Temp_index.push_back(414); Temp_index.push_back(509); Temp_index.push_back(718); Temp_index.push_back(788);
@@ -2530,7 +2530,7 @@ int main(int argc, char** argv){
             cout<<endl;
             cout<<"--------------------------------------------"<<endl<<endl;
         }
-
+        */
 
 
         bool Dynamics_SPDOS = true;
@@ -2644,6 +2644,17 @@ int main(int argc, char** argv){
                 vector< int >().swap( _MODEL_Np1.Hamil.rows );
                 vector< double_type >().swap( _MODEL_Np1.Hamil.value );
             }
+
+        }
+
+
+
+        if(Static_Finite_Temp){
+
+            FTLM_STATIC _FTLM_STATIC;
+            _FTLM_STATIC.Hamil = _MODEL.Hamil;
+
+            _FTLM_STATIC.Perform_FTLM(inp_filename);
 
         }
 
