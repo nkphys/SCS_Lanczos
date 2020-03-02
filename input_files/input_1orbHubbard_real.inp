@@ -1,31 +1,31 @@
-Geometry = NNN_2D_Lattice
+Geometry = NN_2D_Lattice
 Model = 1_orb_Hubbard_chain
 ------------------------------------------
 PBC = true
-Length_X = 2
-Length_Y = 2
-Ndown = 2
-Nup = 2
+Length_X = 4
+Length_Y = 4
+Ndown = 4
+Nup = 4
  
 Hopping = 1.0
 Hopping_NN = 0.0
 U = 10.0
 H_mag = 0
-File_Onsite_Energies = true onsite_ener.txt
+File_Onsite_Energies = false onsite_ener.txt
 ----------------------------------------
 -------------------------------------
-Lanc_Error = 10e-12
-max_steps = 300
+Lanc_Error = -10e-12
+max_steps = 200
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = false
+save_all_Krylov_space_vecs = tru
 get_overlap_bw_eigstates_and_K_vecs = false
 lanczos_reorthogonalization = false
-Get_Full_Spectrum = false
-need_few_eig_vecs = false
+Get_Full_Spectrum = true
+need_few_eig_vecs = true
 few = 6
 ----------------------------------------
 Get_overlap_with_basis = false
-States_to_look = 11 0 3 4 5 13 14 15 16 58 1 2
+States_to_look = 1 0
 overlap_out_file = out0.txt
 calculate_local_obs_for_states_to_look = false
 calculate_local_obs_for_states_to_look_for_first_n_basis = 100
@@ -53,5 +53,8 @@ Dynamics_dos_operators = 1 1.0 0 1 1
 #upspin=0, downspin=1
 ---------------------------------
 
-
+Static_Finite_Temperature = false
+Number_of_Random_States = 300
+Number_of_LowKrylov_States_used = 100
+Temperature = 0.2
 

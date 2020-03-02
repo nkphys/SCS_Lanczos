@@ -2281,6 +2281,15 @@ int main(int argc, char** argv){
 
         }
 
+
+        if(Static_Finite_Temp){
+
+            FTLM_STATIC _FTLM_STATIC;
+            _FTLM_STATIC.Hamil = _MODEL.Hamil;
+            _FTLM_STATIC.Perform_FTLM(inp_filename);
+
+        }
+
     }
 #endif
 

@@ -2,7 +2,7 @@ OBJS =  functions_real.o functions_complex.o binary_decimal.o Base_to_Decimal.o 
 DEBUG = #-g3
 OPTFLAG = -O3
 CC = g++ $(OPTFLAG) #-std=c++11
-CFLAGS = -c $(DEBUG) -DUSE_COMPLEX
+CFLAGS = -c $(DEBUG) #-DUSE_COMPLEX
 LFLAGS = $(DEBUG)
 MKL_LIB = #/opt/intel/mkl/lib/libmkl_core.a  /opt/intel/mkl/lib/libmkl_intel_lp64.a /opt/intel/mkl/lib/libmkl_sequential.a
 MKL_LIB += -llapack -lblas #-ldl -lpthread -lm
