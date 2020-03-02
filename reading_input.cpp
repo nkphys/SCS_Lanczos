@@ -1,11 +1,12 @@
 #include "reading_input.h"
 
-void reading_input(string filename, string & Model_Name, bool &Do_Dynamics, bool &Perform_RIXS, bool &Restricted_Basis){
+void reading_input(string filename, string & Model_Name, bool &Do_Dynamics, bool &Static_Finite_Temp, bool &Perform_RIXS, bool &Restricted_Basis){
 
 
     string filepath = filename;
     string model_name = "Model = ";
     string do_dynamics_,Do_Dynamics_ = "Perform_Dynamics = ";
+    string do_static_finite_temp_, Static_Finite_Temp_ = "Static_Finite_Temperature = ";
     string perform_rixs_, Perform_RIXS_ = "Perform_RIXS = ";
     string restricted_basis_, Restricted_Basis_ = "Restricted_Basis = ";
     int offset;
@@ -35,6 +36,9 @@ void reading_input(string filename, string & Model_Name, bool &Do_Dynamics, bool
             if ((offset = line.find(Perform_RIXS_ , 0)) != string::npos) {
                 perform_rixs_ = line.substr (offset+Perform_RIXS_ .length());				}
 
+            if ((offset = line.find(Static_Finite_Temp_ , 0)) != string::npos) {
+                do_static_finite_temp_ = line.substr (offset+Static_Finite_Temp_ .length());				}
+
 
         }
         inputfile.close();
@@ -54,6 +58,13 @@ if(perform_rixs_=="true"){
 }
 else{
     Perform_RIXS=false;
+}
+
+if(do_static_finite_temp_=="true"){
+    Static_Finite_Temp=true;
+}
+else{
+    Static_Finite_Temp=false;
 }
 
 if(restricted_basis_=="true"){

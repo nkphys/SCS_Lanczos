@@ -25,6 +25,7 @@
 #include "basis/Basis_3_orb_Hubbard_chain_GC.h"
 #include "basis/Basis_3_orb_Hubbard_chain_GC_restricted.h"
 #include "Lanczos_engine.h"
+#include "FTLM_Static.h"
 #include "reading_input.h"
 
 //Remember "cpp" files for templated class over basis need to be included in this code
@@ -46,8 +47,9 @@ int main(int argc, char** argv){
     bool Do_Dynamics;
     bool Perform_RIXS;
     bool Restricted_Basis;
+    bool Static_Finite_Temp;
 
-    reading_input(inp_filename, model_name, Do_Dynamics, Perform_RIXS, Restricted_Basis);
+    reading_input(inp_filename, model_name, Do_Dynamics, Static_Finite_Temp,  Perform_RIXS, Restricted_Basis);
     cout<<"Do_Dynamics ="<<Do_Dynamics<<endl;
 
 
@@ -78,7 +80,7 @@ int main(int argc, char** argv){
 
         _MODEL.Initialize_one_point_to_calculate_from_file(_BASIS);
         _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0);
-
+        _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0, model_name);
 
 
         cout<<"Dynamics startedXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
@@ -94,7 +96,12 @@ int main(int argc, char** argv){
             _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
             _LANCZOS_Dynamics.GS_energy=_LANCZOS.GS_energy;
 
-            _MODEL.Initialize_Opr_for_Dynamics(_BASIS, site_);
+            if(!_MODEL.Dyn_Momentum_Resolved){
+                _MODEL.Initialize_Opr_for_Dynamics(_BASIS, site_);}
+            else{
+                _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+            }
+
             _LANCZOS_Dynamics.Get_Dynamics_seed(_MODEL.Dyn_opr);
 
             cout<<"size of seed = "<<_LANCZOS_Dynamics.Dynamics_seed.size()<<endl;
@@ -105,6 +112,18 @@ int main(int argc, char** argv){
             //-----------------------
 
         }
+
+        if(Static_Finite_Temp){
+
+            FTLM_STATIC _FTLM_STATIC;
+            _FTLM_STATIC.Hamil = _MODEL.Hamil;
+
+            _FTLM_STATIC.Perform_FTLM(inp_filename);
+
+        }
+
+
+
 
 
     }
@@ -1633,7 +1652,7 @@ int main(int argc, char** argv){
                 _LANCZOS.Eig_vecs[s_] = vecs[s_];
             }
 
-                cout<<endl;
+            cout<<endl;
             for(int i=0;i<_MODEL.Hamil.nrows;i++){
                 cout<<"===================FOR STATE NO "<<i<<"============================="<<endl;
                 _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, i);
@@ -2506,10 +2525,10 @@ int main(int argc, char** argv){
         Temp_index.push_back(414); Temp_index.push_back(509); Temp_index.push_back(718); Temp_index.push_back(788);
 
         for(int basis_index=0;basis_index<Temp_index.size();basis_index++){
-         cout<<"---------BASIS INDEX = "<<Temp_index[basis_index]<<"--------------"<<endl;
-        _BASIS.Print_basis(Temp_index[basis_index]);
-        cout<<endl;
-        cout<<"--------------------------------------------"<<endl<<endl;
+            cout<<"---------BASIS INDEX = "<<Temp_index[basis_index]<<"--------------"<<endl;
+            _BASIS.Print_basis(Temp_index[basis_index]);
+            cout<<endl;
+            cout<<"--------------------------------------------"<<endl<<endl;
         }
 
 

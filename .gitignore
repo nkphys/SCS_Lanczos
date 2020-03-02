@@ -1,6 +1,6 @@
+*txt
 *LOCAL
 *.o
-*.inp
 SCS_Lanczos.config
 SCS_Lanczos.creator
 SCS_Lanczos.creator.user

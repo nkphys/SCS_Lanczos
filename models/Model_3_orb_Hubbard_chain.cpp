@@ -1411,7 +1411,6 @@ void MODEL_3_orb_Hubb_chain::Initialize_two_point_to_calculate(BASIS_3_orb_Hubb_
 
 
 void MODEL_3_orb_Hubb_chain::Initialize_Opr_for_Dynamics(BASIS_3_orb_Hubb_chain &basis){
-
     if(Dyn_Momentum_Resolved){
 
 

@@ -1,12 +1,12 @@
 Model = SpinOnly
 ------------------------------------------
-PBC = true
-Length = 10
-TwoTimesSpin = 4
-H_mag = 0 0 -0.005
-D_anisotropy = 0 0 -0.008
-LongRangeExchangeZZ file = input_files/Jzz_longrange_L10_cluster.txt
-LongRangeExchangePM file = input_files/Jpm_longrange_L10_cluster.txt
+PBC = false
+Length = 8
+TwoTimesSpin = 1
+H_mag = 0 0 -0.00
+D_anisotropy = 0 0 0.00
+LongRangeExchangeZZ file = Jzz_AFM_L8chain.txt
+LongRangeExchangePM file = Jpm_AFM_L8chain.txt
 ----------------------------------------
 
 No_of_onepoint_obs = 1
@@ -17,34 +17,42 @@ One_point_oprt_path_2 = Sm.txt
 --------------------------------------
 FourPointObservablesSites file = fourpoint.txt
 -------------------------------------
-Lanc_Error = -10e-10
-max_steps = 100
+Lanc_Error = -10e-16
+max_steps = 60
+Random_seed_generator = 123
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = false
-get_overlap_bw_eigstates_and_K_vecs = false
-lanczos_reorthogonalization = false
+save_all_Krylov_space_vecs = true
+get_overlap_bw_eigstates_and_K_vecs = true
+lanczos_reorthogonalization = true
 Get_Full_Spectrum = true
-need_few_eig_vecs = false
-few = 6
+need_few_eig_vecs = true
+few = 1
 ----------------------------------------
 Get_overlap_with_basis = false
-States_to_look = 6 0 1 2 3 4 5
+States_to_look = 1 0
 overlap_out_file = out0.txt
 calculate_local_obs_for_states_to_look = true
 calculate_local_obs_for_states_to_look_for_first_n_basis = 100
 file_out_local_obs_for_states_to_look = local_obs_for_state_no
 --------------------------------------
 
+
+Static_Finite_Temperature = true
+Number_of_Random_States = 400
+Number_of_LowKrylov_States_used = 40
+Temperature = 0.2
+
+
 ----------------------------------
-Perform_Dynamics = true
+Perform_Dynamics = false
 eta = 0.05
-check_omega = 0.05
-omega_max = 40.0
+check_omega = 0.2
+omega_max = 10.0
 omega_min = 0.0
-d_omega = 0.001
+d_omega = 0.01
 Opr_for_Dynamics = Sm
-Momentum_resolved = false
-k = 0.4
-file_dynamics_out = Dyn_Sm_Dz-0p0_L10cluster
+Momentum_resolved = true
+k = 0.117647058
+file_dynamics_out = Dyn_Sm_K_n1
 ---------------------------------
 

@@ -58,10 +58,16 @@ public:
     bool Check_Ghosts;
     int Random_seed_value;
     Mat_2_doub One_point_observables_values;
+    Mat_1_real B2 ,Norms;
+    Mat_1_doub A, red_eig_vec;
 
     int time_evolution_order;
     Mat_1_doub Evolving_State;
     double omega_sign;
+
+    int Total_Random_States_for_FTLM;
+    double Temperature_FTLM;
+    int M_FTLM;
 
 
 
@@ -83,6 +89,7 @@ void Measure_Total_Energy(Matrix_COO &Macro_oprt, int state_no);
 void Read_Lanczos_parameters(string filename);
 void Get_Dynamics_seed(string filename);
 void Time_evolution_type1(Matrix_COO &Hamil, double dt_, double &Energy_);
+void Clear();
 
 };
 

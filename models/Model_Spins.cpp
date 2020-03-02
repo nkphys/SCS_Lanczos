@@ -443,6 +443,143 @@ void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis, int site_){
 
 }
 
+void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis){
+
+
+
+    assert(Dyn_Momentum_Resolved);
+
+    vector< int >().swap( Dyn_opr.columns );
+    vector< int >().swap( Dyn_opr.rows );
+    vector< double_type >().swap( Dyn_opr.value );
+    Dyn_opr.ncols = Hamil.ncols;
+    Dyn_opr.nrows = Hamil.nrows;
+
+
+    Hamiltonian_1_COO Oprs_local;
+    Oprs_local.resize(basis.Length);
+    for(int site=0;site<basis.Length;site++){
+        Oprs_local[site].nrows = basis.basis_size ;
+        Oprs_local[site].ncols = Oprs_local[site].nrows;
+    }
+
+
+
+
+
+
+    double_type value;
+    int Val_site, Val_site_new;
+    double Factor;
+    int i_new;
+
+
+    if(Dyn_opr_string=="Sz"){
+
+        for(int site_=0;site_<basis.Length;site_++){
+            for (int i=basis.D_min;i<basis.D_max + 1;i++){
+                value=zero;
+                //Sz[site]
+                value=one*
+                        ( ( (1.0*value_at_pos(i, site_, basis.BASE)) - (0.5*basis.TwoTimesSpin)) );
+
+                if(value!=zero){
+                    Oprs_local[site_].value.push_back(value*one);
+                    Oprs_local[site_].rows.push_back(i);
+                    Oprs_local[site_].columns.push_back(i);
+                }
+            }
+        }
+    }
+    else if(Dyn_opr_string=="Sm"){
+
+        for(int site_=0;site_<basis.Length;site_++){
+            for (int i=basis.D_min;i<basis.D_max+1;i++){
+
+                value=zero;
+                Val_site = value_at_pos(i, site_, basis.BASE);
+
+                //Sm[site]:
+                //site cannot be in -Spin
+
+                if(Val_site != 0)
+                {
+                    Val_site_new = Val_site - 1;
+                    i_new = Updated_decimal_with_value_at_pos(i, site_, basis.BASE, Val_site_new);
+
+                    Factor = sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                                   ((Val_site - (0.5*basis.TwoTimesSpin))*
+                                    (Val_site_new - (0.5*basis.TwoTimesSpin))  ) );
+
+                    assert(i_new<i);
+
+                    Oprs_local[site_].value.push_back(Factor*one);
+                    Oprs_local[site_].rows.push_back(i_new);
+                    Oprs_local[site_].columns.push_back(i);
+
+                } // if Sm possible
+            } // "i" i.e up_decimals
+        }
+
+    }
+    else{
+        cout<<"Dyn Opr: only Sz or Sm are allowed"<<endl;
+    }
+
+
+    //In Momentum space--------For PBC use cosine, for OBC use sin----------
+
+
+
+    Matrix_COO temp;
+    temp=Oprs_local[0];
+    double_type value1, value2;
+    for(int site=0;site<basis.Length-1;site++){
+        if(PBC==false){
+            value2=one*sin((site+2)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
+        }
+        else{
+#ifdef USE_COMPLEX
+            value2=exp(iota_comp*(1.0*(site+2))*Dyn_Momentum*PI)*sqrt(1.0/(basis.Length));
+#endif
+#ifndef USE_COMPLEX
+            cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
+#endif
+        }
+        if(site==0){
+            if(PBC==false){
+                value1=one*sin((site+1)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
+            }
+            else{
+#ifdef USE_COMPLEX
+                value1=exp(iota_comp*(1.0*site+1)*Dyn_Momentum*PI)*sqrt(1.0/(basis.Length));
+#endif
+            }
+            Sum(temp, Oprs_local[site+1], temp, value1, value2);}
+        else{
+            Sum(temp, Oprs_local[site+1], temp, 1.0, value2);
+        }
+
+    }
+
+    Dyn_opr=temp;
+
+    //----------------------------------------------------------------------
+
+    vector< int >().swap( temp.columns );
+    vector< int >().swap( temp.rows );
+    vector< double_type >().swap( temp.value );
+
+    for(int site_=0;site_<basis.Length;site_++){
+        vector< int >().swap( Oprs_local[site_].columns );
+        vector< int >().swap( Oprs_local[site_].rows );
+        vector< double_type >().swap( Oprs_local[site_].value );
+    }
+
+
+
+}
+
 
 void MODEL_Spins::Initialize_one_point_to_calculate_from_file(BASIS_Spins &basis){
 
