@@ -20,7 +20,10 @@ public:
     int Momentum_nx, Momentum_ny;
 
     bool Write_Basis;
+    string file_write_basis;
     bool Read_Basis;
+    string file_read_basis;
+
 
     //arrays below save only representative states of the group
     Mat_1_int D_up_basis;

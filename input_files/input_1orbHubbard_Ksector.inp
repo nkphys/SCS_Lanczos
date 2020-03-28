@@ -5,14 +5,21 @@ Lx = 4
 Ly = 2
 Momentum_nx = 1
 Momentum_ny = 1
-Ndown = 4
-Nup = 4
+Ndown = 2
+Nup = 0
 
 Hopping_NN = 1.0
 
 U = 4.0
 H_mag = 0
 ----------------------------------------
+
+Read_Basis_bool = false 
+Read_File_Basis = OUT_TEST
+
+Write_Basis_bool = false
+Write_File_Basis = CDF_TEST
+
 Random_seed_generator = 12
 Read_the_seed = false
 seed_file = seed_GS_old.txt

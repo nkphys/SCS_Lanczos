@@ -542,6 +542,12 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
     string hopp_, Hopp_ = "Hopping_NN = ";
     string momentum_nx_, Momentum_nx_ = "Momentum_nx = ";
     string momentum_ny_, Momentum_ny_ = "Momentum_ny = ";
+    string read_basis_bool_, Read_Basis_BOOL_ = "Read_Basis_bool = ";
+    string basis_read_file_, Basis_Read_File_ = "Read_File_Basis = ";
+    string write_basis_bool_, Write_Basis_BOOL_ = "Write_Basis_bool = ";
+    string basis_write_file_, Basis_Write_File_ = "Write_File_Basis = ";
+
+
 
 
     int offset;
@@ -555,6 +561,17 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
         {
             getline(inputfile,line);
 
+            if ((offset = line.find(Read_Basis_BOOL_, 0)) != string::npos) {
+                read_basis_bool_ = line.substr (offset+Read_Basis_BOOL_.length());				}
+
+            if ((offset = line.find(Basis_Read_File_, 0)) != string::npos) {
+                basis_read_file_ = line.substr (offset+Basis_Read_File_.length());				}
+
+            if ((offset = line.find(Write_Basis_BOOL_, 0)) != string::npos) {
+                write_basis_bool_ = line.substr (offset+Write_Basis_BOOL_.length());				}
+
+            if ((offset = line.find(Basis_Write_File_, 0)) != string::npos) {
+                basis_write_file_ = line.substr (offset+Basis_Write_File_.length());				}
 
             if ((offset = line.find(PBC_, 0)) != string::npos) {
                 pbc_ = line.substr (offset+PBC_.length());				}
@@ -601,6 +618,24 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
     else{
         PBC=false;
     }
+
+    if(read_basis_bool_=="true"){
+        basis.Read_Basis=true;
+    }
+    else{
+        basis.Read_Basis=false;
+    }
+    basis.file_read_basis = basis_read_file_;
+
+    if(write_basis_bool_=="true"){
+        basis.Write_Basis=true;
+    }
+    else{
+        basis.Write_Basis=false;
+    }
+    basis.file_write_basis = basis_write_file_;
+
+
 
     basis.Lx=atoi(lx_.c_str());
     basis.Ly=atoi(ly_.c_str());

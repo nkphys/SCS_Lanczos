@@ -41,7 +41,10 @@ void FTLM_STATIC::Perform_FTLM(string inp_filename){
     cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
 
 
-    M_=Lanczos_.M_FTLM;
+
+    M_=min(Hamil.nrows, Lanczos_.M_FTLM);
+    Lanczos_.M_FTLM=M_;
+
     Total_Random_States=Lanczos_.Total_Random_States_for_FTLM;
 
 

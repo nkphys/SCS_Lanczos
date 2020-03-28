@@ -25,8 +25,6 @@ using namespace std;
 
 void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
 
-    Write_Basis=false;
-    Read_Basis=false;
 
     double epsilon=0.000001;
     int n_int;
@@ -315,10 +313,10 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
         int check_N_dn;
         int check_Momentum_nx;
         int check_Momentum_ny;
-        string file_in_D_up_down_Period_Norm_basis = "IN_D_up_down_Period_Norm_basis.txt";
+        string file_in_D_up_down_Period_Norm_basis =  file_read_basis + "_D_up_down_Period_Norm.txt";
         ifstream infile_file_in_D_up_down_Period_Norm_basis(file_in_D_up_down_Period_Norm_basis.c_str());
 
-        string file_in_Dup_Range = "IN_Dup_Range.txt";
+        string file_in_Dup_Range = file_read_basis + "_Dup_Range.txt";
         ifstream infile_file_in_Dup_Range(file_in_Dup_Range.c_str());
 
 
@@ -404,10 +402,10 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
 
     if(Write_Basis){
 
-        string file_out_D_up_down_Period_Norm_basis = "OUT_D_up_down_Period_Norm_basis.txt";
+        string file_out_D_up_down_Period_Norm_basis = file_write_basis + "_D_up_down_Period_Norm_basis.txt";
         ofstream outfile_file_out_D_up_down_Period_Norm_basis(file_out_D_up_down_Period_Norm_basis.c_str());
 
-        string file_out_Dup_Range = "OUT_Dup_Range.txt";
+        string file_out_Dup_Range = file_write_basis + "_Dup_Range.txt";
         ofstream outfile_file_out_Dup_Range(file_out_Dup_Range.c_str());
 
 
