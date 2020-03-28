@@ -1,4 +1,5 @@
 #include "functions_real.h"
+#define PI_ 3.14159265
 
 
 //extern "C" void zheev_(char *,char *,int *,std::complex<double> *, int *, double *,
@@ -7,6 +8,12 @@ extern "C" void dsyev_(char * , char * , int * , double * , int *, double *, dou
 
 #ifndef USE_COMPLEX
 
+
+double Lorentzian(double eta, double x){
+    double val;
+    val = (1.0/PI_)*( (eta/2.0) / (  (x*x) + ((eta*eta)/4)   ) );
+    return val;
+}
 
 double reading_pair(string double_no_str){
 

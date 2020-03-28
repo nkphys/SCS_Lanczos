@@ -1,0 +1,70 @@
+Model = 1_orb_Hubbard_2D_KSector
+------------------------------------------
+PBC = true
+Lx = 4
+Ly = 2
+Momentum_nx = 1
+Momentum_ny = 1
+Ndown = 4
+Nup = 4
+
+Hopping_NN = 1.0
+
+U = 4.0
+H_mag = 0
+----------------------------------------
+Random_seed_generator = 12
+Read_the_seed = false
+seed_file = seed_GS_old.txt
+
+
+--------------------------------------
+Lanc_Error = -10e-12
+max_steps = 300
+file_eval_spectrum = out0.txt
+save_all_Krylov_space_vecs = false
+get_overlap_bw_eigstates_and_K_vecs = false
+lanczos_reorthogonalization = false
+Get_Full_Spectrum = true
+need_few_eig_vecs = true
+few = 1
+----------------------------------------
+Get_overlap_with_basis = false
+States_to_look = 1 0
+overlap_out_file = overlap_out.txt
+calculate_local_obs_for_states_to_look = false
+calculate_local_obs_for_states_to_look_for_first_n_basis = 8
+file_out_local_obs_for_states_to_look = local_obs_for_state_no
+--------------------------------------
+
+
+Static_Finite_Temperature = true
+Dynamics_Finite_Temperature = false
+Number_of_Random_States = 20
+Number_of_LowKrylov_States_used = 50
+Temperature_Range = 0.02 0.01 5.0
+
+----------------------------------
+Perform_Dynamics = false
+check_omega = 0.05
+Opr_for_Dynamics = J_0
+Momentum_resolved = false
+k = 0.4
+file_dynamics_out = opt_orbHubb_U0_L12_n2.txt
+---------------------------------
+
+---------------For both RIXS and std. dynamics---------
+eta = 0.05
+omega_max = 20.0
+omega_min = 0.02
+d_omega = 0.001
+--------------------------------------
+
+----------------------------------------
+Perform_RIXS = false
+Gamma = 0.2
+No_of_intermediate_states(n) = 100
+Light_polarization_in = 1 0 0 
+Light_polarization_in = 0 1 0
+Incident_energy = 0.1
+----------------------------------------

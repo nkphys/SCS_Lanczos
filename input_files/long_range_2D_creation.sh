@@ -1,3 +1,5 @@
+Lx=2
+Ly=2
 for iy in {0..1}
 do
 for ix in {0..1}
@@ -22,11 +24,11 @@ then
 dis_x=$(echo "-1*${dis_x}" | bc -l)
 fi
 
-if [ ${dis_y} -eq 1 ]
+if [ ${dis_y} -eq 1 ] || [ ${dis_y} -eq 3 ]
 then
 dis_y=1
 fi
-if [ ${dis_x} -eq 1 ]
+if [ ${dis_x} -eq 1 ] || [ ${dis_x} -eq 3 ]
 then
 dis_x=1
 fi

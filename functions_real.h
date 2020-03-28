@@ -61,6 +61,6 @@ static bool sort_using_greater_than(double u, double v);
 string NumberToString ( int Number );
 bool present_before(Mat_1_int nup_2, Mat_1_int ndn_2, Mat_2_int nup_2_group, Mat_2_int ndn_2_group, int &pos);
 int Find_commont_int(Mat_1_int Vec1, Mat_1_int Vec2);
-
+double Lorentzian(double eta, double x);
 
 #endif

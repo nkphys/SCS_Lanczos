@@ -66,8 +66,16 @@ public:
     double omega_sign;
 
     int Total_Random_States_for_FTLM;
-    double Temperature_FTLM;
+    double delta_Temperature_FTLM, Temprature_min_FTLM, Temprature_max_FTLM ;
     int M_FTLM;
+
+    bool Get_insitu_FTLM_overlaps;
+    bool Save_the_Seed;
+    bool Get_SeedVec_from_another_routine;
+    Mat_2_doub Vecs_FTLM;
+    Mat_1_doub Saved_Seed;
+    Mat_1_doub Seed_used;
+    Mat_2_doub Mat_elements;
 
 
 

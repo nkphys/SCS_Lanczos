@@ -1,11 +1,18 @@
 #ifdef USE_COMPLEX
 #include "functions_complex.h"
+#define PI_ 3.14159265
 
 extern "C" void zheev_(char *,char *,int *, complex<double> *, int *, double *,
-                         complex<double> *,int *, double *, int *);
+                       complex<double> *,int *, double *, int *);
 //extern "C" void dsyev_(char * , char * , int * , double * , int *, double *, double *, int *, int *);
 
 
+
+double Lorentzian(double eta, double x){
+    double val;
+    val = (1.0/PI_)*( (eta/2.0) / (  (x*x) + ((eta*eta)/4)   ) );
+    return val;
+}
 
 void Direct_product_of_Mat_2_trio_int(Mat_2_trio_int MAT1_, Mat_1_doub values1_,
                                       Mat_2_trio_int MAT2_, Mat_1_doub values2_,
@@ -511,7 +518,7 @@ void Normalize_vec(Mat_1_doub &vec_in){
 void value_multiply_vector(complex<double> value, Mat_1_doub &vec_in){
 
     for(int i=0;i<vec_in.size();i++){
-    vec_in[i] = vec_in[i]*value;
+        vec_in[i] = vec_in[i]*value;
     }
 }
 
@@ -672,8 +679,8 @@ void Diagonalize(Matrix_COO &X, double & EG, Mat_1_doub & vecG){
     for(int i=0;i<X.value.size();i++){
         int r=X.rows[i];
         int c=X.columns[i];
-       Ham_(r,c) = X.value[i];
-       Ham_(c,r) = X.value[i];
+        Ham_(r,c) = X.value[i];
+        Ham_(c,r) = X.value[i];
     }
 
     char jobz='V';
@@ -735,8 +742,8 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_1_doub & vecG){
     for(int i=0;i<X.value.size();i++){
         int r=X.rows[i];
         int c=X.columns[i];
-       Ham_(r,c) = X.value[i];
-       Ham_(c,r) = X.value[i];
+        Ham_(r,c) = X.value[i];
+        Ham_(c,r) = X.value[i];
     }
 
     char jobz='V';
@@ -801,8 +808,8 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_2_doub & vecs){
     for(int i=0;i<X.value.size();i++){
         int r=X.rows[i];
         int c=X.columns[i];
-       Ham_(r,c) = X.value[i];
-       Ham_(c,r) = X.value[i];
+        Ham_(r,c) = X.value[i];
+        Ham_(c,r) = X.value[i];
     }
 
     char jobz='V';
@@ -845,9 +852,9 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_2_doub & vecs){
     vecs.resize(X.nrows);
     for(int j=0;j<vecs.size();j++){
         vecs[j].resize(vecs.size());
-    for(int i=0;i<X.nrows;i++){
-        vecs[j][i] =Ham_(i,j);//mat[i*X.nrows];
-    }
+        for(int i=0;i<X.nrows;i++){
+            vecs[j][i] =Ham_(i,j);//mat[i*X.nrows];
+        }
     }
 
     Ham_.clear();

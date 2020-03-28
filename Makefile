@@ -1,8 +1,8 @@
-OBJS =  functions_real.o functions_complex.o binary_decimal.o Base_to_Decimal.o reading_input.o Basis_2_orb_Hubbard_chain.o Basis_2_orb_Hubbard_chain_KSector.o Basis_3_orb_Hubbard_chain.o Basis_3_orb_Hubbard_chain_two_SzSectors.o Basis_3_orb_Hubbard_chain_GC.o Basis_1_orb_Hubbard_GC.o  Basis_3_orb_Hubbard_chain_GC_restricted.o Model_2_orb_Hubbard_chain.o Model_2_orb_Hubbard_chain_KSector.o Model_3_orb_Hubbard_chain.o Model_3_orb_Hubbard_chain_GC.o Model_1_orb_Hubbard_GC.o Model_3_orb_Hubbard_chain_two_SzSectors.o Model_3_orb_Hubbard_chain_two_SzSectors_complex.o Model_3_orb_Hubbard_chain_complex.o Basis_1_orb_Hubbard_chain.o Basis_1_orb_tJ.o Basis_Spins.o Model_Spins.o Model_1_orb_Hubbard_chain.o Model_1_orb_Hubbard_chain_complex.o Model_1_orb_tJ.o Model_1_orb_tJ_complex.o Lanczos_engine.o FTLM_Static.o main.o 
+OBJS =  functions_real.o functions_complex.o binary_decimal.o Base_to_Decimal.o reading_input.o Basis_2_orb_Hubbard_chain.o Basis_2_orb_Hubbard_chain_KSector.o Basis_1_orb_Hubbard_2D_KSector.o Basis_3_orb_Hubbard_chain.o Basis_3_orb_Hubbard_chain_two_SzSectors.o Basis_3_orb_Hubbard_chain_GC.o Basis_1_orb_Hubbard_GC.o  Basis_3_orb_Hubbard_chain_GC_restricted.o Model_2_orb_Hubbard_chain.o Model_2_orb_Hubbard_chain_KSector.o Model_3_orb_Hubbard_chain.o Model_3_orb_Hubbard_chain_GC.o Model_1_orb_Hubbard_GC.o Model_3_orb_Hubbard_chain_two_SzSectors.o Model_3_orb_Hubbard_chain_two_SzSectors_complex.o Model_3_orb_Hubbard_chain_complex.o Basis_1_orb_Hubbard_chain.o Basis_1_orb_tJ.o Basis_Spins.o Model_Spins.o Model_1_orb_Hubbard_chain.o Model_1_orb_Hubbard_chain_complex.o Model_1_orb_Hubbard_2D_KSector.o Model_1_orb_tJ.o Model_1_orb_tJ_complex.o Lanczos_engine.o FTLM_Static.o FTLM_Dynamics.o main.o 
 DEBUG = #-g3
 OPTFLAG = -O3
 CC = g++ $(OPTFLAG) #-std=c++11
-CFLAGS = -c $(DEBUG) #-DUSE_COMPLEX
+CFLAGS = -c $(DEBUG) -DUSE_COMPLEX
 LFLAGS = $(DEBUG)
 MKL_LIB = #/opt/intel/mkl/lib/libmkl_core.a  /opt/intel/mkl/lib/libmkl_intel_lp64.a /opt/intel/mkl/lib/libmkl_sequential.a
 MKL_LIB += -llapack -lblas #-ldl -lpthread -lm
@@ -35,6 +35,9 @@ Base_to_Decimal.o : Base_to_Decimal.cpp
 Basis_2_orb_Hubbard_chain_KSector.o : basis/Basis_2_orb_Hubbard_chain_KSector.cpp
 	$(CC) $(CFLAGS) basis/Basis_2_orb_Hubbard_chain_KSector.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
 
+Basis_1_orb_Hubbard_2D_KSector.o : basis/Basis_1_orb_Hubbard_2D_KSector.cpp
+	$(CC) $(CFLAGS) basis/Basis_1_orb_Hubbard_2D_KSector.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
 Basis_2_orb_Hubbard_chain.o : basis/Basis_2_orb_Hubbard_chain.cpp
 	$(CC) $(CFLAGS) basis/Basis_2_orb_Hubbard_chain.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
 
@@ -64,6 +67,9 @@ Model_2_orb_Hubbard_chain.o : models/Model_2_orb_Hubbard_chain.cpp
 
 Model_2_orb_Hubbard_chain_KSector.o : models/Model_2_orb_Hubbard_chain_KSector.cpp
 	$(CC) $(CFLAGS) models/Model_2_orb_Hubbard_chain_KSector.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Model_1_orb_Hubbard_2D_KSector.o : models/Model_1_orb_Hubbard_2D_KSector.cpp
+	$(CC) $(CFLAGS) models/Model_1_orb_Hubbard_2D_KSector.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
 
 Model_3_orb_Hubbard_chain.o : models/Model_3_orb_Hubbard_chain.cpp
 	$(CC) $(CFLAGS) models/Model_3_orb_Hubbard_chain.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
@@ -107,6 +113,8 @@ Lanczos_engine.o : Lanczos_engine.cpp
 FTLM_Static.o : FTLM_Static.cpp
 	$(CC) $(CFLAGS) FTLM_Static.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
 
+FTLM_Dynamics.o : FTLM_Dynamics.cpp
+	$(CC) $(CFLAGS) FTLM_Dynamics.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
 
 main.o : main.cpp
 	$(CC) $(CFLAGS) main.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)

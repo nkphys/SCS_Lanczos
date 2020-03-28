@@ -28,8 +28,19 @@ void FTLM_STATIC::Perform_FTLM(string inp_filename){
     assert(Lanczos_.need_few_eig_vecs);
     }
 
+    Temperature_min = Lanczos_.Temprature_min_FTLM;
+    Temperature_max = Lanczos_.Temprature_max_FTLM;
+    delta_Temperature = Lanczos_.delta_Temperature_FTLM;
+    assert(Temperature_max >= Temperature_min);
+    assert(delta_Temperature != 0.0);
 
-    Temperature = Lanczos_.Temperature_FTLM;
+    N_Temperature_points = int((Temperature_max - Temperature_min)/(delta_Temperature) + 0.5 );
+
+    cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+    cout <<"No. of Temperature points = "<<N_Temperature_points<<", min = "<<Temperature_min<<", max="<<Temperature_max<<endl;
+    cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+
+
     M_=Lanczos_.M_FTLM;
     Total_Random_States=Lanczos_.Total_Random_States_for_FTLM;
 
@@ -40,88 +51,110 @@ void FTLM_STATIC::Perform_FTLM(string inp_filename){
     }
 
     Boltzman_const = 1.0;
-    Beta = 1.0/(Boltzman_const*Temperature);
-
-
-
-    double Conf_Partition_Func, Conf_Partition_Func_Sqr;
-    double Partition_Func_Std_Dev;
-
-    double Conf_Hamil, Conf_Hamil_Sqr;
-    double Hamil_Std_Dev_statistical;
-
-    double Conf_Hamil2, Conf_Hamil2_Sqr;
-    double Hamil2_Std_Dev_statistical;
-
 
 
     int Lanc_steps;
 
-    Sum_Partition_Func=0.0;
-    Sum_Partition_Func_Sqr=0.0;
-    Sum_Hamil=0.0;
-    Sum_Hamil_Sqr=0.0;
-    Sum_Hamil2=0.0;
-    Sum_Hamil2_Sqr=0.0;
+    Mat_1_real Conf_Partition_Func, Conf_Partition_Func_Sqr;
+    Mat_1_real Partition_Func_Std_Dev;
+    Mat_1_real Conf_Hamil, Conf_Hamil_Sqr;
+    Mat_1_real Hamil_Std_Dev_statistical;
+    Mat_1_real Conf_Hamil2, Conf_Hamil2_Sqr;
+    Mat_1_real Hamil2_Std_Dev_statistical;
+
+    Quantum_Avg_Hamil.resize(N_Temperature_points); Quantum_Avg_Hamil2.resize(N_Temperature_points);
+    Conf_Partition_Func.resize(N_Temperature_points); Conf_Partition_Func_Sqr.resize(N_Temperature_points);
+    Partition_Func_Std_Dev.resize(N_Temperature_points);
+    Conf_Hamil.resize(N_Temperature_points); Conf_Hamil_Sqr.resize(N_Temperature_points);
+    Hamil_Std_Dev_statistical.resize(N_Temperature_points);
+    Conf_Hamil2.resize(N_Temperature_points); Conf_Hamil2_Sqr.resize(N_Temperature_points);
+    Hamil2_Std_Dev_statistical.resize(N_Temperature_points);
+    Sum_Partition_Func.resize(N_Temperature_points);Sum_Partition_Func_Sqr.resize(N_Temperature_points);
+    Sum_Hamil.resize(N_Temperature_points);Sum_Hamil_Sqr.resize(N_Temperature_points);
+    Sum_Hamil2.resize(N_Temperature_points);Sum_Hamil2_Sqr.resize(N_Temperature_points);
+
+    for(int t=0;t<N_Temperature_points;t++){
+    Sum_Partition_Func[t]=0.0;Sum_Partition_Func_Sqr[t]=0.0;
+    Sum_Hamil[t]=0.0; Sum_Hamil_Sqr[t]=0.0;
+    Sum_Hamil2[t]=0.0;  Sum_Hamil2_Sqr[t]=0.0;
+
+    Conf_Partition_Func_Sqr[t]=0.0;
+    Partition_Func_Std_Dev[t]=0.0;
+    Conf_Hamil_Sqr[t]=0.0;
+    Hamil_Std_Dev_statistical[t]=0.0;
+    Conf_Hamil2_Sqr[t]=0.0;
+    Hamil2_Std_Dev_statistical[t]=0.0;
+
+    }
+
     for(int run_no=0;run_no<Total_Random_States;run_no++){
 
     Lanczos_.Random_seed_value += run_no;
-
 
     cout<<"-------LANCZOS PREFORMED FOR CONFIGURATION NO. "<<run_no<<" with random seed = "<<Lanczos_.Random_seed_value;
     cout<<"------------------"<<endl;
 
     Lanczos_.Perform_LANCZOS(Hamil);
     Lanc_steps = Lanczos_.Evals_Tri_all.size();
-
     if(run_no==0){
         offset_E = Lanczos_.Evals_Tri_all[Lanc_steps-1][0];
     }
 
 
 
-    Conf_Partition_Func = 0.0;
-    Conf_Hamil =0.0;
-    Conf_Hamil2 =0.0;
+    for(int Temp_point=0;Temp_point<N_Temperature_points;Temp_point++){
+    Temperature = Temperature_min + Temp_point*(delta_Temperature);
+    Beta = 1.0/(Boltzman_const*Temperature);
+
+
+    Conf_Partition_Func[Temp_point] = 0.0;
+    Conf_Hamil[Temp_point] =0.0;
+    Conf_Hamil2[Temp_point] =0.0;
+
     for(int j=0;j<M_;j++){
 
-        Conf_Hamil2 += exp(-Beta*(Lanczos_.Evals_Tri_all[Lanc_steps-1][j]-offset_E))*
+        Conf_Hamil2[Temp_point] += exp(-Beta*(Lanczos_.Evals_Tri_all[Lanc_steps-1][j]-offset_E))*
                         Lanczos_.Evals_Tri_all[Lanc_steps-1][j]*Lanczos_.Evals_Tri_all[Lanc_steps-1][j]
                               *abs(Lanczos_.red_eig_vecs[j][0])*abs(Lanczos_.red_eig_vecs[j][0]);
 
-        Conf_Hamil += exp(-Beta*(Lanczos_.Evals_Tri_all[Lanc_steps-1][j] - offset_E ))*
+        Conf_Hamil[Temp_point] += exp(-Beta*(Lanczos_.Evals_Tri_all[Lanc_steps-1][j] - offset_E ))*
                        Lanczos_.Evals_Tri_all[Lanc_steps-1][j]
                               *abs(Lanczos_.red_eig_vecs[j][0])*abs(Lanczos_.red_eig_vecs[j][0]);
 
-        Conf_Partition_Func += exp(-Beta*(Lanczos_.Evals_Tri_all[Lanc_steps-1][j] - offset_E))
+        Conf_Partition_Func[Temp_point] += exp(-Beta*(Lanczos_.Evals_Tri_all[Lanc_steps-1][j] - offset_E))
                               *abs(Lanczos_.red_eig_vecs[j][0])*abs(Lanczos_.red_eig_vecs[j][0]);
     }
 
-    Conf_Partition_Func_Sqr = Conf_Partition_Func*Conf_Partition_Func;
-    Conf_Hamil_Sqr = Conf_Hamil*Conf_Hamil;
-    Conf_Hamil2_Sqr = Conf_Hamil2*Conf_Hamil2;
+    Conf_Partition_Func_Sqr[Temp_point] = Conf_Partition_Func[Temp_point]*Conf_Partition_Func[Temp_point];
+    Conf_Hamil_Sqr[Temp_point] = Conf_Hamil[Temp_point]*Conf_Hamil[Temp_point];
+    Conf_Hamil2_Sqr[Temp_point] = Conf_Hamil2[Temp_point]*Conf_Hamil2[Temp_point];
 
-    Sum_Partition_Func += Conf_Partition_Func;
-    Sum_Partition_Func_Sqr += Conf_Partition_Func_Sqr;
+    Sum_Partition_Func[Temp_point] += Conf_Partition_Func[Temp_point];
+    Sum_Partition_Func_Sqr[Temp_point] += Conf_Partition_Func_Sqr[Temp_point];
 
-    Sum_Hamil += Conf_Hamil;
-    Sum_Hamil_Sqr += Conf_Hamil_Sqr;
+    Sum_Hamil[Temp_point] += Conf_Hamil[Temp_point];
+    Sum_Hamil_Sqr[Temp_point] += Conf_Hamil_Sqr[Temp_point];
 
-    Sum_Hamil2 += Conf_Hamil2;
-    Sum_Hamil2_Sqr += Conf_Hamil2_Sqr;
-
-
-    Partition_Func_Std_Dev = (Sum_Partition_Func_Sqr*Hamil.ncols)/(run_no+1) - (pow((Sum_Partition_Func/(run_no+1)),2.0)*(Hamil.ncols));
-    Hamil_Std_Dev_statistical = (Sum_Hamil_Sqr*Hamil.ncols)/(run_no+1) - (pow((Sum_Hamil/(run_no+1)),2.0)*(Hamil.ncols));
-    Hamil2_Std_Dev_statistical = (Sum_Hamil2_Sqr*Hamil.ncols)/(run_no+1) - (pow((Sum_Hamil2/(run_no+1)),2.0)*(Hamil.ncols));
+    Sum_Hamil2[Temp_point] += Conf_Hamil2[Temp_point];
+    Sum_Hamil2_Sqr[Temp_point] += Conf_Hamil2_Sqr[Temp_point];
 
 
-    Quantum_Avg_Hamil = Sum_Hamil / Sum_Partition_Func;
-    Quantum_Avg_Hamil2 = Sum_Hamil2 / Sum_Partition_Func;
+    Partition_Func_Std_Dev[Temp_point] = (Sum_Partition_Func_Sqr[Temp_point]*Hamil.ncols)/(run_no+1) - (pow((Sum_Partition_Func[Temp_point]/(run_no+1)),2.0)*(Hamil.ncols));
+    Hamil_Std_Dev_statistical[Temp_point] = (Sum_Hamil_Sqr[Temp_point]*Hamil.ncols)/(run_no+1) - (pow((Sum_Hamil[Temp_point]/(run_no+1)),2.0)*(Hamil.ncols));
+    Hamil2_Std_Dev_statistical[Temp_point] = (Sum_Hamil2_Sqr[Temp_point]*Hamil.ncols)/(run_no+1) - (pow((Sum_Hamil2[Temp_point]/(run_no+1)),2.0)*(Hamil.ncols));
 
-    cout<<"Run_no = "<<run_no<<"  "<<Quantum_Avg_Hamil<<"  "<<Quantum_Avg_Hamil2<<"   "<<Partition_Func_Std_Dev<<endl;
+
+    Quantum_Avg_Hamil[Temp_point] = Sum_Hamil[Temp_point] / Sum_Partition_Func[Temp_point];
+    Quantum_Avg_Hamil2[Temp_point] = Sum_Hamil2[Temp_point] / Sum_Partition_Func[Temp_point];
+
+    cout<<"Run_no = "<<run_no<<"  "<<"Temperature = "<<Temperature<<"   "<<Quantum_Avg_Hamil[Temp_point]<<"  "<<Quantum_Avg_Hamil2[Temp_point]<<"   "<<Partition_Func_Std_Dev[Temp_point]<<endl;
+
+    }
+
 
     Lanczos_.Clear();
+
+
     }
 
 

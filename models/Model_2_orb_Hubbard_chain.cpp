@@ -146,7 +146,7 @@ void MODEL_2_orb_Hubb_chain::Add_diagonal_terms(BASIS_2_orb_Hubb_chain &basis){
 void MODEL_2_orb_Hubb_chain::Add_non_diagonal_terms(BASIS_2_orb_Hubb_chain &basis){
 
 
-    bool PAIRHOPPINGINCLUDED = false;
+    bool PAIRHOPPINGINCLUDED = true;
     if(!PAIRHOPPINGINCLUDED){
         cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
         cout<<"  ---------- PAIR HOPPING is switched OFF --------- "<<endl;
@@ -4925,7 +4925,7 @@ void MODEL_2_orb_Hubb_chain::Initialize_macro_oprs_to_calculate(BASIS_2_orb_Hubb
 
 
 void MODEL_2_orb_Hubb_chain::Initialize_one_point_to_calculate(BASIS_2_orb_Hubb_chain &basis){
-    one_point_obs.resize(5);
+    one_point_obs.resize(7);
     one_point_obs[0]="n_0_up";
     one_point_obs[1]="n_1_up";
 
@@ -4933,6 +4933,9 @@ void MODEL_2_orb_Hubb_chain::Initialize_one_point_to_calculate(BASIS_2_orb_Hubb_
     one_point_obs[3]="n_1_dn";
 
     one_point_obs[4]="n_i"; //write now n_k is n_i
+
+    one_point_obs[5]="n_0_upn_0_dn";
+    one_point_obs[6]="n_1_upn_1_dn";
 
 
     int T_no_oprs=one_point_obs.size();
@@ -4952,7 +4955,7 @@ void MODEL_2_orb_Hubb_chain::Initialize_one_point_to_calculate(BASIS_2_orb_Hubb_
 
 
 
-    for(int opr_no=0;opr_no<5;opr_no++){
+    for(int opr_no=0;opr_no<4;opr_no++){
 
 
         if(one_point_obs[opr_no]=="n_0_up" || one_point_obs[opr_no]=="n_0_dn"){
@@ -5026,9 +5029,7 @@ void MODEL_2_orb_Hubb_chain::Initialize_one_point_to_calculate(BASIS_2_orb_Hubb_
 
     Hamiltonian_1_COO n_i;
     n_i.resize(basis.Length);
-
     Matrix_COO temp;
-
     for(int site=0;site<basis.Length;site++){
         temp = One_point_oprts[0][site];
         for(int dof=1;dof<4;dof++){
@@ -5037,6 +5038,44 @@ void MODEL_2_orb_Hubb_chain::Initialize_one_point_to_calculate(BASIS_2_orb_Hubb_
 
         n_i[site]=temp;
         One_point_oprts[4][site]=temp;
+    }
+
+
+    for(int site=0;site<basis.Length;site++){
+        for(int opr_no=5;opr_no<7;opr_no++){
+            One_point_oprts[opr_no][site].nrows = basis.D_up_basis.size()*basis.D_dn_basis.size();
+            One_point_oprts[opr_no][site].ncols = One_point_oprts[opr_no][site].nrows;
+        }
+    }
+
+
+    int m;
+    double value;
+    for(int opr_no=5;opr_no<7;opr_no++){
+        if(opr_no==5){
+            orb=0;
+        }
+        else if(opr_no==6){
+            orb=1;
+        }
+
+        for(int site=0;site<basis.Length;site++){
+            for (int i=0;i<basis.D_up_basis.size();i++){
+                for (int j=0;j<basis.D_dn_basis.size();j++){
+                    m=basis.D_dn_basis.size()*i + j;
+
+                    value=bit_value(basis.D_up_basis[i],orb*basis.Length + site)*
+                            bit_value(basis.D_dn_basis[j],orb*basis.Length + site);
+
+                    if(value!=0){
+                        One_point_oprts[opr_no][site].value.push_back(value);
+                        One_point_oprts[opr_no][site].rows.push_back(m);
+                        One_point_oprts[opr_no][site].columns.push_back(m);
+                    }
+                }
+            }
+
+        }
     }
 
 

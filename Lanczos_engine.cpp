@@ -52,27 +52,38 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
     srand(seed_lanczos);
     double tmpnrm_type_double,tmpnrm_type_double2;
     double tmpnrm,tmpnrm2;
+
+
+    //--------- CREATING SEED-----------------------------------//
     if(Dynamics_performed==false){
 
         if(Read_the_seed==false){
-            for(int j=0;j<Hamil.nrows;j++){
+
+            if(Get_SeedVec_from_another_routine){
+                Kvector_n = Seed_used;
+            }
+            else{
+                for(int j=0;j<Hamil.nrows;j++){
 #ifdef USE_COMPLEX
-                temp1_type_double.real((rand()%RAND_MAX));
-                temp1_type_double.imag((rand()%RAND_MAX));
+                    temp1_type_double.real((rand()%RAND_MAX));
+                    temp1_type_double.imag((rand()%RAND_MAX));
 #endif
 #ifndef USE_COMPLEX
-                temp1_type_double = (rand()%RAND_MAX);
+                    temp1_type_double = (rand()%RAND_MAX);
 #endif
-                temp1_type_double=(temp1_type_double)*(1.0/(RAND_MAX*1.0));
-                Kvector_n.push_back(temp1_type_double);
+                    temp1_type_double=(temp1_type_double)*(1.0/(RAND_MAX*1.0));
+                    Kvector_n.push_back(temp1_type_double);
+                }
+
+                tmpnrm_type_double=Norm(Kvector_n);
+                tmpnrm=sqrt(tmpnrm_type_double);
+
+                for(int j=0;j<Hamil.nrows;j++){
+                    Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
+                }
             }
 
-            tmpnrm_type_double=Norm(Kvector_n);
-            tmpnrm=sqrt(tmpnrm_type_double);
 
-            for(int j=0;j<Hamil.nrows;j++){
-                Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
-            }
         }
         else{
             ifstream infile_seed(seed_file_in.c_str());
@@ -98,6 +109,12 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
         }
         norm_dynamics=tmpnrm_type_double;
     }
+
+
+    if(Save_the_Seed){
+        Saved_Seed = Kvector_n;
+    }
+    //-------------SEED CREATED----------------------------//
 
 
     E0_old=0;
@@ -149,7 +166,7 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
         A.push_back(temp4_type_double);
 
 #ifdef USE_COMPLEX
-        assert(A[lanc_iter].imag()<0.000000001);
+        assert(A[lanc_iter].imag()<0.0000001);
 #endif
 
         Subtract(Kvector_np1, A[lanc_iter], Kvector_n);
@@ -191,7 +208,7 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
         }
 
         if(save_all_Krylov_space_vecs==true){
-            cout<<"Overlarp b/w 0th and Kvector_np1 : "<<dot_product(Krylov_space_vecs[0],Kvector_np1)<<endl;
+            cout<<"Overlap b/w 0th and Normalized Kvector_np1 : "<<dot_product(Krylov_space_vecs[0],Kvector_np1)<<endl;
         }
 
         if(Get_Full_Spectrum==false){
@@ -282,23 +299,31 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
             }
             srand(seed_lanczos);
 
+            //------Creating Seed--------------------//
             if(Read_the_seed==false){
-                for(int j=0;j<Hamil.nrows;j++){
+
+                if(Get_SeedVec_from_another_routine){
+                    Kvector_n = Seed_used;
+                }
+                else{
+                    for(int j=0;j<Hamil.nrows;j++){
 #ifdef USE_COMPLEX
-                    temp1_type_double.real((rand()%RAND_MAX));
-                    temp1_type_double.imag((rand()%RAND_MAX));
+                        temp1_type_double.real((rand()%RAND_MAX));
+                        temp1_type_double.imag((rand()%RAND_MAX));
 #endif
 #ifndef USE_COMPLEX
-                    temp1_type_double = (rand()%RAND_MAX);
+                        temp1_type_double = (rand()%RAND_MAX);
 #endif
-                    temp1_type_double=(temp1_type_double)*(1.0/(RAND_MAX*1.0));
-                    Kvector_n.push_back(temp1_type_double);
-                }
+                        temp1_type_double=(temp1_type_double)*(1.0/(RAND_MAX*1.0));
+                        Kvector_n.push_back(temp1_type_double);
+                    }
 
-                tmpnrm_type_double=Norm(Kvector_n);
-                tmpnrm=sqrt(tmpnrm_type_double);
-                for(int j=0;j<Hamil.nrows;j++){
-                    Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
+                    tmpnrm_type_double=Norm(Kvector_n);
+                    tmpnrm=sqrt(tmpnrm_type_double);
+                    for(int j=0;j<Hamil.nrows;j++){
+                        Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
+                    }
+
                 }
             }
             else{
@@ -313,6 +338,7 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
                     Kvector_n.push_back(joker_double);
                 }
             }
+            //---------Seed Created----------------------//
 
             Eig_vecs[Ts].clear();
             for(int j=0;j<Hamil.nrows;j++){
@@ -351,6 +377,15 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
             double norm_ev=Norm(Eig_vecs[Ts]);
             for(int j=0;j<Hamil.nrows;j++){
                 Eig_vecs[Ts][j] = (Eig_vecs[Ts][j]/(sqrt(norm_ev)));
+            }
+
+            if(Get_insitu_FTLM_overlaps){
+                for(int ip=0;ip<Mat_elements.size();ip++){
+                    Mat_elements[ip][Ts] = dot_product(Eig_vecs[Ts], Vecs_FTLM[ip]);
+                }
+                if(Ts>0){
+                vector < double_type >().swap(Eig_vecs[Ts]);
+                }
             }
 
             Kvector_n.clear();Kvector_nm1.clear();Kvector_np1.clear();
@@ -447,7 +482,37 @@ sort(numbers.begin(), numbers.end(), comp);
 }
 
 void LANCZOS::Clear(){
-    B2.clear();A.clear(); red_eig_vec.clear();Norms.clear();red_eig_vecs.clear();
+    vector< double >().swap( B2 );
+    vector< double >().swap( Norms );
+
+    vector< double_type >().swap( A );
+    vector< double_type >().swap( red_eig_vec );
+
+    for(int i=0;i>red_eig_vecs.size();i++){
+        vector< double_type >().swap( red_eig_vecs[i] );
+    }
+    red_eig_vecs.clear();
+
+
+    for(int i=0;i<Krylov_space_vecs.size();i++){
+        vector < double_type >().swap(Krylov_space_vecs[i]);
+    }
+    Krylov_space_vecs.clear();
+
+
+    vector < double_type >().swap(Eig_vec);
+
+    for(int i=0;i<Eig_vecs.size();i++){
+        vector < double_type >().swap(Eig_vecs[i]);
+    }
+    Eig_vecs.clear();
+
+    for(int i=0;i<Vecs_FTLM.size();i++){
+        vector < double_type >().swap(Vecs_FTLM[i]);
+    }
+    Vecs_FTLM.clear();
+
+
 }
 
 void LANCZOS::Measure_macro_observables(Mat_1_string macro_obs, Hamiltonian_1_COO &Macro_oprts, int state_no){
@@ -933,7 +998,7 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
     string states_to_look_, States_To_Look_ = "States_to_look = ";
     string Overlap_Out_File_ = "overlap_out_file = ";
 
-    string temperature_ftlm_, Temperature_FTLM_ = "Temperature = ";
+    string temperature_range_ftlm_, Temperature_Range_FTLM_ = "Temperature_Range = ";
     string total_random_states_ftlm_, Total_Random_States_FTLM_ = "Number_of_Random_States = ";
     string m_ftlm_, M_FTLM_ = "Number_of_LowKrylov_States_used = ";
 
@@ -954,8 +1019,8 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
             if ((offset = line.find(Total_Random_States_FTLM_, 0)) != string::npos) {
                 total_random_states_ftlm_ = line.substr (offset + Total_Random_States_FTLM_.length());		}
 
-            if ((offset = line.find(Temperature_FTLM_ , 0)) != string::npos) {
-                temperature_ftlm_ = line.substr (offset + Temperature_FTLM_ .length());		}
+            if ((offset = line.find(Temperature_Range_FTLM_ , 0)) != string::npos) {
+                temperature_range_ftlm_ = line.substr (offset + Temperature_Range_FTLM_ .length());		}
 
             if ((offset = line.find(Eta_, 0)) != string::npos) {
                 eta_ = line.substr (offset + Eta_.length());		}
@@ -1038,7 +1103,6 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
     {cout<<"Unable to open input file while in the Model class."<<endl;}
 
 
-    Temperature_FTLM=atof(temperature_ftlm_.c_str());
     eta=atof(eta_.c_str());
     check_omega=atof(check_omega_.c_str());
     omega_max=atof(omega_max_.c_str());
@@ -1097,6 +1161,13 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
     }
 
 
+    stringstream temperature_range_ftlm_ss;
+    temperature_range_ftlm_ss << temperature_range_ftlm_;
+    temperature_range_ftlm_ss >> delta_Temperature_FTLM;
+    temperature_range_ftlm_ss >> Temprature_min_FTLM;
+    temperature_range_ftlm_ss >> Temprature_max_FTLM;
+
+
 
     if(get_overlap_bw_eigstates_and_k_vecs_=="true"){
         get_overlap_bw_eigstates_and_K_vecs=true;
@@ -1126,6 +1197,11 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
     else{
         Get_Full_Spectrum=false;
     }
+
+    //DO NOT CHANGE THESE, IT SHOULD BE CHANGED ONLY FROM FTLM_DYNAMICS
+    Get_insitu_FTLM_overlaps=false;
+    Save_the_Seed=false;
+    Get_SeedVec_from_another_routine=false;
 
 }
 

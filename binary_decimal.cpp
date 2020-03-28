@@ -64,6 +64,48 @@ int Act_Translation_assuming_PBC(int dec_state, int l1_, int l2_ ){
 
 }
 
+
+
+
+int Act_Translation_2D_alongY_assuming_PBC(int dec_state, int Lx, int Ly, int ix){
+
+
+    //lattice index l = ix + iy*Lx
+    int l;
+
+    int dec_state_new;
+    dec_state_new = dec_state;
+
+    for(int iy=0;iy<Ly-1;iy++){
+        l=ix+(iy*Lx);
+        dec_state_new += bit_value(dec_state,l)*(int)(pow(2,l)+0.5)*
+                         (int)(pow(2,Lx) - 1 + 0.5);
+    }
+    l=ix+((Ly-1)*Lx);
+    dec_state_new += (bit_value(dec_state,l)*(int)(pow(2,ix)+0.5))
+            - (bit_value(dec_state,l)*(int)(pow(2,l)+0.5));
+
+    return dec_state_new;
+
+}
+
+
+int Act_Translation_2D_alongX_assuming_PBC(int dec_state, int Lx, int Ly, int iy){
+
+
+    //lattice index l = ix + iy*Lx
+    int l1, l2;
+    l1 = iy*Lx;
+    l2 = (Lx-1) + iy*Lx;
+
+    int dec_state_new;
+
+    dec_state_new=Act_Translation_assuming_PBC(dec_state, l1, l2 );
+
+    return dec_state_new;
+}
+
+
 void print_binary_of_decimal(int n){
 
     unsigned i,j;

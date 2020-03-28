@@ -148,7 +148,7 @@ void MODEL_2_orb_Hubb_chain_KSector::Add_diagonal_terms(BASIS_2_orb_Hubb_chain_K
 void MODEL_2_orb_Hubb_chain_KSector::Add_non_diagonal_terms(BASIS_2_orb_Hubb_chain_KSector &basis){
 
 
-    bool PAIRHOPPINGINCLUDED = false;
+    bool PAIRHOPPINGINCLUDED = true;
     if(!PAIRHOPPINGINCLUDED){
         cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
         cout<<"  ---------- PAIR HOPPING is switched OFF --------- "<<endl;

@@ -62,4 +62,5 @@ void Read_matrix_from_file(string filepath,
 complex<double> reading_pair(string pair_str);
 Matrix_COO Identity_COO(int rows_no, int cols_no);
 int Find_commont_int(Mat_1_int Vec1, Mat_1_int Vec2);
+double Lorentzian(double eta, double x);
 #endif

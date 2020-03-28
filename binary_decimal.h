@@ -7,7 +7,8 @@
 #include "tensor_type.h"
 #include <stdlib.h>
 
-
+int Act_Translation_2D_alongX_assuming_PBC(int dec_state, int Lx, int Ly, int iy);
+int Act_Translation_2D_alongY_assuming_PBC(int dec_state, int Lx, int Ly, int ix);
 int Act_Translation_assuming_PBC(int dec_state, int l1_, int l2_ );
 int Act_Inv_Translation_assuming_PBC(int dec_state, int l1_, int l2_ );
 void print_binary_of_decimal(int n);

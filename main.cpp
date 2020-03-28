@@ -12,6 +12,8 @@
 #include "basis/Basis_3_orb_Hubbard_chain.h"
 #include "basis/Basis_2_orb_Hubbard_chain.h"
 #include "basis/Basis_2_orb_Hubbard_chain_KSector.h"
+#include "basis/Basis_1_orb_Hubbard_2D_KSector.h"
+#include "models/Model_1_orb_Hubbard_2D_KSector.h"
 #include "basis/Basis_3_orb_Hubbard_chain_two_SzSectors.h"
 #include "models/Model_1_orb_Hubbard_chain.h"
 #include "models/Model_1_orb_tJ.h"
@@ -26,6 +28,7 @@
 #include "basis/Basis_3_orb_Hubbard_chain_GC_restricted.h"
 #include "Lanczos_engine.h"
 #include "FTLM_Static.h"
+#include "FTLM_Dynamics.h"
 #include "reading_input.h"
 
 //Remember "cpp" files for templated class over basis need to be included in this code
@@ -48,12 +51,72 @@ int main(int argc, char** argv){
     bool Perform_RIXS;
     bool Restricted_Basis;
     bool Static_Finite_Temp;
+    bool Dynamics_Finite_Temp;
 
-    reading_input(inp_filename, model_name, Do_Dynamics, Static_Finite_Temp,  Perform_RIXS, Restricted_Basis);
+    reading_input(inp_filename, model_name, Do_Dynamics, Static_Finite_Temp, Dynamics_Finite_Temp,  Perform_RIXS, Restricted_Basis);
     cout<<"Do_Dynamics ="<<Do_Dynamics<<endl;
 
 
     bool DO_FULL_DIAGONALIZATION=false;
+
+
+
+    if(model_name=="1_orb_Hubbard_2D_KSector"){
+        MODEL_1_orb_Hubb_2D_KSector _MODEL;
+        BASIS_1_orb_Hubb_2D_KSector _BASIS;
+
+        _MODEL.Read_parameters(_BASIS, inp_filename);
+        _BASIS.Construct_basis();
+
+        _MODEL.Add_diagonal_terms(_BASIS);
+        _MODEL.Add_connections(_BASIS);
+
+        //Print_Matrix_COO(_MODEL.Hamil);
+
+
+        if(_MODEL.Hamil.nrows<400){
+            DO_FULL_DIAGONALIZATION=true;
+        }
+        if(DO_FULL_DIAGONALIZATION==true){
+            double EG;
+            Mat_1_real Evals_temp;
+            Mat_1_doub vecG;
+            Diagonalize(_MODEL.Hamil, Evals_temp, vecG);
+            cout<<"GS energy from ED(without Lanczos) = "<<Evals_temp[0]<<endl;
+            cout<<"All eigenvalues using ED------------------------------"<<endl;
+            cout<<"-------------------------------------------------------"<<endl;
+            for(int i=0;i<Evals_temp.size();i++){
+                cout<<i<<"  "<<Evals_temp[i]<<endl;
+            }
+            cout<<"-------------------------------------------------------"<<endl;
+            cout<<"-------------------------------------------------------"<<endl;
+        }
+
+
+        //assert(false);
+        LANCZOS _LANCZOS;
+        _LANCZOS.Dynamics_performed=false;
+        _LANCZOS.Read_Lanczos_parameters(inp_filename);
+
+        _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
+        _LANCZOS.Write_full_spectrum();
+
+
+        if(Static_Finite_Temp){
+
+            FTLM_STATIC _FTLM_STATIC;
+            _FTLM_STATIC.Hamil = _MODEL.Hamil;
+
+            _FTLM_STATIC.Perform_FTLM(inp_filename);
+
+        }
+
+
+
+
+
+
+    }
 
 
     if(model_name=="SpinOnly"){
@@ -122,6 +185,25 @@ int main(int argc, char** argv){
 
         }
 
+        if(Dynamics_Finite_Temp){
+            FTLM_DYNAMICS _FTLM_DYNAMICS;
+            _FTLM_DYNAMICS.Hamil = _MODEL.Hamil;
+
+            _MODEL.Read_parameters_for_dynamics(inp_filename);
+            if(!_MODEL.Dyn_Momentum_Resolved){
+                int site_=0;
+                _MODEL.Initialize_Opr_for_Dynamics(_BASIS, site_);}
+            else{
+                _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+            }
+
+            _FTLM_DYNAMICS.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
+
+        }
+
+
+
+
 
 
 
@@ -160,7 +242,7 @@ int main(int argc, char** argv){
         // cout<<"_LANCZOS.Eig_vec done"<<endl;
 
 
-        assert(true==false);
+        //assert(true==false);
 
         double_type overlap_temp;
 
@@ -2528,7 +2610,7 @@ int main(int argc, char** argv){
 
 
         // Only following basis are printed.
-      /*  Mat_1_int Temp_index;
+        /*  Mat_1_int Temp_index;
         Temp_index.push_back(149); Temp_index.push_back(774); Temp_index.push_back(145); Temp_index.push_back(150);
         Temp_index.push_back(205); Temp_index.push_back(135); Temp_index.push_back(714); Temp_index.push_back(789);
         Temp_index.push_back(414); Temp_index.push_back(509); Temp_index.push_back(718); Temp_index.push_back(788);
