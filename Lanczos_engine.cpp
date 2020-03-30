@@ -281,7 +281,12 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
     Lanc_iter_done=lanc_iter;
     Kvector_n.clear();	Kvector_nm1.clear(); Kvector_np1.clear();
 
+
+
+
     if(Dynamics_performed==false){
+        if(Eig_vecs_required){
+
         if(Get_Full_Spectrum == false){
             red_eig_vecs.clear();
             red_eig_vecs.resize(1);
@@ -459,6 +464,8 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
 bool comp(int i, int j) { return i > j; }
 sort(numbers.begin(), numbers.end(), comp);
  */
+
+    }
     }
 
     else{
@@ -1198,10 +1205,12 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
         Get_Full_Spectrum=false;
     }
 
-    //DO NOT CHANGE THESE, IT SHOULD BE CHANGED ONLY FROM FTLM_DYNAMICS
+    //DO NOT CHANGE THESE, IT SHOULD BE CHANGED ONLY FROM FTLM_DYNAMICS OR (FTLM_STATIC)
     Get_insitu_FTLM_overlaps=false;
     Save_the_Seed=false;
     Get_SeedVec_from_another_routine=false;
+    Eig_vecs_required=true;
+
 
 }
 

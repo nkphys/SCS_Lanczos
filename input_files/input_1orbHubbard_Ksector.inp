@@ -1,12 +1,12 @@
 Model = 1_orb_Hubbard_2D_KSector
 ------------------------------------------
 PBC = true
-Lx = 4
+Lx = 7
 Ly = 2
-Momentum_nx = 1
-Momentum_ny = 1
-Ndown = 2
-Nup = 0
+Momentum_nx = 0
+Momentum_ny = 0
+Ndown = 7
+Nup = 7
 
 Hopping_NN = 1.0
 
@@ -27,7 +27,7 @@ seed_file = seed_GS_old.txt
 
 --------------------------------------
 Lanc_Error = -10e-12
-max_steps = 300
+max_steps = 100
 file_eval_spectrum = out0.txt
 save_all_Krylov_space_vecs = false
 get_overlap_bw_eigstates_and_K_vecs = false
@@ -47,9 +47,9 @@ file_out_local_obs_for_states_to_look = local_obs_for_state_no
 
 Static_Finite_Temperature = true
 Dynamics_Finite_Temperature = false
-Number_of_Random_States = 20
+Number_of_Random_States = 1
 Number_of_LowKrylov_States_used = 50
-Temperature_Range = 0.02 0.01 5.0
+Temperature_Range = 0.01 0.01 5.0
 
 ----------------------------------
 Perform_Dynamics = false

@@ -27,6 +27,7 @@ void FTLM_STATIC::Perform_FTLM(string inp_filename){
     cout<<"need_few_eig_vecs must be true"<<endl;
     assert(Lanczos_.need_few_eig_vecs);
     }
+    //Lanczos_.save_all_Krylov_space_vecs=true;
 
     Temperature_min = Lanczos_.Temprature_min_FTLM;
     Temperature_max = Lanczos_.Temprature_max_FTLM;
@@ -48,10 +49,14 @@ void FTLM_STATIC::Perform_FTLM(string inp_filename){
     Total_Random_States=Lanczos_.Total_Random_States_for_FTLM;
 
 
-    Lanczos_.states_to_look.resize(M_);
-    for(int i=0;i<M_;i++){
+    int M_temp = M_;
+    Lanczos_.states_to_look.resize(M_temp);
+    for(int i=0;i<M_temp;i++){
     Lanczos_.states_to_look[i]=i;
     }
+
+
+    Lanczos_.Eig_vecs_required=false; //For : Only <H>, <H^2>
 
     Boltzman_const = 1.0;
 

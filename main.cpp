@@ -74,6 +74,8 @@ int main(int argc, char** argv){
         //Print_Matrix_COO(_MODEL.Hamil);
 
 
+
+        if(!Static_Finite_Temp){
         if(_MODEL.Hamil.nrows<400){
             DO_FULL_DIAGONALIZATION=true;
         }
@@ -100,6 +102,9 @@ int main(int argc, char** argv){
 
         _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
         _LANCZOS.Write_full_spectrum();
+        }
+
+
 
 
         if(Static_Finite_Temp){

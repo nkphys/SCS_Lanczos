@@ -77,6 +77,8 @@ public:
     Mat_1_doub Seed_used;
     Mat_2_doub Mat_elements;
 
+    bool Eig_vecs_required;
+
 
 
 

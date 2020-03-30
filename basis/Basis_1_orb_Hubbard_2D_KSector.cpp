@@ -313,7 +313,7 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
         int check_N_dn;
         int check_Momentum_nx;
         int check_Momentum_ny;
-        string file_in_D_up_down_Period_Norm_basis =  file_read_basis + "_D_up_down_Period_Norm.txt";
+        string file_in_D_up_down_Period_Norm_basis =  file_read_basis + "_D_up_down_Period_Norm_basis.txt";
         ifstream infile_file_in_D_up_down_Period_Norm_basis(file_in_D_up_down_Period_Norm_basis.c_str());
 
         string file_in_Dup_Range = file_read_basis + "_Dup_Range.txt";
