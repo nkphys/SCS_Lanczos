@@ -155,7 +155,7 @@ void FTLM_STATIC::Perform_FTLM(string inp_filename){
     Quantum_Avg_Hamil[Temp_point] = Sum_Hamil[Temp_point] / Sum_Partition_Func[Temp_point];
     Quantum_Avg_Hamil2[Temp_point] = Sum_Hamil2[Temp_point] / Sum_Partition_Func[Temp_point];
 
-    cout<<"Run_no = "<<run_no<<"  "<<"Temperature = "<<Temperature<<"   "<<Quantum_Avg_Hamil[Temp_point]<<"  "<<Quantum_Avg_Hamil2[Temp_point]<<"   "<<Partition_Func_Std_Dev[Temp_point]<<endl;
+    cout<<"Run_no = "<<run_no<<"  "<<"Temperature = "<<Temperature<<"   "<<Sum_Hamil[Temp_point]<<"  "<<Sum_Hamil2[Temp_point]<<"   "<<Sum_Partition_Func[Temp_point]<<endl;
 
     }
 
