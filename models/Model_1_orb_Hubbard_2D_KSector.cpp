@@ -525,7 +525,101 @@ void MODEL_1_orb_Hubb_2D_KSector::Add_connections(BASIS_1_orb_Hubb_2D_KSector &b
 
 }
 
+void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2D_KSector &basis){
 
+
+    vector< int >().swap( Dyn_opr.columns );
+    vector< int >().swap( Dyn_opr.rows );
+    vector< double_type >().swap( Dyn_opr.value );
+    Dyn_opr.ncols = Hamil.ncols;
+    Dyn_opr.nrows = Hamil.nrows;
+
+
+
+
+//    Hamiltonian_2_COO Oprs_local;
+//    Oprs_local.resize(basis.Lx);
+//    for(int ix=0;ix<basis.Lx;ix++){
+//        Oprs_local[ix].resize(basis.Ly);
+//    }
+//    for(int ix=0;ix<basis.Lx;ix++){
+//        for(int iy=0;iy<basis.Ly;iy++){
+//            Oprs_local[ix][iy].nrows = basis.D_up_basis.size() ;
+//            Oprs_local[ix][iy].ncols = Oprs_local[ix][iy].nrows;
+//        }
+//    }
+
+    if(Dyn_opr_string == "Sz"){
+
+
+        //Remember O[l][m]=<l|O|m>
+        int m,j, site;
+        double value;
+        double_type value2;
+        Matrix_COO Oprs_local;
+        Oprs_local.nrows = basis.D_up_basis.size() ;
+        Oprs_local.ncols = Oprs_local.nrows;
+        Matrix_COO temp;
+
+        for(int ix=0;ix<basis.Lx;ix++){
+            for(int iy=0;iy<basis.Ly;iy++){
+                Oprs_local.value.clear();
+                Oprs_local.rows.clear();
+                Oprs_local.columns.clear();
+
+                for (int i=0;i<basis.D_up_basis.size();i++){
+                    m=i;
+                    j=i;
+                    site = ix + iy*(basis.Lx);
+
+                    value=0.5*(1.0)*
+                                ( ( bit_value(basis.D_up_basis[i], site) -
+                                    bit_value(basis.D_dn_basis[j], site) )
+                                  );
+
+                    if(value!=0){
+                        Oprs_local.value.push_back(value*one);
+                        Oprs_local.rows.push_back(m);
+                        Oprs_local.columns.push_back(m);
+                    }
+                }
+
+
+#ifdef USE_COMPLEX
+            value2=exp(iota_comp*((Dyn_Momentum_x*PI*ix) + (Dyn_Momentum_y*PI*iy)))*sqrt(1.0/(basis.Length));
+#endif
+#ifndef USE_COMPLEX
+            cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
+#endif
+
+            if(site==0){
+            temp=Oprs_local;
+            }
+            if(site!=0){
+            Sum(temp, Oprs_local, temp, 1.0, value2);
+            }
+
+            vector< int >().swap( Oprs_local.columns );
+            vector< int >().swap( Oprs_local.rows );
+            vector< double_type >().swap( Oprs_local.value );
+
+
+            }
+        }
+
+
+        Dyn_opr = temp;
+        vector< int >().swap( temp.columns );
+        vector< int >().swap( temp.rows );
+        vector< double_type >().swap( temp.value );
+
+
+    }
+
+
+
+
+}
 
 void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &basis, string filename){
 
@@ -661,4 +755,54 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
 }
 
 
+
+void MODEL_1_orb_Hubb_2D_KSector::Read_parameters_for_dynamics(string filename){
+
+    string dyn_momentum_x_, Dyn_Momentum_x_ = "kx_for_dynamics = ";
+    string dyn_momentum_y_, Dyn_Momentum_y_ = "ky_for_dynamics = ";
+    string dyn_momentum_resolved_, Dyn_Momentum_Resolved_ = "Momentum_resolved = ";
+    string Dyn_opr_string_  = "Opr_for_Dynamics = ";
+
+
+    int offset;
+    string line;
+    ifstream inputfile(filename.c_str());
+
+
+    if(inputfile.is_open())
+    {
+        while(!inputfile.eof())
+        {
+            getline(inputfile,line);
+
+            if ((offset = line.find(Dyn_Momentum_Resolved_, 0)) != string::npos) {
+                dyn_momentum_resolved_ = line.substr (offset + Dyn_Momentum_Resolved_.length());		}
+
+            if ((offset = line.find(Dyn_Momentum_x_, 0)) != string::npos) {
+                dyn_momentum_x_ = line.substr (offset + Dyn_Momentum_x_.length());		}
+
+            if ((offset = line.find(Dyn_Momentum_y_, 0)) != string::npos) {
+                dyn_momentum_y_ = line.substr (offset + Dyn_Momentum_y_.length());		}
+
+            if ((offset = line.find(Dyn_opr_string_, 0)) != string::npos) {
+                Dyn_opr_string = line.substr (offset + Dyn_opr_string_.length());		}
+
+        }
+        inputfile.close();
+    }
+    else
+    {cout<<"Unable to open input file while in the Model class."<<endl;}
+
+
+    Dyn_Momentum_x=atof(dyn_momentum_x_.c_str());
+    Dyn_Momentum_y=atof(dyn_momentum_y_.c_str());
+
+    if(dyn_momentum_resolved_=="true"){
+        Dyn_Momentum_Resolved=true;
+    }
+    else{
+        Dyn_Momentum_Resolved=false;
+    }
+
+}
 //#endif

@@ -48,7 +48,7 @@ void FTLM_DYNAMICS::Perform_FTLM(string inp_filename, Matrix_COO& OPR_){
 
 
 
-    Temperature = 10.0; //CHANGE THIS
+    Temperature = 0.01; //CHANGE THIS
     M_=Lanczos1_.M_FTLM;
     Total_Random_States=Lanczos1_.Total_Random_States_for_FTLM;
     Boltzman_const = 1.0;

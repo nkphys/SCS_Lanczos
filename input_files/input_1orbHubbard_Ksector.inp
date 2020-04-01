@@ -1,16 +1,16 @@
 Model = 1_orb_Hubbard_2D_KSector
 ------------------------------------------
 PBC = true
-Lx = 7
+Lx = 4
 Ly = 2
 Momentum_nx = 0
 Momentum_ny = 0
-Ndown = 7
-Nup = 7
+Ndown = 4
+Nup = 4
 
 Hopping_NN = 1.0
 
-U = 4.0
+U = 10.0
 H_mag = 0
 ----------------------------------------
 
@@ -27,9 +27,9 @@ seed_file = seed_GS_old.txt
 
 --------------------------------------
 Lanc_Error = -10e-12
-max_steps = 100
+max_steps = 200
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = false
+save_all_Krylov_space_vecs = true
 get_overlap_bw_eigstates_and_K_vecs = false
 lanczos_reorthogonalization = false
 Get_Full_Spectrum = true
@@ -45,19 +45,20 @@ file_out_local_obs_for_states_to_look = local_obs_for_state_no
 --------------------------------------
 
 
-Static_Finite_Temperature = true
-Dynamics_Finite_Temperature = false
-Number_of_Random_States = 1
-Number_of_LowKrylov_States_used = 50
+Static_Finite_Temperature = false
+Dynamics_Finite_Temperature = true
+Number_of_Random_States = 5
+Number_of_LowKrylov_States_used = 100
 Temperature_Range = 0.01 0.01 5.0
 
 ----------------------------------
 Perform_Dynamics = false
 check_omega = 0.05
-Opr_for_Dynamics = J_0
-Momentum_resolved = false
-k = 0.4
-file_dynamics_out = opt_orbHubb_U0_L12_n2.txt
+Opr_for_Dynamics = Sz
+Momentum_resolved = true
+kx_for_dynamics = 0
+ky_for_dynamics = 0
+file_dynamics_out = out_dyn.txt
 ---------------------------------
 
 ---------------For both RIXS and std. dynamics---------

@@ -26,7 +26,7 @@ public:
     Hamiltonian_3_COO Two_point_oprts;
     Matrix_COO Dyn_opr;
     string Dyn_opr_string;
-    double Dyn_Momentum;
+    double Dyn_Momentum_x, Dyn_Momentum_y;
     bool Dyn_Momentum_Resolved;
     bool PBC;
     Mat_1_real Momentum_values;
@@ -38,6 +38,10 @@ public:
     void Add_diagonal_terms(BASIS_1_orb_Hubb_2D_KSector &basis);
     void Add_non_diagonal_terms(BASIS_1_orb_Hubb_2D_KSector &basis);
     void Add_connections(BASIS_1_orb_Hubb_2D_KSector &basis);
+    void Read_parameters_for_dynamics(string filename);
+
+    void Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2D_KSector &basis);
+
 
 };
 

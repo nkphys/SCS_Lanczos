@@ -118,6 +118,18 @@ int main(int argc, char** argv){
 
 
 
+        if(Dynamics_Finite_Temp){
+            FTLM_DYNAMICS _FTLM_DYNAMICS;
+            _FTLM_DYNAMICS.Hamil = _MODEL.Hamil;
+
+            _MODEL.Read_parameters_for_dynamics(inp_filename);
+            _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+
+            _FTLM_DYNAMICS.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
+
+        }
+
+
 
 
 
