@@ -1008,6 +1008,7 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
     string temperature_range_ftlm_, Temperature_Range_FTLM_ = "Temperature_Range = ";
     string total_random_states_ftlm_, Total_Random_States_FTLM_ = "Number_of_Random_States = ";
     string m_ftlm_, M_FTLM_ = "Number_of_LowKrylov_States_used = ";
+    string energy_offset_ftlm_, Energy_Offset_FTLM_ = "Energy_Offset_FTLM = ";
 
     int offset;
     string line;
@@ -1019,6 +1020,10 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
         while(!inputfile.eof())
         {
             getline(inputfile,line);
+
+
+            if ((offset = line.find(Energy_Offset_FTLM_, 0)) != string::npos) {
+                energy_offset_ftlm_ = line.substr (offset + Energy_Offset_FTLM_.length());		}
 
             if ((offset = line.find(M_FTLM_, 0)) != string::npos) {
                 m_ftlm_ = line.substr (offset + M_FTLM_.length());		}
@@ -1119,6 +1124,7 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
 
     Total_Random_States_for_FTLM=atoi(total_random_states_ftlm_.c_str());
     M_FTLM=atoi(m_ftlm_.c_str());
+    Energy_Offset_FTLM=atof(energy_offset_ftlm_.c_str());
     Lanc_Error=atof(lanc_error_.c_str());
     max_steps=atoi(max_steps_.c_str());
     few_=atoi(few__.c_str());

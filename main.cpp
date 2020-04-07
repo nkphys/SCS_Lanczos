@@ -28,6 +28,7 @@
 #include "basis/Basis_3_orb_Hubbard_chain_GC_restricted.h"
 #include "Lanczos_engine.h"
 #include "FTLM_Static.h"
+#include "LTLM_Static.h"
 #include "FTLM_Dynamics.h"
 #include "reading_input.h"
 
@@ -57,7 +58,7 @@ int main(int argc, char** argv){
     cout<<"Do_Dynamics ="<<Do_Dynamics<<endl;
 
 
-    bool DO_FULL_DIAGONALIZATION=false;
+    bool DO_FULL_DIAGONALIZATION=true;
 
 
 
@@ -76,46 +77,88 @@ int main(int argc, char** argv){
 
 
         if(!Static_Finite_Temp){
-        if(_MODEL.Hamil.nrows<400){
-            DO_FULL_DIAGONALIZATION=true;
-        }
-        if(DO_FULL_DIAGONALIZATION==true){
-            double EG;
-            Mat_1_real Evals_temp;
-            Mat_1_doub vecG;
-            Diagonalize(_MODEL.Hamil, Evals_temp, vecG);
-            cout<<"GS energy from ED(without Lanczos) = "<<Evals_temp[0]<<endl;
-            cout<<"All eigenvalues using ED------------------------------"<<endl;
-            cout<<"-------------------------------------------------------"<<endl;
-            for(int i=0;i<Evals_temp.size();i++){
-                cout<<i<<"  "<<Evals_temp[i]<<endl;
+            if(_MODEL.Hamil.nrows<700){
+                DO_FULL_DIAGONALIZATION=true;
             }
-            cout<<"-------------------------------------------------------"<<endl;
-            cout<<"-------------------------------------------------------"<<endl;
+            else{
+                DO_FULL_DIAGONALIZATION=false;
+            }
+            if(DO_FULL_DIAGONALIZATION==true){
+                double EG;
+                Mat_1_real Evals_temp;
+                Mat_1_doub vecG;
+                Diagonalize(_MODEL.Hamil, Evals_temp, vecG);
+                cout<<"GS energy from ED(without Lanczos) = "<<Evals_temp[0]<<endl;
+                cout<<"All eigenvalues using ED------------------------------"<<endl;
+                cout<<"-------------------------------------------------------"<<endl;
+                for(int i=0;i<Evals_temp.size();i++){
+                    cout<<i<<"  "<<Evals_temp[i]<<endl;
+                }
+                cout<<"-------------------------------------------------------"<<endl;
+                cout<<"-------------------------------------------------------"<<endl;
+            }
+
+
+            //assert(false);
+            LANCZOS _LANCZOS;
+            _LANCZOS.Dynamics_performed=false;
+            _LANCZOS.Read_Lanczos_parameters(inp_filename);
+
+            _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
+
+
+            _MODEL.Read_parameters_for_dynamics(inp_filename);
+
+            cout<<"-------SzSz(qx,qy)-----------"<<endl;
+            for(int nx=0;nx<_BASIS.Lx;nx++){
+                for(int ny=0;ny<_BASIS.Ly;ny++){
+                    _MODEL.Dyn_Momentum_x = (2.0*nx)/(1.0*_BASIS.Lx);
+                    _MODEL.Dyn_Momentum_y = (2.0*ny)/(1.0*_BASIS.Ly);
+                    _MODEL.Initialize_Opr_for_Structure_factor(_BASIS);
+                    double_type Opr_val;
+                    Mat_1_doub Vec_Temp;
+
+                    Matrix_COO_vector_multiplication("FULL", _MODEL.OPR_SF, _LANCZOS.Eig_vec, Vec_Temp);
+                    Opr_val = dot_product(Vec_Temp, _LANCZOS.Eig_vec);
+                    cout<<_MODEL.Dyn_Momentum_x<<"pi"<<"   "<<_MODEL.Dyn_Momentum_y<<"pi"<<"    "<<Opr_val<<endl;
+
+                    vector< double_type >().swap(Vec_Temp);
+                }
+            }
+
+
+            _MODEL.Initialize_Oprs_for_meausurement(_BASIS);
+            for(int i=0;i<_MODEL.obs_string.size();i++){
+                double_type Opr_val;
+                Mat_1_doub Vec_Temp;
+                _MODEL.Initialize_Oprs_for_meausurement(_BASIS);
+                Matrix_COO_vector_multiplication("FULL", _MODEL.Oprts_array[i], _LANCZOS.Eig_vec, Vec_Temp);
+                Opr_val = dot_product(Vec_Temp, _LANCZOS.Eig_vec);
+                cout<<_MODEL.obs_string[i]<<"  "<<Opr_val<<endl;
+                vector< double_type >().swap(Vec_Temp);
+            }
+
+
+
+            _LANCZOS.Write_full_spectrum();
         }
-
-
-        //assert(false);
-        LANCZOS _LANCZOS;
-        _LANCZOS.Dynamics_performed=false;
-        _LANCZOS.Read_Lanczos_parameters(inp_filename);
-
-        _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
-        _LANCZOS.Write_full_spectrum();
-        }
-
-
 
 
         if(Static_Finite_Temp){
 
-            FTLM_STATIC _FTLM_STATIC;
-            _FTLM_STATIC.Hamil = _MODEL.Hamil;
+//            FTLM_STATIC _FTLM_STATIC;
+//            _FTLM_STATIC.Hamil = _MODEL.Hamil;
+//            _MODEL.Read_parameters_for_dynamics(inp_filename);
+//            _MODEL.Initialize_Oprs_for_meausurement(_BASIS);
+//            _FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Oprts_array[0]);
 
-            _FTLM_STATIC.Perform_FTLM(inp_filename);
+            LTLM_STATIC _LTLM_STATIC;
+            _LTLM_STATIC.Hamil = _MODEL.Hamil;
+            _MODEL.Read_parameters_for_dynamics(inp_filename);
+            _MODEL.Initialize_Oprs_for_meausurement(_BASIS);
+            _LTLM_STATIC.Perform_LTLM(inp_filename, _MODEL.Oprts_array);
 
         }
-
 
 
         if(Dynamics_Finite_Temp){
@@ -198,7 +241,7 @@ int main(int argc, char** argv){
             FTLM_STATIC _FTLM_STATIC;
             _FTLM_STATIC.Hamil = _MODEL.Hamil;
 
-            _FTLM_STATIC.Perform_FTLM(inp_filename);
+            _FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
 
         }
 
@@ -2621,6 +2664,9 @@ int main(int argc, char** argv){
         _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
         _LANCZOS.Write_full_spectrum();
 
+
+        Print_vector_in_file(_LANCZOS.Eig_vec,"GS_vec.txt");
+
         cout<<scientific<<setprecision(6);
         _MODEL.Calculate_one_point_observables(_LANCZOS.Eig_vec);
         _MODEL.Calculate_two_point_observables(_LANCZOS.Eig_vec);
@@ -2762,7 +2808,7 @@ int main(int argc, char** argv){
             FTLM_STATIC _FTLM_STATIC;
             _FTLM_STATIC.Hamil = _MODEL.Hamil;
 
-            _FTLM_STATIC.Perform_FTLM(inp_filename);
+            _FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
 
         }
 

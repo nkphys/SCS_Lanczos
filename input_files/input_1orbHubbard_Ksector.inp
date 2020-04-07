@@ -10,7 +10,7 @@ Nup = 4
 
 Hopping_NN = 1.0
 
-U = 10.0
+U = 1.0
 H_mag = 0
 ----------------------------------------
 
@@ -27,10 +27,10 @@ seed_file = seed_GS_old.txt
 
 --------------------------------------
 Lanc_Error = -10e-12
-max_steps = 200
+max_steps = 280
 file_eval_spectrum = out0.txt
 save_all_Krylov_space_vecs = true
-get_overlap_bw_eigstates_and_K_vecs = false
+get_overlap_bw_eigstates_and_K_vecs = true
 lanczos_reorthogonalization = false
 Get_Full_Spectrum = true
 need_few_eig_vecs = true
@@ -44,20 +44,19 @@ calculate_local_obs_for_states_to_look_for_first_n_basis = 8
 file_out_local_obs_for_states_to_look = local_obs_for_state_no
 --------------------------------------
 
-
 Static_Finite_Temperature = false
-Dynamics_Finite_Temperature = true
-Number_of_Random_States = 5
-Number_of_LowKrylov_States_used = 100
-Temperature_Range = 0.01 0.01 5.0
-
+Dynamics_Finite_Temperature = false
+Number_of_Random_States = 200
+Number_of_LowKrylov_States_used = 250
+Temperature_Range = 0.01 0.00001 12.0
+Energy_Offset_FTLM = -3.467173437214044
 ----------------------------------
 Perform_Dynamics = false
 check_omega = 0.05
 Opr_for_Dynamics = Sz
 Momentum_resolved = true
-kx_for_dynamics = 0
-ky_for_dynamics = 0
+kx_for_dynamics = 1.0
+ky_for_dynamics = 1.0
 file_dynamics_out = out_dyn.txt
 ---------------------------------
 

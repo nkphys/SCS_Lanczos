@@ -15,10 +15,10 @@
 
 using namespace std;
 
-#ifndef FTLM_STATIC_engine
-#define FTLM_STATIC_engine
+#ifndef LTLM_STATIC_engine
+#define LTLM_STATIC_engine
 
-class FTLM_STATIC{
+class LTLM_STATIC{
 
 public:
 
@@ -32,16 +32,16 @@ public:
     double Beta;
     double Boltzman_const;
 
-    Mat_1_Complex_doub Sum_Opr_val;
-    Mat_1_real Sum_Hamil, Sum_Hamil_Sqr;
-    Mat_1_real Sum_Hamil2, Sum_Hamil2_Sqr;
-    Mat_1_real Sum_Partition_Func, Sum_Partition_Func_Sqr;
-    Mat_1_real Quantum_Avg_Hamil, Quantum_Avg_Hamil2;
+    Mat_2_doub Sum_Opr_val;
+    Mat_1_doub Sum_Hamil, Sum_Hamil_Sqr;
+    Mat_1_doub Sum_Hamil2, Sum_Hamil2_Sqr;
+    Mat_1_doub Sum_Partition_Func, Sum_Partition_Func_Sqr;
+    Mat_1_doub Quantum_Avg_Hamil, Quantum_Avg_Hamil2;
 
     Matrix_COO Hamil;
 
 
-    void Perform_FTLM(string inp_filename, Matrix_COO& OPR_);
+    void Perform_LTLM(string inp_filename, Hamiltonian_1_COO& OPR_);
 
 };
 

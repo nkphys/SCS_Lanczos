@@ -48,7 +48,7 @@ void FTLM_DYNAMICS::Perform_FTLM(string inp_filename, Matrix_COO& OPR_){
 
 
 
-    Temperature = 0.01; //CHANGE THIS
+    Temperature = 100.0; //CHANGE THIS
     M_=Lanczos1_.M_FTLM;
     Total_Random_States=Lanczos1_.Total_Random_States_for_FTLM;
     Boltzman_const = 1.0;
@@ -159,7 +159,7 @@ void FTLM_DYNAMICS::Perform_FTLM(string inp_filename, Matrix_COO& OPR_){
 
 
 
-        if(run_no%10 ==0){
+        if(run_no%5 ==0){
 
             char run_no_char[50];
             sprintf(run_no_char,"%d", run_no);

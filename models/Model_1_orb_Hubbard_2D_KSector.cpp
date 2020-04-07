@@ -537,17 +537,17 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2
 
 
 
-//    Hamiltonian_2_COO Oprs_local;
-//    Oprs_local.resize(basis.Lx);
-//    for(int ix=0;ix<basis.Lx;ix++){
-//        Oprs_local[ix].resize(basis.Ly);
-//    }
-//    for(int ix=0;ix<basis.Lx;ix++){
-//        for(int iy=0;iy<basis.Ly;iy++){
-//            Oprs_local[ix][iy].nrows = basis.D_up_basis.size() ;
-//            Oprs_local[ix][iy].ncols = Oprs_local[ix][iy].nrows;
-//        }
-//    }
+    //    Hamiltonian_2_COO Oprs_local;
+    //    Oprs_local.resize(basis.Lx);
+    //    for(int ix=0;ix<basis.Lx;ix++){
+    //        Oprs_local[ix].resize(basis.Ly);
+    //    }
+    //    for(int ix=0;ix<basis.Lx;ix++){
+    //        for(int iy=0;iy<basis.Ly;iy++){
+    //            Oprs_local[ix][iy].nrows = basis.D_up_basis.size() ;
+    //            Oprs_local[ix][iy].ncols = Oprs_local[ix][iy].nrows;
+    //        }
+    //    }
 
     if(Dyn_opr_string == "Sz"){
 
@@ -573,9 +573,9 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2
                     site = ix + iy*(basis.Lx);
 
                     value=0.5*(1.0)*
-                                ( ( bit_value(basis.D_up_basis[i], site) -
-                                    bit_value(basis.D_dn_basis[j], site) )
-                                  );
+                            ( ( bit_value(basis.D_up_basis[i], site) -
+                                bit_value(basis.D_dn_basis[j], site) )
+                              );
 
                     if(value!=0){
                         Oprs_local.value.push_back(value*one);
@@ -586,22 +586,22 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2
 
 
 #ifdef USE_COMPLEX
-            value2=exp(iota_comp*((Dyn_Momentum_x*PI*ix) + (Dyn_Momentum_y*PI*iy)))*sqrt(1.0/(basis.Length));
+                value2=exp(iota_comp*((Dyn_Momentum_x*PI*ix) + (Dyn_Momentum_y*PI*iy)))*sqrt(1.0/(basis.Length));
 #endif
 #ifndef USE_COMPLEX
-            cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
+                cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
 #endif
 
-            if(site==0){
-            temp=Oprs_local;
-            }
-            if(site!=0){
-            Sum(temp, Oprs_local, temp, 1.0, value2);
-            }
+                if(site==0){
+                    temp=Oprs_local;
+                }
+                if(site!=0){
+                    Sum(temp, Oprs_local, temp, 1.0, value2);
+                }
 
-            vector< int >().swap( Oprs_local.columns );
-            vector< int >().swap( Oprs_local.rows );
-            vector< double_type >().swap( Oprs_local.value );
+                vector< int >().swap( Oprs_local.columns );
+                vector< int >().swap( Oprs_local.rows );
+                vector< double_type >().swap( Oprs_local.value );
 
 
             }
@@ -620,6 +620,407 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2
 
 
 }
+
+void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Structure_factor(BASIS_1_orb_Hubb_2D_KSector &basis){
+
+
+    vector< int >().swap( OPR_SF.columns );
+    vector< int >().swap( OPR_SF.rows );
+    vector< double_type >().swap(OPR_SF.value );
+    OPR_SF.ncols = Hamil.ncols;
+    OPR_SF.nrows = Hamil.nrows;
+
+
+
+
+    //    Hamiltonian_2_COO Oprs_local;
+    //    Oprs_local.resize(basis.Lx);
+    //    for(int ix=0;ix<basis.Lx;ix++){
+    //        Oprs_local[ix].resize(basis.Ly);
+    //    }
+    //    for(int ix=0;ix<basis.Lx;ix++){
+    //        for(int iy=0;iy<basis.Ly;iy++){
+    //            Oprs_local[ix][iy].nrows = basis.D_up_basis.size() ;
+    //            Oprs_local[ix][iy].ncols = Oprs_local[ix][iy].nrows;
+    //        }
+    //    }
+
+    if(Dyn_opr_string == "Sz"){
+
+
+        //Remember O[l][m]=<l|O|m>
+        int m,j, site_i, site_j;
+        double value;
+        double_type value2;
+        Matrix_COO Oprs_ij;
+        Oprs_ij.nrows = basis.D_up_basis.size() ;
+        Oprs_ij.ncols = Oprs_ij.nrows;
+        Matrix_COO temp;
+        temp.nrows = basis.D_up_basis.size() ;
+        temp.ncols = temp.nrows;
+
+        for(int jx=0;jx<basis.Lx;jx++){
+            for(int jy=0;jy<basis.Ly;jy++){
+                site_j = jx + jy*(basis.Lx);
+
+
+                for(int ix=0;ix<basis.Lx;ix++){
+                    for(int iy=0;iy<basis.Ly;iy++){
+                        site_i = ix + iy*(basis.Lx);
+
+                        //if(site_i==site_j){
+
+
+                        Oprs_ij.value.clear();
+                        Oprs_ij.rows.clear();
+                        Oprs_ij.columns.clear();
+
+                        for (int i=0;i<basis.D_up_basis.size();i++){
+
+                            m=i;
+                            j=i;
+
+                            value=0.25*(1.0)*
+                                    ( ( bit_value(basis.D_up_basis[i], site_i) -
+                                        bit_value(basis.D_dn_basis[j], site_i) )*
+                                      ( bit_value(basis.D_up_basis[i], site_j) -
+                                        bit_value(basis.D_dn_basis[j], site_j) )
+                                      );
+
+                            if(value!=0){
+                                Oprs_ij.value.push_back(value*one);
+                                Oprs_ij.rows.push_back(m);
+                                Oprs_ij.columns.push_back(m);
+                            }
+                        }
+
+
+#ifdef USE_COMPLEX
+                        value2=exp(iota_comp*( (Dyn_Momentum_x*PI*(ix-jx)) + (Dyn_Momentum_y*PI*(iy-jy))  ))*(1.0/(basis.Length));
+#endif
+#ifndef USE_COMPLEX
+                        cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
+#endif
+
+
+                        Sum(temp, Oprs_ij, temp, 1.0, value2);
+
+
+                        vector< int >().swap( Oprs_ij.columns );
+                        vector< int >().swap( Oprs_ij.rows );
+                        vector< double_type >().swap( Oprs_ij.value );
+
+
+                        //}
+                    }
+                }
+
+            }
+        }
+
+
+        OPR_SF = temp;
+        vector< int >().swap( temp.columns );
+        vector< int >().swap( temp.rows );
+        vector< double_type >().swap( temp.value );
+
+
+    }
+
+}
+
+
+
+void MODEL_1_orb_Hubb_2D_KSector::Initialize_Oprs_for_meausurement(BASIS_1_orb_Hubb_2D_KSector &basis){
+
+    //    Mat_1_string obs_string;
+    //    Hamiltonian_2_COO Oprts_array;
+
+    obs_string.clear();
+    obs_string.push_back("SzSz_00"); //q1=(0,0) i.e. FM
+    obs_string.push_back("SzSz_pipi"); //q1=(1,1) i.e. AFM
+
+    obs_string.push_back("Local_nup_ndn");
+
+
+    Oprts_array.clear();
+    Oprts_array.resize(3);
+
+
+
+    Dyn_Momentum_x=0.0;Dyn_Momentum_y=0.0;
+    //***************Sq***********************************//
+    vector< int >().swap( OPR_SF.columns );
+    vector< int >().swap( OPR_SF.rows );
+    vector< double_type >().swap(OPR_SF.value );
+    OPR_SF.ncols = Hamil.ncols;
+    OPR_SF.nrows = Hamil.nrows;
+
+
+
+
+    //    Hamiltonian_2_COO Oprs_local;
+    //    Oprs_local.resize(basis.Lx);
+    //    for(int ix=0;ix<basis.Lx;ix++){
+    //        Oprs_local[ix].resize(basis.Ly);
+    //    }
+    //    for(int ix=0;ix<basis.Lx;ix++){
+    //        for(int iy=0;iy<basis.Ly;iy++){
+    //            Oprs_local[ix][iy].nrows = basis.D_up_basis.size() ;
+    //            Oprs_local[ix][iy].ncols = Oprs_local[ix][iy].nrows;
+    //        }
+    //    }
+
+
+    //Remember O[l][m]=<l|O|m>
+    int m,j, site_i, site_j;
+    double value;
+    double_type value2;
+    Matrix_COO Oprs_ij;
+    Oprs_ij.nrows = basis.D_up_basis.size() ;
+    Oprs_ij.ncols = Oprs_ij.nrows;
+    Matrix_COO temp;
+    temp.nrows = basis.D_up_basis.size() ;
+    temp.ncols = temp.nrows;
+
+    for(int jx=0;jx<basis.Lx;jx++){
+        for(int jy=0;jy<basis.Ly;jy++){
+            site_j = jx + jy*(basis.Lx);
+
+
+            for(int ix=0;ix<basis.Lx;ix++){
+                for(int iy=0;iy<basis.Ly;iy++){
+                    site_i = ix + iy*(basis.Lx);
+
+                    //if(site_i==site_j){
+
+
+                    Oprs_ij.value.clear();
+                    Oprs_ij.rows.clear();
+                    Oprs_ij.columns.clear();
+
+                    for (int i=0;i<basis.D_up_basis.size();i++){
+
+                        m=i;
+                        j=i;
+
+                        value=0.25*(1.0)*
+                                ( ( bit_value(basis.D_up_basis[i], site_i) -
+                                    bit_value(basis.D_dn_basis[j], site_i) )*
+                                  ( bit_value(basis.D_up_basis[i], site_j) -
+                                    bit_value(basis.D_dn_basis[j], site_j) )
+                                  );
+
+                        if(value!=0){
+                            Oprs_ij.value.push_back(value*one);
+                            Oprs_ij.rows.push_back(m);
+                            Oprs_ij.columns.push_back(m);
+                        }
+                    }
+
+
+#ifdef USE_COMPLEX
+                    value2=exp(iota_comp*( (Dyn_Momentum_x*PI*(ix-jx)) + (Dyn_Momentum_y*PI*(iy-jy))  ))*(1.0/(basis.Length));
+#endif
+#ifndef USE_COMPLEX
+                    cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
+#endif
+
+                    Sum(temp, Oprs_ij, temp, 1.0*one, value2);
+
+                    vector< int >().swap( Oprs_ij.columns );
+                    vector< int >().swap( Oprs_ij.rows );
+                    vector< double_type >().swap( Oprs_ij.value );
+
+                    //}
+                }
+            }
+        }
+    }
+
+    OPR_SF = temp;
+    vector< int >().swap( temp.columns );
+    vector< int >().swap( temp.rows );
+    vector< double_type >().swap( temp.value );
+
+
+    Oprts_array[0]=OPR_SF;
+
+    vector< int >().swap( OPR_SF.columns );
+    vector< int >().swap( OPR_SF.rows );
+    vector< double_type >().swap(OPR_SF.value );
+
+    //****************************************************//
+
+
+
+    Dyn_Momentum_x=1.0;
+    Dyn_Momentum_y=1.0;
+    //***************Sq***********************************//
+    vector< int >().swap( OPR_SF.columns );
+    vector< int >().swap( OPR_SF.rows );
+    vector< double_type >().swap(OPR_SF.value );
+    OPR_SF.ncols = Hamil.ncols;
+    OPR_SF.nrows = Hamil.nrows;
+
+
+
+
+    //    Hamiltonian_2_COO Oprs_local;
+    //    Oprs_local.resize(basis.Lx);
+    //    for(int ix=0;ix<basis.Lx;ix++){
+    //        Oprs_local[ix].resize(basis.Ly);
+    //    }
+    //    for(int ix=0;ix<basis.Lx;ix++){
+    //        for(int iy=0;iy<basis.Ly;iy++){
+    //            Oprs_local[ix][iy].nrows = basis.D_up_basis.size() ;
+    //            Oprs_local[ix][iy].ncols = Oprs_local[ix][iy].nrows;
+    //        }
+    //    }
+
+
+    //Remember O[l][m]=<l|O|m>
+
+    Oprs_ij.nrows = basis.D_up_basis.size() ;
+    Oprs_ij.ncols = Oprs_ij.nrows;
+
+    temp.nrows = basis.D_up_basis.size() ;
+    temp.ncols = temp.nrows;
+
+    for(int jx=0;jx<basis.Lx;jx++){
+        for(int jy=0;jy<basis.Ly;jy++){
+            site_j = jx + jy*(basis.Lx);
+
+
+            for(int ix=0;ix<basis.Lx;ix++){
+                for(int iy=0;iy<basis.Ly;iy++){
+                    site_i = ix + iy*(basis.Lx);
+
+                    Oprs_ij.value.clear();
+                    Oprs_ij.rows.clear();
+                    Oprs_ij.columns.clear();
+
+                    for (int i=0;i<basis.D_up_basis.size();i++){
+
+                        m=i;
+                        j=i;
+
+                        value=0.25*(1.0)*
+                                ( ( bit_value(basis.D_up_basis[i], site_i) -
+                                    bit_value(basis.D_dn_basis[j], site_i) )*
+                                  ( bit_value(basis.D_up_basis[i], site_j) -
+                                    bit_value(basis.D_dn_basis[j], site_j) )
+                                  );
+
+                        if(value!=0){
+                            Oprs_ij.value.push_back(value*one);
+                            Oprs_ij.rows.push_back(m);
+                            Oprs_ij.columns.push_back(m);
+                        }
+                    }
+
+
+#ifdef USE_COMPLEX
+                    value2=exp(iota_comp*( (Dyn_Momentum_x*PI*(ix-jx)) + (Dyn_Momentum_y*PI*(iy-jy))  ))*(1.0/(basis.Length));
+#endif
+#ifndef USE_COMPLEX
+                    cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
+#endif
+
+                    Sum(temp, Oprs_ij, temp, 1.0*one, value2);
+
+                    vector< int >().swap( Oprs_ij.columns );
+                    vector< int >().swap( Oprs_ij.rows );
+                    vector< double_type >().swap( Oprs_ij.value );
+
+                }
+            }
+        }
+    }
+
+    OPR_SF = temp;
+    vector< int >().swap( temp.columns );
+    vector< int >().swap( temp.rows );
+    vector< double_type >().swap( temp.value );
+
+
+    Oprts_array[1]=OPR_SF;
+
+    vector< int >().swap( OPR_SF.columns );
+    vector< int >().swap( OPR_SF.rows );
+    vector< double_type >().swap(OPR_SF.value );
+
+    //****************************************************//
+
+
+
+    //******Local NupNdn**********************************//
+
+    vector< int >().swap( Oprts_array[2].columns );
+    vector< int >().swap( Oprts_array[2].rows );
+    vector< double_type >().swap(Oprts_array[2].value );
+    Oprts_array[2].ncols = Hamil.ncols;
+    Oprts_array[2].nrows = Hamil.nrows;
+
+
+    //Remember O[l][m]=<l|O|m>
+    Matrix_COO Oprs_i;
+    Oprs_i.nrows = basis.D_up_basis.size() ;
+    Oprs_i.ncols = Oprs_i.nrows;
+
+    temp.columns.clear();temp.rows.clear();temp.value.clear();
+    temp.nrows = basis.D_up_basis.size();
+    temp.ncols = temp.nrows;
+
+
+            for(int ix=0;ix<basis.Lx;ix++){
+                for(int iy=0;iy<basis.Ly;iy++){
+                    site_i = ix + iy*(basis.Lx);
+
+                    Oprs_i.value.clear();
+                    Oprs_i.rows.clear();
+                    Oprs_i.columns.clear();
+
+                    for (int i=0;i<basis.D_up_basis.size();i++){
+
+                        m=i;
+                        j=i;
+
+                        value=(1.0)*
+                              (bit_value(basis.D_up_basis[i], site_i))*
+                              (bit_value(basis.D_dn_basis[i], site_i));
+
+                        if(value!=0){
+                            Oprs_i.value.push_back(value*one);
+                            Oprs_i.rows.push_back(m);
+                            Oprs_i.columns.push_back(m);
+                        }
+                    }
+
+
+                    value2=(1.0/(basis.Length));
+
+
+                    Sum(temp, Oprs_i, temp, 1.0*one, value2);
+
+                    vector< int >().swap( Oprs_i.columns );
+                    vector< int >().swap( Oprs_i.rows );
+                    vector< double_type >().swap( Oprs_i.value );
+
+                }
+            }
+
+    Oprts_array[2] = temp;
+    vector< int >().swap( temp.columns );
+    vector< int >().swap( temp.rows );
+    vector< double_type >().swap( temp.value );
+
+
+    //****************************************************//
+
+
+}
+
 
 void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &basis, string filename){
 

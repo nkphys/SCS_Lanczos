@@ -68,6 +68,7 @@ public:
     int Total_Random_States_for_FTLM;
     double delta_Temperature_FTLM, Temprature_min_FTLM, Temprature_max_FTLM ;
     int M_FTLM;
+    double Energy_Offset_FTLM;
 
     bool Get_insitu_FTLM_overlaps;
     bool Save_the_Seed;

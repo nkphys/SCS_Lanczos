@@ -20,11 +20,16 @@ public:
     bool Calculate_observables_onepoint;
     Mat_1_string one_point_obs;
     Hamiltonian_2_COO One_point_oprts;
+
+    Mat_1_string obs_string;
+    Hamiltonian_1_COO Oprts_array;
+
     Mat_1_string macro_obs;
     Hamiltonian_1_COO Macro_oprts;
     Mat_1_string two_point_obs;
     Hamiltonian_3_COO Two_point_oprts;
     Matrix_COO Dyn_opr;
+    Matrix_COO OPR_SF;
     string Dyn_opr_string;
     double Dyn_Momentum_x, Dyn_Momentum_y;
     bool Dyn_Momentum_Resolved;
@@ -39,8 +44,11 @@ public:
     void Add_non_diagonal_terms(BASIS_1_orb_Hubb_2D_KSector &basis);
     void Add_connections(BASIS_1_orb_Hubb_2D_KSector &basis);
     void Read_parameters_for_dynamics(string filename);
-
     void Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2D_KSector &basis);
+    void Initialize_Opr_for_Structure_factor(BASIS_1_orb_Hubb_2D_KSector &basis);
+    void Initialize_Oprs_for_meausurement(BASIS_1_orb_Hubb_2D_KSector &basis);
+    void Calculate_two_point_observables(Mat_1_doub &Vec_);
+
 
 
 };

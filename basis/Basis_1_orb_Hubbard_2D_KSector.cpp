@@ -134,9 +134,11 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
                 Addition_Allowed=false;
                 sign_up_min_R=0;
                 sign_dn_min_R=0;
-                for(int Rx=1;Rx<=Lx;Rx++){
+                gamma_=zero_comp;
+                m_bar=0;
+                for(int Rx=0;Rx<Lx;Rx++){
 
-                    if(Lx>1){
+                    if(Lx>1 && Rx>0){
                         for(int iy=0;iy<Ly;iy++){
 
                             sign_dn_min_R_orb0 = one_bits_in_bw(iy*Lx, (iy+1)*Lx - 1, d_dn_basis_temp) +
@@ -166,9 +168,9 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
                     d_up_basis_temp_Xtrans=d_up_basis_temp;
                     d_dn_basis_temp_Xtrans=d_dn_basis_temp;
 
-                    for(int Ry=1;Ry<=Ly;Ry++){
+                    for(int Ry=0;Ry<Ly;Ry++){
 
-                        if(Ly>1){
+                        if(Ly>1 && Ry>0){
                             for(int ix=0;ix<Lx;ix++){
 
                                 for(int iy_=0;iy_<Ly-1;iy_++){
@@ -207,7 +209,6 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
                             //or in other words the representative state of D_up_basis_All[state_up]
                             //is already present
                             Already_Added=true;
-                            break;
                         }
                         if ( (d_up_basis_temp==D_up_basis_All[state_up])
                              &&
@@ -217,21 +218,22 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
                             //or in other words the representative state of D_up_basis_All[state_up]
                             //is already present
                             Already_Added=true;
-                            break;
                         }
 
                         if(   (  (d_up_basis_temp==D_up_basis_All[state_up])
                                 &&
                                 (d_dn_basis_temp==D_dn_basis_All[state_dn])  )
-                              &&
-                              !Addition_Allowed
-
                                 ){
 
                             Addition_Allowed =true;
-                            Rx_=Rx;
-                            Ry_=Ry;
+
                             sign_pow_min_R = sign_up_min_R + sign_dn_min_R;
+                            sign_min_R = pow(-1.0, 1.0*sign_pow_min_R);
+                            gamma_ += exp(-1.0*iota_comp*( ((2.0*PI*Momentum_nx*Rx)/(Lx*1.0)) +
+                                                           ((2.0*PI*Momentum_ny*Ry)/(Ly*1.0))
+                                                           ))* ( pow(1.0*sign_min_R, 1.0) );
+                            m_bar += 1;
+
 
                         }
                     }
@@ -245,26 +247,10 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
 
                 if( (!Already_Added) && Addition_Allowed ){
 
-                    for(int m_=1;m_<=max(Lx,Ly);m_++){
-                        if( ((m_*Rx_)%Lx)==0  &&   ((m_*Ry_)%Ly)==0    ){
-                            m_bar=m_;
-                            break;
-                        }
-                    }
-
-                    sign_min_R = pow(-1.0, 1.0*sign_pow_min_R);
-
-                    gamma_=zero_comp;
-                    for(int m=0;m<m_bar;m++){
-                        gamma_ += exp(-1.0*iota_comp*( ((2.0*PI*Momentum_nx*Rx_*m)/(Lx*1.0)) +
-                                                       ((2.0*PI*Momentum_ny*Ry_*m)/(Ly*1.0))
-                                                       ))* ( pow(1.0*sign_min_R, 1.0*m) );
-                    }
-
                     if(abs(gamma_)>=epsilon)
                     {
-                        Dx_Period.push_back(Rx_);
-                        Dy_Period.push_back(Ry_);
+                        Dx_Period.push_back(-10);
+                        Dy_Period.push_back(-10);
                         D_Norm.push_back((Lx*Ly*abs(gamma_)*abs(gamma_)*1.0)/(m_bar*1.0));
                         D_up_basis.push_back(D_up_basis_All[state_up]);
                         D_dn_basis.push_back(D_dn_basis_All[state_dn]);
