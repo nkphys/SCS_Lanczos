@@ -36,6 +36,10 @@
 #include "models/Model_3_orb_Hubbard_chain_GC.cpp"
 #include "models/Model_1_orb_Hubbard_GC.cpp"
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 
 
 
@@ -53,12 +57,24 @@ int main(int argc, char** argv){
     bool Restricted_Basis;
     bool Static_Finite_Temp;
     bool Dynamics_Finite_Temp;
+    int no_of_processors;
 
-    reading_input(inp_filename, model_name, Do_Dynamics, Static_Finite_Temp, Dynamics_Finite_Temp,  Perform_RIXS, Restricted_Basis);
+    reading_input(inp_filename, model_name, Do_Dynamics, Static_Finite_Temp, Dynamics_Finite_Temp,  Perform_RIXS, Restricted_Basis, no_of_processors);
     cout<<"Do_Dynamics ="<<Do_Dynamics<<endl;
 
 
     bool DO_FULL_DIAGONALIZATION=true;
+
+#ifdef _OPENMP
+    double begin_time, end_time;
+    begin_time = omp_get_wtime();
+
+    int N_p = omp_get_max_threads();
+    omp_set_num_threads(no_of_processors);
+
+    cout<<"Max threads which can be used parallely = "<<N_p<<endl;
+    cout<<"No. of threads used parallely = "<<no_of_processors<<endl;
+#endif
 
 
 
@@ -109,6 +125,7 @@ int main(int argc, char** argv){
 
             _MODEL.Read_parameters_for_dynamics(inp_filename);
 
+            /*
             cout<<"-------SzSz(qx,qy)-----------"<<endl;
             for(int nx=0;nx<_BASIS.Lx;nx++){
                 for(int ny=0;ny<_BASIS.Ly;ny++){
@@ -137,7 +154,7 @@ int main(int argc, char** argv){
                 cout<<_MODEL.obs_string[i]<<"  "<<Opr_val<<endl;
                 vector< double_type >().swap(Vec_Temp);
             }
-
+            */
 
 
             _LANCZOS.Write_full_spectrum();
@@ -2820,6 +2837,12 @@ int main(int argc, char** argv){
     //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
     //=======================================================================================================================================================================================================//
 
+
+
+#ifdef _OPENMP
+    end_time = omp_get_wtime();
+    cout<<"Actual Time [using OpenMP] = "<<double(end_time - begin_time)<<endl;
+#endif
 
     return 0;
 }

@@ -1,6 +1,5 @@
 #include "Lanczos_engine.h"
 #include <stdlib.h>
-
 #define PI 3.14159265
 using namespace std;
 //#define USE_COMPLEX
@@ -104,6 +103,10 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
         Kvector_n=Dynamics_seed;
         tmpnrm_type_double=Norm(Kvector_n);
         tmpnrm=sqrt(tmpnrm_type_double);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
         for(int j=0;j<Hamil.nrows;j++){
             Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
         }
@@ -183,10 +186,17 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
             if(to_reorth==true){
                 Mat_1_doub temp_dot;
                 temp_dot.resize(Krylov_space_vecs.size());
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
                 for(int i=0;i<Krylov_space_vecs.size();i++){
                     temp_dot[i]=dot_product(Kvector_np1,Krylov_space_vecs[i]);
                 }
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(val_temp)
+#endif
                 for(int l=0;l<Kvector_n.size();l++){
                     val_temp=zero;
                     for(int i=0;i<Krylov_space_vecs.size();i++){
@@ -203,6 +213,10 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
         //Normalizaton of Knp1, added by myself, not included in std. Lanczos
         tmpnrm_type_double=Norm(Kvector_np1);
         tmpnrm=sqrt(tmpnrm_type_double);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
         for(int i=0;i<Kvector_np1.size();i++){
             Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm));//*1.0e-10;
         }
@@ -325,6 +339,10 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
 
                     tmpnrm_type_double=Norm(Kvector_n);
                     tmpnrm=sqrt(tmpnrm_type_double);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
                     for(int j=0;j<Hamil.nrows;j++){
                         Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
                     }
@@ -380,6 +398,10 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
             }
 
             double norm_ev=Norm(Eig_vecs[Ts]);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
             for(int j=0;j<Hamil.nrows;j++){
                 Eig_vecs[Ts][j] = (Eig_vecs[Ts][j]/(sqrt(norm_ev)));
             }
@@ -484,6 +506,11 @@ sort(numbers.begin(), numbers.end(), comp);
         file_out<<"# sum response = "<<sum_response<<endl;
     }
 
+
+    for(int i=0;i<Krylov_space_vecs.size();i++){
+        vector < double_type >().swap(Krylov_space_vecs[i]);
+    }
+    Krylov_space_vecs.clear();
 
 
 }

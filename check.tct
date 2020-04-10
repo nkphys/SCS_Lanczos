@@ -1,0 +1,12 @@
+iter = 99 diff_E = 1.92438e-10 E0 = -13.6327 E0_old = -13.6327
+Time for 1 LAnczos iter : 0.607995
+Perform_LANCZOS: NO. of iterations required to get convergence in LANCZOS(pass 1) = 100
+Perform_LANCZOS: Energy(GS) is Energy = -1.36327386246677058068e+01   Lanczos_error = 1.92438065482747333590e-10
+Perform_LANCZOS: LANCZOS(pass 2) STARTING FOR Eigenvectors, , Size of Matrix(SB) = 496860
+
+Actual Time [using OpenMP] = 1.03185806165100075305e+02
+
+real	1m43.198s
+user	2m4.324s
+sys	0m34.704s
+

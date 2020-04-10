@@ -1,6 +1,6 @@
 #include "reading_input.h"
 
-void reading_input(string filename, string & Model_Name, bool &Do_Dynamics, bool &Static_Finite_Temp, bool &Dynamics_Finite_Temp, bool &Perform_RIXS, bool &Restricted_Basis){
+void reading_input(string filename, string & Model_Name, bool &Do_Dynamics, bool &Static_Finite_Temp, bool &Dynamics_Finite_Temp, bool &Perform_RIXS, bool &Restricted_Basis, int &No_Of_Processors){
 
 
     string filepath = filename;
@@ -10,6 +10,7 @@ void reading_input(string filename, string & Model_Name, bool &Do_Dynamics, bool
     string do_dynamics_finite_temp_, Dynamics_Finite_Temp_ = "Dynamics_Finite_Temperature = ";
     string perform_rixs_, Perform_RIXS_ = "Perform_RIXS = ";
     string restricted_basis_, Restricted_Basis_ = "Restricted_Basis = ";
+    string processors_, Processors_ = "Processors = ";
     int offset;
     string line;
 
@@ -43,47 +44,53 @@ void reading_input(string filename, string & Model_Name, bool &Do_Dynamics, bool
             if ((offset = line.find(Dynamics_Finite_Temp_ , 0)) != string::npos) {
                 do_dynamics_finite_temp_ = line.substr (offset+Dynamics_Finite_Temp_ .length());	}
 
+            if ((offset = line.find(Processors_ , 0)) != string::npos) {
+                processors_ = line.substr (offset+Processors_ .length());	}
+
         }
         inputfile.close();
     }
     else
     {cout<<"Unable to open input file 1st time."<<endl;}
 
-if(do_dynamics_=="true"){
-    Do_Dynamics=true;
-}
-else{
-    Do_Dynamics=false;
-}
-
-if(perform_rixs_=="true"){
-    Perform_RIXS=true;
-}
-else{
-    Perform_RIXS=false;
-}
-
-if(do_static_finite_temp_=="true"){
-    Static_Finite_Temp=true;
-}
-else{
-    Static_Finite_Temp=false;
-}
-
-if(do_dynamics_finite_temp_=="true"){
-    Dynamics_Finite_Temp=true;
-}
-else{
-    Dynamics_Finite_Temp=false;
-}
 
 
-if(restricted_basis_=="true"){
-    Restricted_Basis=true;
-}
-else{
-    Restricted_Basis=false;
-}
+    No_Of_Processors=atoi(processors_.c_str());
+    if(do_dynamics_=="true"){
+        Do_Dynamics=true;
+    }
+    else{
+        Do_Dynamics=false;
+    }
+
+    if(perform_rixs_=="true"){
+        Perform_RIXS=true;
+    }
+    else{
+        Perform_RIXS=false;
+    }
+
+    if(do_static_finite_temp_=="true"){
+        Static_Finite_Temp=true;
+    }
+    else{
+        Static_Finite_Temp=false;
+    }
+
+    if(do_dynamics_finite_temp_=="true"){
+        Dynamics_Finite_Temp=true;
+    }
+    else{
+        Dynamics_Finite_Temp=false;
+    }
+
+
+    if(restricted_basis_=="true"){
+        Restricted_Basis=true;
+    }
+    else{
+        Restricted_Basis=false;
+    }
 
 
 }

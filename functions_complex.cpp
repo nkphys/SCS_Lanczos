@@ -1,4 +1,7 @@
 #ifdef USE_COMPLEX
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 #include "functions_complex.h"
 #define PI_ 3.14159265
 
@@ -509,6 +512,7 @@ void Normalize_vec(Mat_1_doub &vec_in){
     val_comp = dot_product(vec_in, vec_in);
     val = val_comp.real();
     val = sqrt(val);
+
     for(int i=0;i<vec_in.size();i++){
         vec_in[i] = vec_in[i]*(1.0/val);
     }
@@ -523,9 +527,10 @@ void value_multiply_vector(complex<double> value, Mat_1_doub &vec_in){
 }
 
 complex<double> dot_product(Mat_1_doub &vec1, Mat_1_doub &vec2){
-    //This dot_product is parallelized always, create another one with _PARALLELIZE_AT_MATRICES_LEVEL
     complex<double> temp;
     complex<double> temp1=zero;
+    double temp1_real=0.0;
+    double temp1_imag=0.0;
     assert(vec1.size()==vec2.size());
     // bool Parallelize_dot_product;
     // Parallelize_dot_product=true;
@@ -533,9 +538,19 @@ complex<double> dot_product(Mat_1_doub &vec1, Mat_1_doub &vec2){
     // if(!Parallelize_dot_product){goto skiploop_143;}
     //#pragma omp parallel for default(shared) reduction(+:temp1)
     //skiploop_143:
+#ifndef _OPENMP
     for(int i=0;i<vec1.size();i++){
         temp1 = temp1 + (vec1[i])*(conj(vec2[i])); //<vec2|vec1>
     }
+#endif
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) reduction(+:temp1_real,temp1_imag)
+    for(int i=0;i<vec1.size();i++){
+        temp1_real += ((vec1[i])*(conj(vec2[i])) ).real(); //<vec2|vec1>
+        temp1_imag += ((vec1[i])*(conj(vec2[i])) ).imag();
+    }
+    temp1 =complex<double> (temp1_real, temp1_imag);
+#endif
 
     temp = temp1;
 
@@ -546,10 +561,25 @@ complex<double> dot_product(Mat_1_doub &vec1, Mat_1_doub &vec2){
 double Norm(Mat_1_doub &vec1){
     complex<double> temp;
     complex<double> temp1=zero;
+    double temp1_real=0.0;
+    double temp1_imag=0.0;
 
+#ifndef _OPENMP
     for(int i=0;i<vec1.size();i++){
         temp1 = temp1 + (vec1[i])*(conj(vec1[i])); //<vec1|vec1>
     }
+#endif
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) reduction(+:temp1_real,temp1_imag)
+    for(int i=0;i<vec1.size();i++){
+        temp1_real += ((vec1[i])*(conj(vec1[i]))).real(); //<vec1|vec1>
+        temp1_imag += ((vec1[i])*(conj(vec1[i]))).imag();
+    }
+
+    temp1=complex<double> (temp1_real, temp1_imag);
+#endif
+
 
     temp = temp1;
 
@@ -565,10 +595,12 @@ void Matrix_COO_vector_multiplication(string COO_type, Matrix_COO & A,Mat_1_doub
     v.resize(u.size());
     assert(A.nrows==u.size());
 
+#ifndef _OPENMP
     for (int i=0;i<v.size();i++){
         v[i]=zero;}
 
     if(COO_type =="U"){
+
         for (int n=0;n<A.value.size();n++){
 
             if(A.rows[n]==A.columns[n]){
@@ -582,16 +614,104 @@ void Matrix_COO_vector_multiplication(string COO_type, Matrix_COO & A,Mat_1_doub
         }
     }
     else{
+
+        for (int n=0;n<A.value.size();n++){
+            v[A.rows[n]] = v[A.rows[n]] + u[A.columns[n]]*A.value[n];
+        }
+    }
+#endif
+
+
+
+#ifdef _OPENMP
+    Mat_2_doub v_temp;
+    int thread_id;
+    int N_threads;
+#pragma omp parallel
+    {
+        N_threads=omp_get_num_threads();
+        //cout<<"N_threads = "<<N_threads<<endl;
+    }
+
+    v_temp.resize(N_threads);
+
+#pragma omp parallel for default(shared)
+    for(int tid=0;tid<N_threads;tid++){
+        v_temp[tid].resize(u.size());
+        for (int i=0;i<u.size();i++){
+            v_temp[tid][i]=zero;
+        }
+    }
+
+    //cout<<"here 1, No_of_threads = "<<N_threads<<endl;
+
+    //assert(false);
+    if(COO_type =="U"){
+
+#pragma omp parallel for default(shared) private(thread_id)
         for (int n=0;n<A.value.size();n++){
 
-            v[A.rows[n]] = v[A.rows[n]] + u[A.columns[n]]*A.value[n];
+            thread_id = omp_get_thread_num();
 
+            //            if(thread_id>=N_threads){
+            //                cout<<"thread_id = "<<thread_id<<",  N_threads = "<<N_threads<<endl;
+            //            }
+            //cout<<"n="<<n<<"  thread_id="<<thread_id<<endl;
+            if(A.rows[n]==A.columns[n]){
+                v_temp[thread_id][A.rows[n]] = v_temp[thread_id][A.rows[n]] + u[A.columns[n]]*A.value[n];
+            }
+            else{
+                v_temp[thread_id][A.rows[n]] = v_temp[thread_id][A.rows[n]] + u[A.columns[n]]*A.value[n];
+                v_temp[thread_id][A.columns[n]] = v_temp[thread_id][A.columns[n]] + u[A.rows[n]]*conj(A.value[n]);
+            }
 
-
+        }
+    }
+    else{
+#pragma omp parallel for default(shared) private(thread_id)
+        for (int n=0;n<A.value.size();n++){
+            thread_id = omp_get_thread_num();
+            v_temp[thread_id][A.rows[n]] = v_temp[thread_id][A.rows[n]] + u[A.columns[n]]*A.value[n];
         }
     }
 
 
+    // cout<<"here 2"<<endl;
+
+    double sum_real, sum_imag;
+#pragma omp parallel for default(shared) private (sum_real, sum_imag)
+    for(int i=0;i<u.size();i++){
+        sum_real=0.0;sum_imag=0.0;
+        //#pragma omp parallel for default(shared) reduction(+:sum_real, sum_imag)
+        for(int tid=0;tid<N_threads;tid++){
+            sum_real += v_temp[tid][i].real();
+            sum_imag += v_temp[tid][i].imag();
+        }
+        v[i] = complex<double> (sum_real, sum_imag);
+    }
+
+    // cout<<"here 3"<<endl;
+
+    //    sum = 0;
+    //    #pragma omp parallel for shared(sum, a) reduction(+: sum)
+    //    for (auto i = 0; i < 10; i++)
+    //    {
+    //        sum += a[i]
+    //    }
+
+
+
+#pragma omp parallel for default(shared)
+    for(int tid=0;tid<N_threads;tid++){
+        vector< double_type >().swap( v_temp[tid] );
+    }
+    v_temp.clear();
+
+    //cout<<"here 4"<<endl;
+
+#endif
+
+    //  assert(false);
 }
 
 Matrix_COO Dagger(Matrix_COO &A){
@@ -642,10 +762,12 @@ Matrix_COO Identity_COO(int rows_no, int cols_no){
 void Subtract( Mat_1_doub &temp1, double_type x, Mat_1_doub &temp2){
 
     assert(temp1.size()==temp2.size());
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int k=0;k<temp1.size();k++){
-
         temp1[k]=temp1[k] - x*temp2[k];
-
     }
 
 }
@@ -654,10 +776,12 @@ void Subtract( Mat_1_doub &temp1, double_type x, Mat_1_doub &temp2){
 void Subtract( Mat_1_doub &temp1, double x, Mat_1_doub &temp2){
 
     assert(temp1.size()==temp2.size());
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int k=0;k<temp1.size();k++){
-
         temp1[k]=temp1[k] - x*temp2[k];
-
     }
 
 }
@@ -670,12 +794,19 @@ void Diagonalize(Matrix_COO &X, double & EG, Mat_1_doub & vecG){
     Matrix< complex<double> > Ham_;
     Ham_.resize(X.nrows,X.ncols);
 
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.nrows;i++){
         for(int j=i;j<X.ncols;j++){
             Ham_(i,j) = complex<double>(0.0,0.0);
         }
     }
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.value.size();i++){
         int r=X.rows[i];
         int c=X.columns[i];
@@ -717,6 +848,10 @@ void Diagonalize(Matrix_COO &X, double & EG, Mat_1_doub & vecG){
     eigs_.clear();
     vecG.clear();
     vecG.resize(X.nrows);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.nrows;i++){
         vecG[i] =Ham_(i,0);//mat[i*X.nrows];
     }
@@ -733,12 +868,18 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_1_doub & vecG){
     Matrix< complex<double> > Ham_;
     Ham_.resize(X.nrows,X.ncols);
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.nrows;i++){
         for(int j=i;j<X.ncols;j++){
             Ham_(i,j) = complex<double>(0.0,0.0);
         }
     }
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.value.size();i++){
         int r=X.rows[i];
         int c=X.columns[i];
@@ -777,6 +918,9 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_1_doub & vecG){
 
 
     EVALS.resize(eigs_.size());
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<eigs_.size();i++){
         EVALS[i]=eigs_[i];
     }
@@ -784,6 +928,10 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_1_doub & vecG){
     eigs_.clear();
     vecG.clear();
     vecG.resize(X.nrows);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.nrows;i++){
         vecG[i] =Ham_(i,0);//mat[i*X.nrows];
     }
@@ -799,12 +947,18 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_2_doub & vecs){
     Matrix< complex<double> > Ham_;
     Ham_.resize(X.nrows,X.ncols);
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.nrows;i++){
         for(int j=i;j<X.ncols;j++){
             Ham_(i,j) = complex<double>(0.0,0.0);
         }
     }
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.value.size();i++){
         int r=X.rows[i];
         int c=X.columns[i];
@@ -843,6 +997,10 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_2_doub & vecs){
 
 
     EVALS.resize(eigs_.size());
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<eigs_.size();i++){
         EVALS[i]=eigs_[i];
     }
@@ -850,6 +1008,10 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_2_doub & vecs){
     eigs_.clear();
     vecs.clear();
     vecs.resize(X.nrows);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int j=0;j<vecs.size();j++){
         vecs[j].resize(vecs.size());
         for(int i=0;i<X.nrows;i++){
@@ -869,6 +1031,10 @@ void Diagonalize(Mat_1_doub &X ,Mat_1_real &Y2 , Mat_2_real & EG, Mat_1_doub & v
     Mat_1_real eigs_;
     Matrix< complex<double> > Ham_;
     Ham_.resize(X.size(),X.size());
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.size();i++){
         for(int j=0;j<=i;j++){
             if(j==i){
@@ -911,6 +1077,9 @@ void Diagonalize(Mat_1_doub &X ,Mat_1_real &Y2 , Mat_2_real & EG, Mat_1_doub & v
 
     int Target_state=0;
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.size();i++){
         EG[lanc_iter][i]=eigs_[i];
     }
@@ -919,6 +1088,10 @@ void Diagonalize(Mat_1_doub &X ,Mat_1_real &Y2 , Mat_2_real & EG, Mat_1_doub & v
 
     vecG.clear();
     vecG.resize(X.size());
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.size();i++){
         vecG[i] = Ham_(i,Target_state);
     }
@@ -934,6 +1107,10 @@ void Diagonalize(Mat_1_doub &X ,Mat_1_real &Y2 , Mat_2_real & EG, Mat_2_doub & v
     Mat_1_real eigs_;
     Matrix< complex<double> > Ham_;
     Ham_.resize(X.size(),X.size());
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.size();i++){
         for(int j=0;j<=i;j++){
             if(j==i){
@@ -977,6 +1154,9 @@ void Diagonalize(Mat_1_doub &X ,Mat_1_real &Y2 , Mat_2_real & EG, Mat_2_doub & v
 
 
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.size();i++){
         EG[lanc_iter][i]=eigs_[i];
     }
@@ -990,6 +1170,9 @@ void Diagonalize(Mat_1_doub &X ,Mat_1_real &Y2 , Mat_2_real & EG, Mat_2_doub & v
         vecG[i].resize(X.size());
     }
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<few_;i++){
         for(int j=0;j<X.size();j++){
             vecG[i][j] =  Ham_(j,i);
@@ -1008,6 +1191,10 @@ void Diagonalize(Mat_1_doub &X ,Mat_1_real &Y2 , Mat_2_real & EG, Mat_2_doub & v
     Mat_1_real eigs_;
     Matrix< complex<double> > Ham_;
     Ham_.resize(X.size(),X.size());
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.size();i++){
         for(int j=0;j<=i;j++){
             if(j==i){
@@ -1057,6 +1244,9 @@ void Diagonalize(Mat_1_doub &X ,Mat_1_real &Y2 , Mat_2_real & EG, Mat_2_doub & v
 
     int Target_state=0;
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.size();i++){
         EG[lanc_iter][i]=eigs_[i];
     }
@@ -1070,6 +1260,9 @@ void Diagonalize(Mat_1_doub &X ,Mat_1_real &Y2 , Mat_2_real & EG, Mat_2_doub & v
         vecG[i].resize(X.size());
     }
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<few_;i++){
         Target_state=states_to_look[i];
         for(int j=0;j<X.size();j++){
@@ -1088,6 +1281,10 @@ void Diagonalize(Mat_1_doub &X ,Mat_1_real &Y2 , double & EG, Mat_1_doub & vecG)
     Mat_1_real eigs_;
     Matrix< complex<double> > Ham_;
     Ham_.resize(X.size(),X.size());
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.size();i++){
         for(int j=0;j<=i;j++){
             if(j==i){
@@ -1135,6 +1332,10 @@ void Diagonalize(Mat_1_doub &X ,Mat_1_real &Y2 , double & EG, Mat_1_doub & vecG)
     eigs_.clear();
     vecG.clear();
     vecG.resize(X.size());
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.size();i++){
         vecG[i] = Ham_(i,Target_state); //mat[i*X.size()+Target_state];
     }
@@ -1155,6 +1356,10 @@ void Diagonalize(Mat_1_doub &X ,Mat_1_real &Y2 , double & EG, Mat_1_doub & vecG,
     Mat_1_real eigs_;
     Matrix< complex<double> > Ham_;
     Ham_.resize(X.size(),X.size());
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.size();i++){
         for(int j=0;j<=i;j++){
             if(j==i){
@@ -1206,6 +1411,9 @@ void Diagonalize(Mat_1_doub &X ,Mat_1_real &Y2 , double & EG, Mat_1_doub & vecG,
     }*/
     EG=eigs_[T_s];
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.size();i++){
         Evals_Lanczos[i]=eigs_[i];
     }
@@ -1216,9 +1424,15 @@ void Diagonalize(Mat_1_doub &X ,Mat_1_real &Y2 , double & EG, Mat_1_doub & vecG,
     Unit_E_vecs.clear();
     Unit_E_vecs.resize(X.size());
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.size();i++){
         Unit_E_vecs[i].resize(X.size());}
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
     for(int i=0;i<X.size();i++){
 
         vecG[i] = Ham_(i,Target_state);//mat[i*X.size()+Target_state];
