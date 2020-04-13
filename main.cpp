@@ -125,7 +125,7 @@ int main(int argc, char** argv){
 
             _MODEL.Read_parameters_for_dynamics(inp_filename);
 
-            /*
+
             cout<<"-------SzSz(qx,qy)-----------"<<endl;
             for(int nx=0;nx<_BASIS.Lx;nx++){
                 for(int ny=0;ny<_BASIS.Ly;ny++){
@@ -154,7 +154,7 @@ int main(int argc, char** argv){
                 cout<<_MODEL.obs_string[i]<<"  "<<Opr_val<<endl;
                 vector< double_type >().swap(Vec_Temp);
             }
-            */
+
 
 
             _LANCZOS.Write_full_spectrum();
@@ -167,7 +167,7 @@ int main(int argc, char** argv){
 //            _FTLM_STATIC.Hamil = _MODEL.Hamil;
 //            _MODEL.Read_parameters_for_dynamics(inp_filename);
 //            _MODEL.Initialize_Oprs_for_meausurement(_BASIS);
-//            _FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Oprts_array[0]);
+//            _FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Oprts_array);
 
             LTLM_STATIC _LTLM_STATIC;
             _LTLM_STATIC.Hamil = _MODEL.Hamil;
@@ -258,7 +258,7 @@ int main(int argc, char** argv){
             FTLM_STATIC _FTLM_STATIC;
             _FTLM_STATIC.Hamil = _MODEL.Hamil;
 
-            _FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
+           // _FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
 
         }
 
@@ -2825,7 +2825,7 @@ int main(int argc, char** argv){
             FTLM_STATIC _FTLM_STATIC;
             _FTLM_STATIC.Hamil = _MODEL.Hamil;
 
-            _FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
+            //_FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
 
         }
 

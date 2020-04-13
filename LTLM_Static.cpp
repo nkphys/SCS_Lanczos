@@ -151,13 +151,11 @@ void LTLM_STATIC::Perform_LTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
                             *conj(Lanczos_.red_eig_vecs[l][0])*(Lanczos_.red_eig_vecs[j][0]);
                     }
 
+
+                    if(j==l){
                     Conf_Hamil2[Temp_point] += exp(-Beta*( (Lanczos_.Evals_Tri_all[Lanc_steps-1][j] + Lanczos_.Evals_Tri_all[Lanc_steps-1][l])*0.5 - offset_E ))*
                             Lanczos_.Evals_Tri_all[Lanc_steps-1][j]*Lanczos_.Evals_Tri_all[Lanc_steps-1][j]
                             *conj(Lanczos_.red_eig_vecs[l][0])*(Lanczos_.red_eig_vecs[j][0]);
-
-//                    Conf_Hamil[Temp_point] += one*exp(-Beta*(Lanczos_.Evals_Tri_all[Lanc_steps-1][j] - offset_E ))*
-//                            Lanczos_.Evals_Tri_all[Lanc_steps-1][j]
-//                            *abs(Lanczos_.red_eig_vecs[j][0])*abs(Lanczos_.red_eig_vecs[j][0]);
 
                     Conf_Hamil[Temp_point] += exp(-Beta*( (Lanczos_.Evals_Tri_all[Lanc_steps-1][j] + Lanczos_.Evals_Tri_all[Lanc_steps-1][l])*0.5 - offset_E ))*
                             Lanczos_.Evals_Tri_all[Lanc_steps-1][j]
@@ -165,6 +163,7 @@ void LTLM_STATIC::Perform_LTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
 
                     Conf_Partition_Func[Temp_point] += exp(-Beta*( (Lanczos_.Evals_Tri_all[Lanc_steps-1][j] + Lanczos_.Evals_Tri_all[Lanc_steps-1][l])*0.5 - offset_E ))
                             *conj(Lanczos_.red_eig_vecs[l][0])*(Lanczos_.red_eig_vecs[j][0]);
+                    }
 
                 }
             }

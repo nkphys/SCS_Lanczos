@@ -32,7 +32,7 @@ public:
     double Beta;
     double Boltzman_const;
 
-    Mat_1_Complex_doub Sum_Opr_val;
+    Mat_2_doub Sum_Opr_val;
     Mat_1_real Sum_Hamil, Sum_Hamil_Sqr;
     Mat_1_real Sum_Hamil2, Sum_Hamil2_Sqr;
     Mat_1_real Sum_Partition_Func, Sum_Partition_Func_Sqr;
@@ -41,7 +41,7 @@ public:
     Matrix_COO Hamil;
 
 
-    void Perform_FTLM(string inp_filename, Matrix_COO& OPR_);
+    void Perform_FTLM(string inp_filename, Hamiltonian_1_COO& OPR_);
 
 };
 
