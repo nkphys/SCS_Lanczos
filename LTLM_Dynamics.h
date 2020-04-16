@@ -15,10 +15,10 @@
 
 using namespace std;
 
-#ifndef FTLM_DYNAMICS_engine
-#define FTLM_DYNAMICS_engine
+#ifndef LTLM_DYNAMICS_engine
+#define LTLM_DYNAMICS_engine
 
-class FTLM_DYNAMICS{
+class LTLM_DYNAMICS{
 
 public:
 
@@ -26,22 +26,20 @@ public:
     //           Qauntum Avg is just expectation values.
     int Total_Random_States;
     double Temperature;
-    double Temperature_min, Temperature_max, delta_Temperature;
-    int N_Temperature_points;
     int M_;
     double Beta;
     double Boltzman_const;
 
 
-    Mat_2_doub Sum_Cw;
-    Mat_1_real Sum_Partition_Func;
+    Mat_1_doub Sum_Cw;
+    double Sum_Partition_Func;
 
     Matrix_COO Hamil;
 
     Mat_1_real Evals1, Evals2;
 
 
-    void Perform_FTLM(string inp_filename, Matrix_COO& OPR_);
+    void Perform_LTLM(string inp_filename, Matrix_COO& OPR_);
 
 };
 

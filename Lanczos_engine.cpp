@@ -60,6 +60,12 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
 
             if(Get_SeedVec_from_another_routine){
                 Kvector_n = Seed_used;
+
+                tmpnrm_type_double=Norm(Kvector_n);
+                tmpnrm=sqrt(tmpnrm_type_double);
+                for(int j=0;j<Hamil.nrows;j++){
+                    Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
+                }
             }
             else{
                 for(int j=0;j<Hamil.nrows;j++){
@@ -323,6 +329,15 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
 
                 if(Get_SeedVec_from_another_routine){
                     Kvector_n = Seed_used;
+                    tmpnrm_type_double=Norm(Kvector_n);
+                    tmpnrm=sqrt(tmpnrm_type_double);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
+                    for(int j=0;j<Hamil.nrows;j++){
+                        Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
+                    }
                 }
                 else{
                     for(int j=0;j<Hamil.nrows;j++){
@@ -1036,6 +1051,7 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
     string total_random_states_ftlm_, Total_Random_States_FTLM_ = "Number_of_Random_States = ";
     string m_ftlm_, M_FTLM_ = "Number_of_LowKrylov_States_used = ";
     string energy_offset_ftlm_, Energy_Offset_FTLM_ = "Energy_Offset_FTLM = ";
+    string temperature_LTLM_dynamics_, Temperature_LTLM_Dynamics_ = "Temperature_LTLM_Dynamics = ";
 
     int offset;
     string line;
@@ -1051,6 +1067,10 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
 
             if ((offset = line.find(Energy_Offset_FTLM_, 0)) != string::npos) {
                 energy_offset_ftlm_ = line.substr (offset + Energy_Offset_FTLM_.length());		}
+
+
+            if ((offset = line.find(Temperature_LTLM_Dynamics_, 0)) != string::npos) {
+                temperature_LTLM_dynamics_ = line.substr (offset + Temperature_LTLM_Dynamics_.length());		}
 
             if ((offset = line.find(M_FTLM_, 0)) != string::npos) {
                 m_ftlm_ = line.substr (offset + M_FTLM_.length());		}
@@ -1152,6 +1172,7 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
     Total_Random_States_for_FTLM=atoi(total_random_states_ftlm_.c_str());
     M_FTLM=atoi(m_ftlm_.c_str());
     Energy_Offset_FTLM=atof(energy_offset_ftlm_.c_str());
+    Temperature_LTLM_Dynamics=atof(temperature_LTLM_dynamics_.c_str());
     Lanc_Error=atof(lanc_error_.c_str());
     max_steps=atoi(max_steps_.c_str());
     few_=atoi(few__.c_str());

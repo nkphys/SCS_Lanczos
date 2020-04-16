@@ -1,16 +1,16 @@
 Model = SpinOnly
 ------------------------------------------
-PBC = false
+PBC = true
 Length = 8
 TwoTimesSpin = 1
 H_mag = 0 0 -0.00
 D_anisotropy = 0 0 0.00
-LongRangeExchangeZZ file = Jzz_AFM_L8chain.txt
-LongRangeExchangePM file = Jpm_AFM_L8chain.txt
+LongRangeExchangeZZ file = Jzz_longrange_8.txt
+LongRangeExchangePM file = Jzz_longrange_8.txt
 ----------------------------------------
 
 No_of_onepoint_obs = 1
-One_point_oprt_path_1 = Sz_S2.txt
+One_point_oprt_path_1 = Sz.txt
 One_point_oprt_path_2 = Sm.txt
 
 
@@ -18,8 +18,8 @@ One_point_oprt_path_2 = Sm.txt
 FourPointObservablesSites file = fourpoint.txt
 -------------------------------------
 Lanc_Error = -10e-16
-max_steps = 60
-Random_seed_generator = 123
+max_steps = 220
+Random_seed_generator = 2
 file_eval_spectrum = out0.txt
 save_all_Krylov_space_vecs = true
 get_overlap_bw_eigstates_and_K_vecs = true
@@ -37,10 +37,13 @@ file_out_local_obs_for_states_to_look = local_obs_for_state_no
 --------------------------------------
 
 
-Static_Finite_Temperature = true
-Number_of_Random_States = 400
-Number_of_LowKrylov_States_used = 40
-Temperature = 0.2
+Static_Finite_Temperature = false
+Dynamics_Finite_Temperature = true
+Number_of_Random_States = 20
+Number_of_LowKrylov_States_used = 200
+Temperature_Range = 0.1 0.01 1.0
+Energy_Offset_FTLM = -3.6510934089371769317
+Temperature_LTLM_Dynamics = 0.91
 
 
 ----------------------------------
@@ -50,9 +53,10 @@ check_omega = 0.2
 omega_max = 10.0
 omega_min = 0.0
 d_omega = 0.01
-Opr_for_Dynamics = Sm
+Opr_for_Dynamics = Sz
 Momentum_resolved = true
-k = 0.117647058
-file_dynamics_out = Dyn_Sm_K_n1
+k = 0.1
+file_dynamics_out = Dyn_Sz_K0.1
 ---------------------------------
 
+Processors = 1

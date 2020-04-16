@@ -69,6 +69,7 @@ public:
     double delta_Temperature_FTLM, Temprature_min_FTLM, Temprature_max_FTLM ;
     int M_FTLM;
     double Energy_Offset_FTLM;
+    double Temperature_LTLM_Dynamics;
 
     bool Get_insitu_FTLM_overlaps;
     bool Save_the_Seed;

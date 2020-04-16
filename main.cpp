@@ -30,6 +30,7 @@
 #include "FTLM_Static.h"
 #include "LTLM_Static.h"
 #include "FTLM_Dynamics.h"
+#include "LTLM_Dynamics.h"
 #include "reading_input.h"
 
 //Remember "cpp" files for templated class over basis need to be included in this code
@@ -92,7 +93,7 @@ int main(int argc, char** argv){
 
 
 
-        if(!Static_Finite_Temp){
+        if(! (Static_Finite_Temp || Dynamics_Finite_Temp) ){
             if(_MODEL.Hamil.nrows<700){
                 DO_FULL_DIAGONALIZATION=true;
             }
@@ -179,13 +180,24 @@ int main(int argc, char** argv){
 
 
         if(Dynamics_Finite_Temp){
-            FTLM_DYNAMICS _FTLM_DYNAMICS;
-            _FTLM_DYNAMICS.Hamil = _MODEL.Hamil;
+//            FTLM_DYNAMICS _FTLM_DYNAMICS;
+//            _FTLM_DYNAMICS.Hamil = _MODEL.Hamil;
+
+//            _MODEL.Read_parameters_for_dynamics(inp_filename);
+//            _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+
+//            _FTLM_DYNAMICS.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
+
+
+            if(true){
+            LTLM_DYNAMICS _LTLM_DYNAMICS;
+            _LTLM_DYNAMICS.Hamil = _MODEL.Hamil;
 
             _MODEL.Read_parameters_for_dynamics(inp_filename);
             _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
 
-            _FTLM_DYNAMICS.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
+            _LTLM_DYNAMICS.Perform_LTLM(inp_filename, _MODEL.Dyn_opr);
+            }
 
         }
 
@@ -213,7 +225,7 @@ int main(int argc, char** argv){
         _LANCZOS.Dynamics_performed=false;
         _LANCZOS.Read_Lanczos_parameters(inp_filename);
 
-
+         if( !(Dynamics_Finite_Temp || Static_Finite_Temp) ){
         _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
         _LANCZOS.Write_full_spectrum();
         Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS.txt");
@@ -221,7 +233,7 @@ int main(int argc, char** argv){
         _MODEL.Initialize_one_point_to_calculate_from_file(_BASIS);
         _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0);
         _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0, model_name);
-
+         }
 
         cout<<"Dynamics startedXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
 
@@ -263,6 +275,8 @@ int main(int argc, char** argv){
         }
 
         if(Dynamics_Finite_Temp){
+
+            if(false){
             FTLM_DYNAMICS _FTLM_DYNAMICS;
             _FTLM_DYNAMICS.Hamil = _MODEL.Hamil;
 
@@ -275,6 +289,24 @@ int main(int argc, char** argv){
             }
 
             _FTLM_DYNAMICS.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
+
+        }
+
+        if(true){
+            LTLM_DYNAMICS _LTLM_DYNAMICS;
+            _LTLM_DYNAMICS.Hamil = _MODEL.Hamil;
+
+            _MODEL.Read_parameters_for_dynamics(inp_filename);
+            if(!_MODEL.Dyn_Momentum_Resolved){
+                int site_=0;
+                _MODEL.Initialize_Opr_for_Dynamics(_BASIS, site_);}
+            else{
+                _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+            }
+
+            _LTLM_DYNAMICS.Perform_LTLM(inp_filename, _MODEL.Dyn_opr);
+
+        }
 
         }
 

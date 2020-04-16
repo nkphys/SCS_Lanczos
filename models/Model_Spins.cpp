@@ -540,7 +540,7 @@ void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis){
         }
         else{
 #ifdef USE_COMPLEX
-            value2=exp(iota_comp*(1.0*(site+2))*Dyn_Momentum*PI)*sqrt(1.0/(basis.Length));
+            value2=exp(iota_comp*(1.0*(site+1))*Dyn_Momentum*PI)*sqrt(1.0/(basis.Length));
 #endif
 #ifndef USE_COMPLEX
             cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
@@ -552,7 +552,7 @@ void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis){
             }
             else{
 #ifdef USE_COMPLEX
-                value1=exp(iota_comp*(1.0*site+1)*Dyn_Momentum*PI)*sqrt(1.0/(basis.Length));
+                value1=exp(iota_comp*(1.0*site)*Dyn_Momentum*PI)*sqrt(1.0/(basis.Length));
 #endif
             }
             Sum(temp, Oprs_local[site+1], temp, value1, value2);}

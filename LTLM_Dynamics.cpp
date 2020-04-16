@@ -1,4 +1,4 @@
-#include "FTLM_Dynamics.h"
+#include "LTLM_Dynamics.h"
 #include <stdlib.h>
 
 #define PI 3.14159265
@@ -8,7 +8,7 @@ using namespace std;
 
 
 
-void FTLM_DYNAMICS::Perform_FTLM(string inp_filename, Matrix_COO& OPR_){
+void LTLM_DYNAMICS::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
 
 
     LANCZOS Lanczos1_;LANCZOS Lanczos2_;
@@ -56,20 +56,12 @@ void FTLM_DYNAMICS::Perform_FTLM(string inp_filename, Matrix_COO& OPR_){
     Boltzman_const = 1.0;
 
 
-    Temperature_min = Lanczos1_.Temprature_min_FTLM;
-    Temperature_max = Lanczos1_.Temprature_max_FTLM;
-    delta_Temperature = Lanczos1_.delta_Temperature_FTLM;
-    assert(Temperature_max >= Temperature_min);
-    assert(delta_Temperature != 0.0);
-    N_Temperature_points = int((Temperature_max - Temperature_min)/(delta_Temperature) + 0.5 );
+    Temperature = Lanczos1_.Temperature_LTLM_Dynamics;
+    Beta = 1.0/(Boltzman_const*Temperature);
 
     cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
-    cout <<"No. of Temperature points = "<<N_Temperature_points<<", min = "<<Temperature_min<<", max="<<Temperature_max<<endl;
+    cout<<"For Temperature = "<<Temperature<<endl;
     cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
-
-
-//    Temperature = 100.0; //CHANGE THIS
-//    Beta = 1.0/(Boltzman_const*Temperature);
 
 
     //Save Eigenvectors only for Lanczos-1, Lanczos-2.
@@ -97,21 +89,15 @@ void FTLM_DYNAMICS::Perform_FTLM(string inp_filename, Matrix_COO& OPR_){
     Conf_Cw.resize(omega_points);
 
 
-
-    Sum_Partition_Func.resize(N_Temperature_points);
-    Sum_Cw.resize(N_Temperature_points);
-
-    for(int Temp_point=0;Temp_point<N_Temperature_points;Temp_point++){
-    Sum_Partition_Func[Temp_point]=0.0;
-    Sum_Cw[Temp_point].resize(omega_points);
+    Sum_Partition_Func=0.0;
+    Sum_Cw.resize(omega_points);
     for(int point=0;point<omega_points;point++){
-        Sum_Cw[Temp_point][point]=zero;
-    }
+        Sum_Cw[point]=zero;
     }
 
     offset_E = Lanczos1_.Energy_Offset_FTLM;
 
-
+    double_type temp_coeff;
     for(int run_no=0;run_no<Total_Random_States;run_no++){
 
 
@@ -131,7 +117,19 @@ void FTLM_DYNAMICS::Perform_FTLM(string inp_filename, Matrix_COO& OPR_){
             Matrix_COO_vector_multiplication("FULL", OPR_, Lanczos1_.Eig_vecs[i], Lanczos2_.Vecs_FTLM[i]);
             vector < double_type >().swap(Lanczos1_.Eig_vecs[i]);
         }
-        Matrix_COO_vector_multiplication("FULL", OPR_, Lanczos1_.Saved_Seed, Lanczos2_.Seed_used);
+
+        //Creating Seed for Lanczos2_
+        Lanczos2_.Seed_used.resize(OPR_.ncols);
+        for(int i=0;i<Lanczos2_.Seed_used.size();i++){Lanczos2_.Seed_used[i]=zero;}
+
+        for(int l=0;l<M_;l++){
+        temp_coeff = exp(-Beta*0.5*(Evals1[l] - offset_E))*conj(Lanczos1_.red_eig_vecs[l][0]);
+        Subtract(Lanczos2_.Seed_used, -1.0*temp_coeff, Lanczos2_.Vecs_FTLM[l]);
+        }
+
+        double_type check_orth;
+        check_orth = dot_product(Lanczos2_.Seed_used , Lanczos1_.Eig_vec);
+        cout<<"|<Lanczos-2_SEED|Lanczos_1_GS>| = "<<abs(check_orth)<<endl;
 
 
         cout<<"-------LANCZOS-2 PERFORMED FOR CONFIGURATION NO. "<<run_no<<" with seed = OPR|"<<Lanczos1_.Random_seed_value<<">";
@@ -140,17 +138,13 @@ void FTLM_DYNAMICS::Perform_FTLM(string inp_filename, Matrix_COO& OPR_){
         Evals2 = Lanczos2_.Evals_Tri_all[Lanc_steps-1];
 
 
-        for(int Temp_point=0;Temp_point<N_Temperature_points;Temp_point++){
-            Temperature = Temperature_min + Temp_point*(delta_Temperature);
-            Beta = 1.0/(Boltzman_const*Temperature);
-
         Conf_Partition_Func = 0.0;
         for(int j=0;j<M_;j++){
             Conf_Partition_Func += exp(-Beta*(Evals1[j] - offset_E))
                     *abs(Lanczos1_.red_eig_vecs[j][0])*abs(Lanczos1_.red_eig_vecs[j][0]);
         }
 
-        Sum_Partition_Func[Temp_point] += Conf_Partition_Func;
+        Sum_Partition_Func += Conf_Partition_Func; //*exp(-Beta*(0.5*offset_E));
 
         for(int point=0;point<omega_points;point++){
             omega = Lanczos1_.omega_min + (point*Lanczos1_.d_omega);
@@ -159,18 +153,19 @@ void FTLM_DYNAMICS::Perform_FTLM(string inp_filename, Matrix_COO& OPR_){
             for(int i=0;i<M_;i++){
                 for(int j=0;j<M_;j++){
 #ifdef USE_COMPLEX
-                    Conf_Cw[point] += exp(-Beta*(Evals1[i] - offset_E))*Lanczos1_.red_eig_vecs[i][0]*conj(Lanczos2_.red_eig_vecs[j][0])*
+                    Conf_Cw[point] += exp(-Beta*0.5*(Evals1[i]-offset_E))*Lanczos1_.red_eig_vecs[i][0]*conj(Lanczos2_.red_eig_vecs[j][0])*
                             Lanczos2_.Mat_elements[i][j]*
                             Lorentzian(Lanczos1_.eta, (omega - Evals2[j] + Evals1[i]) );
 #endif
 #ifndef USE_COMPLEX
-                    Conf_Cw[point] += exp(-Beta*(Evals1[i] - offset_E))*Lanczos1_.red_eig_vecs[i][0]*(Lanczos2_.red_eig_vecs[j][0])*
+                    Conf_Cw[point] += exp(-Beta*0.5*(Evals1[i]-offset_E))*Lanczos1_.red_eig_vecs[i][0]*(Lanczos2_.red_eig_vecs[j][0])*
                             Lanczos2_.Mat_elements[i][j]*
                             Lorentzian(Lanczos1_.eta, (omega - Evals2[j] + Evals1[i]) );
 #endif
                 }
+
             }
-            Sum_Cw[Temp_point][point] += Conf_Cw[point];
+            Sum_Cw[point] += Conf_Cw[point];
         }
 
 
@@ -181,7 +176,7 @@ void FTLM_DYNAMICS::Perform_FTLM(string inp_filename, Matrix_COO& OPR_){
             sprintf(run_no_char,"%d", run_no);
 
             char Temperature_char[50];
-            sprintf(Temperature_char,"%d", Temp_point);
+            sprintf(Temperature_char,"%.3f", Temperature);
 
 
             string out_filerun = "FTLM_Dynamics_out_randomstates" + string(run_no_char) + "_Temperature" + string(Temperature_char) +".txt";
@@ -192,14 +187,14 @@ void FTLM_DYNAMICS::Perform_FTLM(string inp_filename, Matrix_COO& OPR_){
                 omega = Lanczos1_.omega_min + (point*Lanczos1_.d_omega);
 
 #ifdef USE_COMPLEX
-                filerun_out<<omega<<"    "<<Sum_Cw[Temp_point][point].real()<<"   "<<Sum_Cw[Temp_point][point].imag()<<"   "<<Sum_Partition_Func[Temp_point]<<endl;
+                filerun_out<<omega<<"    "<<Sum_Cw[point].real()<<"   "<<Sum_Cw[point].imag()<<"   "<<Sum_Partition_Func<<endl;
 #endif
 #ifndef USE_COMPLEX
-                filerun_out<<omega<<"    "<<Sum_Cw[Temp_point][point]<<"   "<<Sum_Partition_Func[Temp_point]<<endl;
+                filerun_out<<omega<<"    "<<Sum_Cw[point]<<"   "<<Sum_Partition_Func<<endl;
 #endif
             }
         }
-    }
+
 
 
         cout<<"Run_no = "<<run_no<<"   "<<"completed"<<endl;

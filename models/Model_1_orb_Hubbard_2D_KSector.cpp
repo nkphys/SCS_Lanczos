@@ -560,6 +560,8 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2
         Oprs_local.nrows = basis.D_up_basis.size() ;
         Oprs_local.ncols = Oprs_local.nrows;
         Matrix_COO temp;
+        temp.nrows = basis.D_up_basis.size() ;
+        temp.ncols = temp.nrows;
 
         for(int ix=0;ix<basis.Lx;ix++){
             for(int iy=0;iy<basis.Ly;iy++){
@@ -592,12 +594,10 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2
                 cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
 #endif
 
-                if(site==0){
-                    temp=Oprs_local;
-                }
-                if(site!=0){
-                    Sum(temp, Oprs_local, temp, 1.0, value2);
-                }
+
+
+                Sum(temp, Oprs_local, temp, 1.0, value2);
+
 
                 vector< int >().swap( Oprs_local.columns );
                 vector< int >().swap( Oprs_local.rows );
@@ -973,42 +973,42 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Oprs_for_meausurement(BASIS_1_orb_H
     temp.ncols = temp.nrows;
 
 
-            for(int ix=0;ix<basis.Lx;ix++){
-                for(int iy=0;iy<basis.Ly;iy++){
-                    site_i = ix + iy*(basis.Lx);
+    for(int ix=0;ix<basis.Lx;ix++){
+        for(int iy=0;iy<basis.Ly;iy++){
+            site_i = ix + iy*(basis.Lx);
 
-                    Oprs_i.value.clear();
-                    Oprs_i.rows.clear();
-                    Oprs_i.columns.clear();
+            Oprs_i.value.clear();
+            Oprs_i.rows.clear();
+            Oprs_i.columns.clear();
 
-                    for (int i=0;i<basis.D_up_basis.size();i++){
+            for (int i=0;i<basis.D_up_basis.size();i++){
 
-                        m=i;
-                        j=i;
+                m=i;
+                j=i;
 
-                        value=(1.0)*
-                              (bit_value(basis.D_up_basis[i], site_i))*
-                              (bit_value(basis.D_dn_basis[i], site_i));
+                value=(1.0)*
+                        (bit_value(basis.D_up_basis[i], site_i))*
+                        (bit_value(basis.D_dn_basis[i], site_i));
 
-                        if(value!=0){
-                            Oprs_i.value.push_back(value*one);
-                            Oprs_i.rows.push_back(m);
-                            Oprs_i.columns.push_back(m);
-                        }
-                    }
-
-
-                    value2=(1.0/(basis.Length));
-
-
-                    Sum(temp, Oprs_i, temp, 1.0*one, value2);
-
-                    vector< int >().swap( Oprs_i.columns );
-                    vector< int >().swap( Oprs_i.rows );
-                    vector< double_type >().swap( Oprs_i.value );
-
+                if(value!=0){
+                    Oprs_i.value.push_back(value*one);
+                    Oprs_i.rows.push_back(m);
+                    Oprs_i.columns.push_back(m);
                 }
             }
+
+
+            value2=(1.0/(basis.Length));
+
+
+            Sum(temp, Oprs_i, temp, 1.0*one, value2);
+
+            vector< int >().swap( Oprs_i.columns );
+            vector< int >().swap( Oprs_i.rows );
+            vector< double_type >().swap( Oprs_i.value );
+
+        }
+    }
 
     Oprts_array[2] = temp;
     vector< int >().swap( temp.columns );

@@ -2,36 +2,36 @@ Model = 1_orb_Hubbard_2D_KSector
 ------------------------------------------
 PBC = true
 Lx = 8
-Ly = 2
+Ly = 1
 Momentum_nx = 0
 Momentum_ny = 0
-Ndown = 5
+Ndown = 4
 Nup = 4
 
 Hopping_NN = 1.0
 
-U = 8.0
+U = 50.0
 H_mag = 0
 ----------------------------------------
 
-Read_Basis_bool = true
+Read_Basis_bool = false
 Read_File_Basis = OUT_TEST
 
 Write_Basis_bool = false
 Write_File_Basis = OUT_TEST
 
-Random_seed_generator = 12
+Random_seed_generator = 13
 Read_the_seed = false
 seed_file = seed_GS_old.txt
 
 
 --------------------------------------
-Lanc_Error = 10e-12
-max_steps = 100
+Lanc_Error = -10e-12
+max_steps = 200
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = false
-get_overlap_bw_eigstates_and_K_vecs = false
-lanczos_reorthogonalization = false
+save_all_Krylov_space_vecs = true
+get_overlap_bw_eigstates_and_K_vecs = true
+lanczos_reorthogonalization = true
 Get_Full_Spectrum = true
 need_few_eig_vecs = true
 few = 1
@@ -45,18 +45,19 @@ file_out_local_obs_for_states_to_look = local_obs_for_state_no
 --------------------------------------
 
 Static_Finite_Temperature = false
-Dynamics_Finite_Temperature = false
-Number_of_Random_States = 200
-Number_of_LowKrylov_States_used = 250
-Temperature_Range = 0.01 0.00001 12.0
-Energy_Offset_FTLM = -3.467173437214044
+Dynamics_Finite_Temperature = true
+Number_of_Random_States = 2
+Number_of_LowKrylov_States_used = 180
+Temperature_Range = 0.1 0.01 1.0
+Energy_Offset_FTLM = -0.4096380939139
+Temperature_LTLM_Dynamics = 0.001
 ----------------------------------
 Perform_Dynamics = false
 check_omega = 0.05
 Opr_for_Dynamics = Sz
 Momentum_resolved = true
-kx_for_dynamics = 1.0
-ky_for_dynamics = 1.0
+kx_for_dynamics = 0.5
+ky_for_dynamics = 0.0
 file_dynamics_out = out_dyn.txt
 ---------------------------------
 
@@ -76,4 +77,4 @@ Light_polarization_in = 0 1 0
 Incident_energy = 0.1
 ----------------------------------------
 
-Processors = 4
+Processors = 2
