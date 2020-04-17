@@ -440,6 +440,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_connections(){
     if(USE_LONG_RANGE_HOPPINGS){
     //Hopping_mat_LongRange
         double_type value;
+        value=one;
         int m,j;
         int D_up,D_dn;
         int i_new,j_new;
@@ -1254,7 +1255,7 @@ template <typename Basis_type>
 void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
 
 
-    USE_LONG_RANGE_HOPPINGS = false;
+    USE_LONG_RANGE_HOPPINGS = true;
     string filepath = filename;
 
     double temp_val;

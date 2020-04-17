@@ -1,3 +1,5 @@
+*.inp
+*.dat
 *txt
 *LOCAL
 *.o
