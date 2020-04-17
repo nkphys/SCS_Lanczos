@@ -6,6 +6,7 @@ PBC = false
 Length = 4
 N_Total = 16
 CFS = -0.1 0.0 0.8
+LongRangeHopping_file = Hopping_L4.txt
  
 Hopping_mat[0][orb] = -0.5 0.0 0.1
 Hopping_mat[1][orb] = 0.0 -0.5 0.1

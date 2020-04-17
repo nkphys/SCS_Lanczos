@@ -137,7 +137,6 @@ void LTLM_DYNAMICS::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
         Lanczos2_.Perform_LANCZOS(Hamil);
         Evals2 = Lanczos2_.Evals_Tri_all[Lanc_steps-1];
 
-
         Conf_Partition_Func = 0.0;
         for(int j=0;j<M_;j++){
             Conf_Partition_Func += exp(-Beta*(Evals1[j] - offset_E))

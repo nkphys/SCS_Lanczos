@@ -435,8 +435,241 @@ template <typename Basis_type>
 void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_connections(){
 
     //REMEMBER TO PUT IT FALSE
-    bool make_blocks=false;
 
+
+    if(USE_LONG_RANGE_HOPPINGS){
+    //Hopping_mat_LongRange
+        double_type value;
+        int m,j;
+        int D_up,D_dn;
+        int i_new,j_new;
+        int nup_temp, ndn_temp;
+        int N1_temp, N2_temp;
+        int m_new;
+        double sign_FM;
+        int sign_pow_up, sign_pow_dn;
+        int l,lp;
+        double_type check_val;
+
+        for (int i=0;i<basis.D_up_basis.size();i++){
+            //cout<<i<<" done"<<endl;
+            m=i;
+            j=i;
+
+            for(int site=0;site<basis.Length ;site++){
+
+                for(int gamma=0;gamma<3;gamma++){
+
+                    for(int site_p=0;site_p<basis.Length ;site_p++){
+
+                        for(int gamma_p=gamma;gamma_p>=0;gamma_p--){
+
+                            check_val = Hopping_mat_LongRange[site_p + gamma_p*basis.Length][site + gamma*basis.Length];
+
+                            if(
+                                (site + gamma*basis.Length)>(site_p + gamma_p*basis.Length)
+                                    &&
+                                (check_val!=zero)
+                                    )
+                            {
+
+
+
+
+                                //---------------Hopping for up electrons-------------------//
+                                //there have to be one up electron in gamma, site
+                                //there have to be no up electron in gamma_p, site_p
+                                if(
+                                        (bit_value(basis.D_up_basis[i],gamma*basis.Length + site)==1)
+                                        &&
+                                        (bit_value(basis.D_up_basis[i],gamma_p*basis.Length + site_p)==0)
+                                        )
+                                {
+
+
+
+                                    D_up = (int) (basis.D_up_basis[i] + pow(2,gamma_p*basis.Length + site_p)
+                                                  - pow(2,gamma*basis.Length + site) );
+                                    D_dn = basis.D_dn_basis[j];
+
+                                    //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,basis.D_dn_basis);
+
+                                    if(basis.Restricted==true){
+                                        nup_temp = __builtin_popcount(D_up);
+                                        ndn_temp = __builtin_popcount(D_dn);
+                                        // m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
+                                        //       basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
+                                        m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+                                        N1_temp =0;
+                                        N2_temp =0;
+                                        for(int orb_temp=0;orb_temp<3;orb_temp++){
+                                            N1_temp += bit_value(D_up,orb_temp*basis.Length + site) +
+                                                    bit_value(D_dn,orb_temp*basis.Length + site);
+                                            N2_temp += bit_value(D_up,orb_temp*basis.Length + site_p) +
+                                                    bit_value(D_dn,orb_temp*basis.Length + site_p);
+
+                                        }
+
+
+
+
+
+
+                                    }
+                                    else{
+                                        i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                                        j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+                                        m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                                                basis.Nup_offsets[__builtin_popcount(D_up)].first;
+                                    }
+
+                                    //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,
+                                    //basis.D_dn_basis,__builtin_popcount(D_up),basis.Nup_offsets);
+
+                                    l=gamma*basis.Length + site;
+                                    lp=gamma_p*basis.Length + site_p;
+
+                                    sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+
+                                    sign_FM = pow(-1.0, sign_pow_up);
+
+
+                                    if(!basis.Restricted){
+                                            assert(m_new<m);
+                                            Hamil.value.push_back(-1.0*sign_FM*(check_val)*one*value);
+                                            Hamil.rows.push_back((m_new));
+                                            Hamil.columns.push_back((m));
+
+                                            Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(check_val)*one*value);
+                                            Macro_oprts[num_Hopping].rows.push_back((m_new));
+                                            Macro_oprts[num_Hopping].columns.push_back((m));
+
+                                    }
+                                    else{
+                                        if(    Is_int_in_array(N1_temp, basis.Local_occupations_allowed)
+                                                &&
+                                                Is_int_in_array(N2_temp, basis.Local_occupations_allowed)
+                                                ){
+                                            assert(m_new<m);
+                                            Hamil.value.push_back(-1.0*sign_FM*(check_val)*one*value);
+                                            Hamil.rows.push_back((m_new));
+                                            Hamil.columns.push_back((m));
+
+                                            Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(check_val)*one*value);
+                                            Macro_oprts[num_Hopping].rows.push_back((m_new));
+                                            Macro_oprts[num_Hopping].columns.push_back((m));
+
+
+                                        }
+                                    }
+
+                                } // if up hopping possible
+
+
+                                //---------------Hopping for dn electrons-------------------//
+                                //there have to be one dn electron in gamma, site
+                                //there have to be no dn electron in gamma_p, site_p
+                                if(
+                                        (bit_value(basis.D_dn_basis[j],gamma*basis.Length + site)==1)
+                                        &&
+                                        (bit_value(basis.D_dn_basis[j],gamma_p*basis.Length + site_p)==0)
+                                        )
+                                {
+
+                                    D_up = basis.D_up_basis[i];
+                                    D_dn = (int) (basis.D_dn_basis[j] + pow(2,gamma_p*basis.Length + site_p)
+                                                  - pow(2,gamma*basis.Length + site) );
+
+
+                                    //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,basis.D_dn_basis);
+                                    if(basis.Restricted==true){
+                                        nup_temp = __builtin_popcount(D_up);
+                                        ndn_temp = __builtin_popcount(D_dn);
+                                        //  m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
+                                        //        basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
+                                        m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+                                        N1_temp =0;
+                                        N2_temp =0;
+                                        for(int orb_temp=0;orb_temp<3;orb_temp++){
+                                            N1_temp += bit_value(D_up,orb_temp*basis.Length + site) +
+                                                    bit_value(D_dn,orb_temp*basis.Length + site);
+                                            N2_temp += bit_value(D_up,orb_temp*basis.Length + site_p) +
+                                                    bit_value(D_dn,orb_temp*basis.Length + site_p);
+
+                                        }
+
+                                    }
+                                    else{
+                                        i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                                        j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+                                        m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                                                basis.Nup_offsets[__builtin_popcount(D_up)].first;
+                                    }
+
+                                    //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,
+                                    //basis.D_dn_basis,__builtin_popcount(D_up),basis.Nup_offsets);
+
+                                    l=gamma*basis.Length + site;
+                                    lp=gamma_p*basis.Length + site_p;
+
+                                    sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+
+                                    sign_FM = pow(-1.0, sign_pow_dn);
+
+
+                                    if(!basis.Restricted){
+                                            assert(m_new<m);
+                                            Hamil.value.push_back(-1.0*sign_FM*(check_val)*one*value);
+                                            Hamil.rows.push_back((m_new));
+                                            Hamil.columns.push_back((m));
+
+                                            Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(check_val)*one*value);
+                                            Macro_oprts[num_Hopping].rows.push_back((m_new));
+                                            Macro_oprts[num_Hopping].columns.push_back((m));
+
+                                    }
+                                    else{
+                                        if( Is_int_in_array(N1_temp, basis.Local_occupations_allowed)
+                                                &&
+                                                Is_int_in_array(N2_temp, basis.Local_occupations_allowed)
+                                                ){
+                                            assert(m_new<m);
+                                            Hamil.value.push_back(-1.0*sign_FM*(check_val)*one*value);
+                                            Hamil.rows.push_back((m_new));
+                                            Hamil.columns.push_back((m));
+
+                                            Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(check_val)*one*value);
+                                            Macro_oprts[num_Hopping].rows.push_back((m_new));
+                                            Macro_oprts[num_Hopping].columns.push_back((m));
+
+                                        }
+                                    }
+
+
+                                } // if dn hopping possible
+
+
+                            }//nearest neighbour
+                        } //gamma_p
+
+                    }//site_p
+
+                } //gamma
+
+
+            } // site
+
+        } // "i" i.e up_decimals
+
+    //LONG RANGE DONE
+    }
+    else
+    {
+    bool make_blocks=false;
     double_type value;
     int m,j;
     int D_up,D_dn;
@@ -727,6 +960,8 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_connections(){
         } // site
 
     } // "i" i.e up_decimals
+
+    }
 
 }
 
@@ -1019,8 +1254,8 @@ template <typename Basis_type>
 void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
 
 
+    USE_LONG_RANGE_HOPPINGS = false;
     string filepath = filename;
-
 
     double temp_val;
     string pbc_,PBC_ ="PBC = ";
@@ -1042,6 +1277,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
     string hopp2_, Hopp2_ = "Hopping_mat[2][orb] = ";
 
     string restriction_on_local_occupations_, Restriction_On_Local_Occupations_ = "Restriction_on_local_occupations = ";
+    string LongRangeHoppingfile_ = "LongRangeHopping_file = ";
 
 
 
@@ -1056,6 +1292,8 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
         {
             getline(inputfile,line);
 
+            if ((offset = line.find(LongRangeHoppingfile_, 0)) != string::npos) {
+                LongRangeHoppingfilepath = line.substr (offset+LongRangeHoppingfile_.length());  }
 
             if ((offset = line.find(PBC_, 0)) != string::npos) {
                 pbc_ = line.substr (offset+PBC_.length());				}
@@ -1250,6 +1488,10 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
         }
     }
 
+    if(USE_LONG_RANGE_HOPPINGS){
+    cout<<"Reading hopping matrix from : "<<LongRangeHoppingfilepath<<endl;
+    Read_matrix_from_file(LongRangeHoppingfilepath, Hopping_mat_LongRange , 3*basis.Length, 3*basis.Length);
+    }
 
 }
 

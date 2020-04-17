@@ -1,0 +1,13 @@
+ze__ro t1m_00 t2m_00 ze__ro ze__ro t1m_10 t2m_10 ze__ro ze__ro t1m_20 t2m_20 ze__ro
+t1p_00 ze__ro t1m_00 t2m_00 t1p_10 ze__ro t1m_10 t2m_10 t1p_20 ze__ro t1m_20 t2m_20
+t2p_00 t1p_00 ze__ro t1m_00 t2p_10 t1p_10 ze__ro t1m_10 t2p_20 t1p_20 ze__ro t1m_20
+ze__ro t2p_00 t1p_00 ze__ro ze__ro t2p_10 t1p_10 ze__ro ze__ro t2p_20 t1p_20 ze__ro
+ze__ro t1m_01 t2m_01 ze__ro ze__ro t1m_11 t2m_11 ze__ro ze__ro t1m_21 t2m_21 ze__ro 
+t1p_01 ze__ro t1m_01 t2m_01 t1p_11 ze__ro t1m_11 t2m_11 t1p_21 ze__ro t1m_21 t2m_21
+t2p_01 t1p_01 ze__ro t1m_01 t2p_11 t1p_11 ze__ro t1m_11 t2p_21 t1p_21 ze__ro t1m_21
+ze__ro t2p_01 t1p_01 ze__ro ze__ro t2p_11 t1p_11 ze__ro ze__ro t2p_21 t1p_21 ze__ro
+ze__ro t1m_02 t2m_02 ze__ro ze__ro t1m_02 t2m_02 ze__ro	ze__ro t1m_22 t2m_22 ze__ro
+t1p_02 ze__ro t1m_02 t2m_02 t1p_02 ze__ro t1m_02 t2m_02 t1p_00 ze__ro t1m_22 t2m_22
+t2p_02 t1p_02 ze__ro t1m_02 t2p_02 t1p_02 ze__ro t1m_02 t2p_22 t1p_22 ze__ro t1m_22
+ze__ro t2p_02 t1p_02 ze__ro ze__ro t2p_02 t1p_02 ze__ro ze__ro t2p_11 t1p_22 ze__ro					
+ 

@@ -23,6 +23,9 @@ public:
     double U_p;
     double J_H;
     Mat_2_real Hopping_mat_NN;//Nearest neighbour hopping matrix
+    bool USE_LONG_RANGE_HOPPINGS;
+    string LongRangeHoppingfilepath;
+    Mat_2_doub Hopping_mat_LongRange;
     Mat_1_real CFS;
     Mat_2_real CFS_SITE_RESOLVED_;
     bool CFS_SITE_RESOLVED_bool;
