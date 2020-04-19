@@ -10,7 +10,7 @@ Nup = 4
 
 Hopping_NN = 1.0
 
-U = 50.0
+U = 10.0
 H_mag = 0
 ----------------------------------------
 
@@ -45,24 +45,24 @@ file_out_local_obs_for_states_to_look = local_obs_for_state_no
 --------------------------------------
 
 Static_Finite_Temperature = false
-Dynamics_Finite_Temperature = true
+Dynamics_Finite_Temperature = false
 Number_of_Random_States = 2
-Number_of_LowKrylov_States_used = 180
+Number_of_LowKrylov_States_used = 198
 Temperature_Range = 0.1 0.01 1.0
-Energy_Offset_FTLM = -0.4096380939139
+Energy_Offset_FTLM = -3.09605622505854860549
 Temperature_LTLM_Dynamics = 0.001
 ----------------------------------
-Perform_Dynamics = false
+Perform_Dynamics = true
 check_omega = 0.05
 Opr_for_Dynamics = Sz
 Momentum_resolved = true
-kx_for_dynamics = 0.5
+kx_for_dynamics = 1.0
 ky_for_dynamics = 0.0
-file_dynamics_out = out_dyn.txt
+file_dynamics_out = Sz_k6by6_dyn.txt
 ---------------------------------
 
 ---------------For both RIXS and std. dynamics---------
-eta = 0.05
+eta = 0.02
 omega_max = 20.0
 omega_min = 0.02
 d_omega = 0.001

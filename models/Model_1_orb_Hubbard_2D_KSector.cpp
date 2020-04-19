@@ -615,6 +615,10 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2
 
 
     }
+    else{
+        cout<<"Only Sz operator is implemented for dynamics"<<endl;
+        assert(false);
+    }
 
 
 

@@ -156,9 +156,32 @@ int main(int argc, char** argv){
                 vector< double_type >().swap(Vec_Temp);
             }
 
-
-
             _LANCZOS.Write_full_spectrum();
+
+
+            if(Do_Dynamics){
+
+                _MODEL.Read_parameters_for_dynamics(inp_filename);
+
+                LANCZOS _LANCZOS_Dynamics;
+                _LANCZOS_Dynamics.Dynamics_performed=true;
+                _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
+                _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
+                _LANCZOS_Dynamics.GS_energy=_LANCZOS.GS_energy;
+
+                _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+
+                _LANCZOS_Dynamics.Get_Dynamics_seed(_MODEL.Dyn_opr);
+
+                cout<<"size of seed = "<<_LANCZOS_Dynamics.Dynamics_seed.size()<<endl;
+                _LANCZOS_Dynamics.omega_sign=1.0;
+                _LANCZOS_Dynamics.file_dynamics_out = _LANCZOS_Dynamics.file_dynamics_out +".txt";
+                _LANCZOS_Dynamics.Perform_LANCZOS(_MODEL.Hamil);
+
+                //-----------------------
+
+            }
+
         }
 
 
