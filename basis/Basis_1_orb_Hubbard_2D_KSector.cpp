@@ -293,6 +293,7 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
         string line;
         int index_n, temp_int;
         double temp_double;
+        double_type temp_double_type;
         pair_int temp_pair_int;
         assert(Read_Basis);
         int check_Lx;
@@ -334,6 +335,8 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
         cout<<"Reading Basis"<<endl;
         D_up_basis.clear();
         D_dn_basis.clear();
+        Dgamma.clear();
+        Dm_bar.clear();
         Dx_Period.clear();
         Dy_Period.clear();
         D_Norm.clear();
@@ -344,7 +347,9 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
             line_ss>>temp_int;D_dn_basis.push_back(temp_int);
             line_ss>>temp_int;Dx_Period.push_back(temp_int);
             line_ss>>temp_int;Dy_Period.push_back(temp_int);
+            line_ss>>temp_int;Dm_bar.push_back(temp_int);
             line_ss>>temp_double;D_Norm.push_back(temp_double);
+            line_ss>>temp_double_type;Dgamma.push_back(temp_double_type);
         }
         cout<<"Basis read"<<endl;
 
@@ -405,7 +410,9 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
                                                           D_dn_basis[n]<<"   "<<
                                                           Dx_Period[n]<<"   "<<
                                                           Dy_Period[n]<<"   "<<
-                                                          D_Norm[n]<<"   "<<endl;
+                                                          Dm_bar[n]<<"   "<<
+                                                          D_Norm[n]<<"   "<<
+                                                          Dgamma[n]<<"   "<<endl;
         }
 
         for(int n=0;n<Dup_Range.size();n++){
