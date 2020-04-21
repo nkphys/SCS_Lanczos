@@ -562,7 +562,7 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2
                                   );
 
 #ifdef USE_COMPLEX
-                        value2=exp(iota_comp*((Dyn_Momentum_x*PI*ix) + (Dyn_Momentum_y*PI*iy)))*sqrt(1.0/(basis.Length));
+                        value2=exp(iota_comp*(((2.0/(1.0*basis.Lx))*Dyn_Momentum_x*PI*ix) + ((2.0/(1.0*basis.Ly))*Dyn_Momentum_y*PI*iy)))*sqrt(1.0/(basis.Length));
 #endif
 #ifndef USE_COMPLEX
                         cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
@@ -875,7 +875,7 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Structure_factor(BASIS_1_or
 
 
 #ifdef USE_COMPLEX
-                        value2=exp(iota_comp*( (Dyn_Momentum_x*PI*(ix-jx)) + (Dyn_Momentum_y*PI*(iy-jy))  ))*(1.0/(basis.Length));
+                        value2=exp(iota_comp*( ((2.0/(1.0*basis.Lx))*Dyn_Momentum_x*PI*(ix-jx)) + ((2.0/(1.0*basis.Ly))*Dyn_Momentum_y*PI*(iy-jy))  ))*(1.0/(basis.Length));
 #endif
 #ifndef USE_COMPLEX
                         cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
@@ -927,7 +927,7 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Oprs_for_meausurement(BASIS_1_orb_H
 
 
 
-    Dyn_Momentum_x=0.0;Dyn_Momentum_y=0.0;
+    Dyn_Momentum_x=0;Dyn_Momentum_y=0;
     //***************Sq***********************************//
     vector< int >().swap( OPR_SF.columns );
     vector< int >().swap( OPR_SF.rows );
@@ -999,7 +999,7 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Oprs_for_meausurement(BASIS_1_orb_H
 
 
 #ifdef USE_COMPLEX
-                    value2=exp(iota_comp*( (Dyn_Momentum_x*PI*(ix-jx)) + (Dyn_Momentum_y*PI*(iy-jy))  ))*(1.0/(basis.Length));
+                    value2=exp(iota_comp*( ((2.0/(1.0*basis.Lx))*Dyn_Momentum_x*PI*(ix-jx)) + ((2.0/(1.0*basis.Ly))*Dyn_Momentum_y*PI*(iy-jy))  ))*(1.0/(basis.Length));
 #endif
 #ifndef USE_COMPLEX
                     cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
@@ -1033,8 +1033,8 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Oprs_for_meausurement(BASIS_1_orb_H
 
 
 
-    Dyn_Momentum_x=1.0;
-    Dyn_Momentum_y=1.0;
+    Dyn_Momentum_x=basis.Lx/2;
+    Dyn_Momentum_y=basis.Ly/2;
     //***************Sq***********************************//
     vector< int >().swap( OPR_SF.columns );
     vector< int >().swap( OPR_SF.rows );
@@ -1100,7 +1100,7 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Oprs_for_meausurement(BASIS_1_orb_H
 
 
 #ifdef USE_COMPLEX
-                    value2=exp(iota_comp*( (Dyn_Momentum_x*PI*(ix-jx)) + (Dyn_Momentum_y*PI*(iy-jy))  ))*(1.0/(basis.Length));
+                    value2=exp(iota_comp*( ((2.0/(1.0*basis.Lx))*Dyn_Momentum_x*PI*(ix-jx)) + ((2.0/(1.0*basis.Ly))*Dyn_Momentum_y*PI*(iy-jy))  ))*(1.0/(basis.Length));
 #endif
 #ifndef USE_COMPLEX
                     cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
@@ -1238,8 +1238,10 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
             if ((offset = line.find(Read_Basis_BOOL_, 0)) != string::npos) {
                 read_basis_bool_ = line.substr (offset+Read_Basis_BOOL_.length());				}
 
+
             if ((offset = line.find(Basis_Read_File_, 0)) != string::npos) {
                 basis_read_file_ = line.substr (offset+Basis_Read_File_.length());				}
+
 
             if ((offset = line.find(Write_Basis_BOOL_, 0)) != string::npos) {
                 write_basis_bool_ = line.substr (offset+Write_Basis_BOOL_.length());				}
@@ -1342,6 +1344,8 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters_for_dynamics(string filename){
     string dyn_momentum_y_, Dyn_Momentum_y_ = "ky_for_dynamics = ";
     string dyn_momentum_resolved_, Dyn_Momentum_Resolved_ = "Momentum_resolved = ";
     string Dyn_opr_string_  = "Opr_for_Dynamics = ";
+    string basis_read_file_Kminusq_, Basis_Read_File_Kminusq_ = "Read_File_Basis_Kminusq = ";
+
 
 
     int offset;
@@ -1354,6 +1358,9 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters_for_dynamics(string filename){
         while(!inputfile.eof())
         {
             getline(inputfile,line);
+
+            if ((offset = line.find(Basis_Read_File_Kminusq_, 0)) != string::npos) {
+                basis_read_file_Kminusq_ = line.substr (offset+Basis_Read_File_Kminusq_.length());	}
 
             if ((offset = line.find(Dyn_Momentum_Resolved_, 0)) != string::npos) {
                 dyn_momentum_resolved_ = line.substr (offset + Dyn_Momentum_Resolved_.length());		}
@@ -1374,8 +1381,10 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters_for_dynamics(string filename){
     {cout<<"Unable to open input file while in the Model class."<<endl;}
 
 
-    Dyn_Momentum_x=atof(dyn_momentum_x_.c_str());
-    Dyn_Momentum_y=atof(dyn_momentum_y_.c_str());
+    file_read_basis_Kminusq = basis_read_file_Kminusq_;
+
+    Dyn_Momentum_x=atoi(dyn_momentum_x_.c_str());
+    Dyn_Momentum_y=atoi(dyn_momentum_y_.c_str());
 
     if(dyn_momentum_resolved_=="true"){
         Dyn_Momentum_Resolved=true;

@@ -31,13 +31,14 @@ public:
     Matrix_COO Dyn_opr;
     Matrix_COO OPR_SF;
     string Dyn_opr_string;
-    double Dyn_Momentum_x, Dyn_Momentum_y;
+    int Dyn_Momentum_x, Dyn_Momentum_y;
     bool Dyn_Momentum_Resolved;
     bool PBC;
     Mat_1_real Momentum_values;
     Mat_2_doub overlap_matrix_for_Anzatz_basis;
 
     Mat_2_doub State_Szq_on_GS;
+    string file_read_basis_Kminusq;
 
 
 

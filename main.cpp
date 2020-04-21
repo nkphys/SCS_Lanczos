@@ -130,15 +130,15 @@ int main(int argc, char** argv){
             cout<<"-------SzSz(qx,qy)-----------"<<endl;
             for(int nx=0;nx<_BASIS.Lx;nx++){
                 for(int ny=0;ny<_BASIS.Ly;ny++){
-                    _MODEL.Dyn_Momentum_x = (2.0*nx)/(1.0*_BASIS.Lx);
-                    _MODEL.Dyn_Momentum_y = (2.0*ny)/(1.0*_BASIS.Ly);
+                    _MODEL.Dyn_Momentum_x = nx;
+                    _MODEL.Dyn_Momentum_y = ny;
                     _MODEL.Initialize_Opr_for_Structure_factor(_BASIS);
                     double_type Opr_val;
                     Mat_1_doub Vec_Temp;
 
                     Matrix_COO_vector_multiplication("FULL", _MODEL.OPR_SF, _LANCZOS.Eig_vec, Vec_Temp);
                     Opr_val = dot_product(Vec_Temp, _LANCZOS.Eig_vec);
-                    cout<<_MODEL.Dyn_Momentum_x<<"pi"<<"   "<<_MODEL.Dyn_Momentum_y<<"pi"<<"    "<<Opr_val<<endl;
+                    cout<<_MODEL.Dyn_Momentum_x<<"   "<<_MODEL.Dyn_Momentum_y<<"    "<<Opr_val<<endl;
 
                     vector< double_type >().swap(Vec_Temp);
                 }
@@ -185,12 +185,13 @@ int main(int argc, char** argv){
                 _MODEL_Kminusq.Read_parameters(_BASIS_Kminusq, inp_filename);
                 _MODEL_Kminusq.Read_parameters_for_dynamics(inp_filename);
 
-                int Momentum_qx_int = int (((_MODEL_Kminusq.Dyn_Momentum_x*_BASIS.Lx)/2.0) +0.5);
-                int Momentum_qy_int = int (((_MODEL_Kminusq.Dyn_Momentum_y*_BASIS.Ly)/2.0) +0.5);
+              //  int Momentum_qx_int = int (((_MODEL_Kminusq.Dyn_Momentum_x*_BASIS.Lx)/2.0) +0.5);
+              //  int Momentum_qy_int = int (((_MODEL_Kminusq.Dyn_Momentum_y*_BASIS.Ly)/2.0) +0.5);
 
-                _BASIS_Kminusq.Momentum_nx = (_BASIS.Momentum_nx - Momentum_qx_int + _BASIS.Lx )%_BASIS.Lx;
-                _BASIS_Kminusq.Momentum_ny = (_BASIS.Momentum_ny - Momentum_qy_int + _BASIS.Ly )%_BASIS.Ly;
+                _BASIS_Kminusq.Momentum_nx = (_BASIS.Momentum_nx - _MODEL_Kminusq.Dyn_Momentum_x + _BASIS.Lx )%_BASIS.Lx;
+                _BASIS_Kminusq.Momentum_ny = (_BASIS.Momentum_ny - _MODEL_Kminusq.Dyn_Momentum_y + _BASIS.Ly )%_BASIS.Ly;
 
+                _BASIS_Kminusq.file_read_basis = _MODEL_Kminusq.file_read_basis_Kminusq;
                 _BASIS_Kminusq.Construct_basis();
 
                 _MODEL_Kminusq.Add_diagonal_terms(_BASIS_Kminusq);
@@ -2270,6 +2271,9 @@ int main(int argc, char** argv){
 
         if(_MODEL.Hamil.nrows<400){
             DO_FULL_DIAGONALIZATION=true;
+        }
+        else{
+          DO_FULL_DIAGONALIZATION=false;
         }
         if(DO_FULL_DIAGONALIZATION==true){
             double EG;
