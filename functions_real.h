@@ -15,6 +15,7 @@
 //#include <bits/stdc++.h>
 
 
+double conjugate(double val);
 double reading_pair(string double_no_str);
 void Normalize_vec(Mat_1_doub &vec_in);
 void value_multiply_vector(double value, Mat_1_doub &vec_in);

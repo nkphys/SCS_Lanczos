@@ -9,6 +9,10 @@ extern "C" void dsyev_(char * , char * , int * , double * , int *, double *, dou
 #ifndef USE_COMPLEX
 
 
+double conjugate(double val){
+    return (val);
+}
+
 double Lorentzian(double eta, double x){
     double val;
     val = (1.0/PI_)*( (eta/2.0) / (  (x*x) + ((eta*eta)/4)   ) );

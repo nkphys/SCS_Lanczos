@@ -178,7 +178,13 @@ void FTLM_STATIC::Perform_FTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
             cout<<"Run_no = "<<run_no<<"  "<<"Temperature = "<<Temperature<<"   "<<Sum_Hamil[Temp_point]<<"  "<<Sum_Hamil2[Temp_point]<<"   "<<Sum_Partition_Func[Temp_point]<<"   ";
 
             for(int n=0;n<No_of_oprts;n++){
+#ifdef USE_COMPLEX
                 cout<<Sum_Opr_val[n][Temp_point].real()<<"   "<<Sum_Opr_val[n][Temp_point].imag()<<"   ";
+#endif
+#ifndef USE_COMPLEX
+                cout<<Sum_Opr_val[n][Temp_point]<<"   ";
+#endif
+
             }
             cout<<endl;
 

@@ -123,7 +123,7 @@ void LTLM_DYNAMICS::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
         for(int i=0;i<Lanczos2_.Seed_used.size();i++){Lanczos2_.Seed_used[i]=zero;}
 
         for(int l=0;l<M_;l++){
-        temp_coeff = exp(-Beta*0.5*(Evals1[l] - offset_E))*conj(Lanczos1_.red_eig_vecs[l][0]);
+        temp_coeff = exp(-Beta*0.5*(Evals1[l] - offset_E))*conjugate(Lanczos1_.red_eig_vecs[l][0]);
         Subtract(Lanczos2_.Seed_used, -1.0*temp_coeff, Lanczos2_.Vecs_FTLM[l]);
         }
 

@@ -10,6 +10,11 @@ extern "C" void zheev_(char *,char *,int *, complex<double> *, int *, double *,
 //extern "C" void dsyev_(char * , char * , int * , double * , int *, double *, double *, int *, int *);
 
 
+complex<double> conjugate(complex<double> val){
+
+    return (conj(val));
+}
+
 
 double Lorentzian(double eta, double x){
     double val;
@@ -592,8 +597,8 @@ double Norm(Mat_1_doub &vec1){
 void Matrix_COO_vector_multiplication(string COO_type, Matrix_COO & A,Mat_1_doub &u,Mat_1_doub &v){
 
     v.clear();
-    v.resize(u.size());
-    assert(A.nrows==u.size());
+    v.resize(A.nrows);
+    assert(A.ncols==u.size());
 
 #ifndef _OPENMP
     for (int i=0;i<v.size();i++){
@@ -637,8 +642,8 @@ void Matrix_COO_vector_multiplication(string COO_type, Matrix_COO & A,Mat_1_doub
 
 #pragma omp parallel for default(shared)
     for(int tid=0;tid<N_threads;tid++){
-        v_temp[tid].resize(u.size());
-        for (int i=0;i<u.size();i++){
+        v_temp[tid].resize(A.nrows);
+        for (int i=0;i<A.nrows;i++){
             v_temp[tid][i]=zero;
         }
     }
@@ -680,7 +685,7 @@ void Matrix_COO_vector_multiplication(string COO_type, Matrix_COO & A,Mat_1_doub
 
     double sum_real, sum_imag;
 #pragma omp parallel for default(shared) private (sum_real, sum_imag)
-    for(int i=0;i<u.size();i++){
+    for(int i=0;i<A.nrows;i++){
         sum_real=0.0;sum_imag=0.0;
         //#pragma omp parallel for default(shared) reduction(+:sum_real, sum_imag)
         for(int tid=0;tid<N_threads;tid++){

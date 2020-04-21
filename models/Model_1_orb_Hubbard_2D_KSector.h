@@ -37,6 +37,8 @@ public:
     Mat_1_real Momentum_values;
     Mat_2_doub overlap_matrix_for_Anzatz_basis;
 
+    Mat_2_doub State_Szq_on_GS;
+
 
 
     void Read_parameters(BASIS_1_orb_Hubb_2D_KSector &basis, string filename);
@@ -44,7 +46,9 @@ public:
     void Add_non_diagonal_terms(BASIS_1_orb_Hubb_2D_KSector &basis);
     void Add_connections(BASIS_1_orb_Hubb_2D_KSector &basis);
     void Read_parameters_for_dynamics(string filename);
-    void Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2D_KSector &basis);
+    void Getting_Local_Sz_Opr(BASIS_1_orb_Hubb_2D_KSector &basis, Matrix_COO & OPR_LOCAL, int site);
+    //void Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2D_KSector &basis);
+    void Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2D_KSector &basis ,BASIS_1_orb_Hubb_2D_KSector & basis_Kminusq);
     void Initialize_Opr_for_Structure_factor(BASIS_1_orb_Hubb_2D_KSector &basis);
     void Initialize_Oprs_for_meausurement(BASIS_1_orb_Hubb_2D_KSector &basis);
     void Calculate_two_point_observables(Mat_1_doub &Vec_);

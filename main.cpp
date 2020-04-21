@@ -156,12 +156,47 @@ int main(int argc, char** argv){
                 vector< double_type >().swap(Vec_Temp);
             }
 
+
+
+            /*
+            Matrix_COO OPR_LOCAL;
+            for(int site=0;site<_BASIS.Length;site++){
+            double_type Opr_val;
+            Mat_1_doub Vec_Temp;
+            _MODEL.Getting_Local_Sz_Opr(_BASIS, OPR_LOCAL, site);
+            Matrix_COO_vector_multiplication("FULL", OPR_LOCAL, _LANCZOS.Eig_vec, Vec_Temp);
+            Opr_val = dot_product(Vec_Temp, _LANCZOS.Eig_vec);
+            cout << "Sz["<<site<<"]  = "<<Opr_val<<endl;
+            }
+            vector< double_type >().swap(OPR_LOCAL.value);
+            vector< int >().swap(OPR_LOCAL.columns);
+            vector< int >().swap(OPR_LOCAL.rows);
+            */
+
+
             _LANCZOS.Write_full_spectrum();
 
 
             if(Do_Dynamics){
 
-                _MODEL.Read_parameters_for_dynamics(inp_filename);
+                MODEL_1_orb_Hubb_2D_KSector _MODEL_Kminusq;
+                BASIS_1_orb_Hubb_2D_KSector _BASIS_Kminusq;
+
+                _MODEL_Kminusq.Read_parameters(_BASIS_Kminusq, inp_filename);
+                _MODEL_Kminusq.Read_parameters_for_dynamics(inp_filename);
+
+                int Momentum_qx_int = int (((_MODEL_Kminusq.Dyn_Momentum_x*_BASIS.Lx)/2.0) +0.5);
+                int Momentum_qy_int = int (((_MODEL_Kminusq.Dyn_Momentum_y*_BASIS.Ly)/2.0) +0.5);
+
+                _BASIS_Kminusq.Momentum_nx = (_BASIS.Momentum_nx - Momentum_qx_int + _BASIS.Lx )%_BASIS.Lx;
+                _BASIS_Kminusq.Momentum_ny = (_BASIS.Momentum_ny - Momentum_qy_int + _BASIS.Ly )%_BASIS.Ly;
+
+                _BASIS_Kminusq.Construct_basis();
+
+                _MODEL_Kminusq.Add_diagonal_terms(_BASIS_Kminusq);
+                _MODEL_Kminusq.Add_connections(_BASIS_Kminusq);
+
+
 
                 LANCZOS _LANCZOS_Dynamics;
                 _LANCZOS_Dynamics.Dynamics_performed=true;
@@ -169,16 +204,45 @@ int main(int argc, char** argv){
                 _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
                 _LANCZOS_Dynamics.GS_energy=_LANCZOS.GS_energy;
 
-                _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+                _MODEL_Kminusq.Initialize_Opr_for_Dynamics(_BASIS, _BASIS_Kminusq);
 
-                _LANCZOS_Dynamics.Get_Dynamics_seed(_MODEL.Dyn_opr);
+                _LANCZOS_Dynamics.Get_Dynamics_seed(_MODEL_Kminusq.Dyn_opr);
+
+
+
+
+                //cout<<"XXXXXXXXXXXXXXXXX REMOVING ELASTIC PART : Opr_new = Opr - <Opr> XXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+                //-ELASTIC PART-----------
+                /*
+                double_type Opr_val;
+                Mat_1_doub Vec_Temp;
+
+                Matrix_COO_vector_multiplication("FULL", _MODEL.Dyn_opr, _LANCZOS.Eig_vec, Vec_Temp);
+                Opr_val = dot_product(Vec_Temp, _LANCZOS.Eig_vec);
+                cout<<_MODEL.Dyn_Momentum_x<<"pi"<<"   "<<_MODEL.Dyn_Momentum_y<<"pi"<<" =  "<<Opr_val<<endl;
+
+                vector< double_type >().swap(Vec_Temp);
+                */
+
+                /*
+                Matrix_COO Iden;
+                Iden.ncols=_MODEL.Dyn_opr.ncols;
+                Iden.nrows=_MODEL.Dyn_opr.nrows;
+                for(int i=0;i<Iden.ncols;i++){
+                    Iden.columns.push_back(i);
+                    Iden.rows.push_back(i);
+                    Iden.value.push_back(-1.0*Opr_val);
+                }
+                Sum(_MODEL.Dyn_opr, Iden, _MODEL.Dyn_opr, 1.0, 1.0);
+                */
+
+                //-----------------------
+
 
                 cout<<"size of seed = "<<_LANCZOS_Dynamics.Dynamics_seed.size()<<endl;
                 _LANCZOS_Dynamics.omega_sign=1.0;
                 _LANCZOS_Dynamics.file_dynamics_out = _LANCZOS_Dynamics.file_dynamics_out +".txt";
-                _LANCZOS_Dynamics.Perform_LANCZOS(_MODEL.Hamil);
-
-                //-----------------------
+                _LANCZOS_Dynamics.Perform_LANCZOS(_MODEL_Kminusq.Hamil);
 
             }
 
@@ -217,7 +281,7 @@ int main(int argc, char** argv){
             _LTLM_DYNAMICS.Hamil = _MODEL.Hamil;
 
             _MODEL.Read_parameters_for_dynamics(inp_filename);
-            _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+           // _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
 
             _LTLM_DYNAMICS.Perform_LTLM(inp_filename, _MODEL.Dyn_opr);
             }
@@ -2165,7 +2229,7 @@ int main(int argc, char** argv){
 
 
 
-#ifndef USE_COMPLEX
+//#ifndef USE_COMPLEX
     if (model_name=="1_orb_Hubbard_chain") {
 
         Mat_1_doub Null_double_vec;
@@ -2174,7 +2238,7 @@ int main(int argc, char** argv){
         Null_int_vec.resize(1);
 
 
-        bool Dynamics_SPDOS = true;
+        bool Dynamics_SPDOS = false;
         bool Above_mu = true;
         bool Below_mu= true;
         bool Cheaper_observables=true;
@@ -2283,7 +2347,7 @@ int main(int argc, char** argv){
              */
 
                 //one_point_observables
-                double value_one_point;
+                double_type value_one_point;
                 cout<<"One point observables:"<<endl;
                 opr_type_.clear();
                 opr_type_.push_back("n_up");
@@ -2300,13 +2364,13 @@ int main(int argc, char** argv){
                 }
 
                 //two_point_observables
-                double value_two_point;
+                double_type value_two_point;
                 cout<<"Two point observables:"<<endl;
                 opr_type_.clear();
                 opr_type_.push_back("SzSz");
                 opr_type_.push_back("SpSm");
                 opr_type_.push_back("SmSp");
-                double Sum_;
+                double_type Sum_;
                 for(int type=0;type<opr_type_.size();type++){
                     cout<<"________________________________"<<endl;
                     cout<<opr_type_[type]<<":"<<endl;
@@ -2369,7 +2433,8 @@ int main(int argc, char** argv){
             vector< int >().swap( _MODEL.Hamil.rows );
             vector< double_type >().swap( _MODEL.Hamil.value );
 
-            Mat_1_trio_int TRIO_VEC; Mat_1_doub values_;
+            Mat_1_trio_int TRIO_VEC;
+            Mat_1_doub values_;
             reading_input_dos_trio(inp_filename, TRIO_VEC, values_ );
 
             for(int s_=0;s_<TRIO_VEC.size();s_++){
@@ -2500,12 +2565,12 @@ int main(int argc, char** argv){
 
             FTLM_STATIC _FTLM_STATIC;
             _FTLM_STATIC.Hamil = _MODEL.Hamil;
-            _FTLM_STATIC.Perform_FTLM(inp_filename);
+           // _FTLM_STATIC.Perform_FTLM(inp_filename);
 
         }
 
     }
-#endif
+//#endif
 
 
     //=======================================================================================================================================================================================================//
@@ -2759,7 +2824,8 @@ int main(int argc, char** argv){
         */
 
 
-        bool Dynamics_SPDOS = true;
+
+        bool Dynamics_SPDOS = false;
         bool Above_mu = true;
         bool Below_mu= true;
 

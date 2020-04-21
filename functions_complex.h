@@ -15,6 +15,7 @@
 #include "Matrix.h"
 
 
+complex<double> conjugate(complex<double> val);
 void Normalize_vec(Mat_1_doub &vec_in);
 void value_multiply_vector(complex<double> value, Mat_1_doub &vec_in);
 void Direct_product_of_Mat_2_trio_int(Mat_2_trio_int MAT1_, Mat_1_doub values1_,

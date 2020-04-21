@@ -2,7 +2,7 @@
 This class includes the Model for which Lanczos is being done
 */
 
-#ifdef USE_COMPLEX
+#ifdef NOTUSE_COMPLEX
 #include "Model_1_orb_Hubbard_chain.h"
 #include <stdlib.h>
 using namespace std;

@@ -2,7 +2,7 @@
 This class includes the Model for which Lanczos is being done
 */
 
-#ifndef USE_COMPLEX
+//#ifndef USE_COMPLEX
 #include "Model_1_orb_Hubbard_chain.h"
 #include <stdlib.h>
 using namespace std;
@@ -660,9 +660,9 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     }
 
 
-  //  cout<<"PRINTING HOPPING MATRIX"<<endl;
-  //  Print_Matrix(Hopping_mat_NN);
-  //  cout<<"**************************"<<endl;
+    //  cout<<"PRINTING HOPPING MATRIX"<<endl;
+    //  Print_Matrix(Hopping_mat_NN);
+    //  cout<<"**************************"<<endl;
 
 
 
@@ -756,10 +756,10 @@ void MODEL_1_orb_Hubb_chain::Initialize_one_point_operator_site_specific(string 
 
             //n_orb_spin[site]:
             if(spin==0){
-                value=one*bit_value(basis.D_up_basis[i],orb*basis.Length + site);
+                value=one*(1.0*bit_value(basis.D_up_basis[i],orb*basis.Length + site));
             }
             else{
-                value=one*bit_value(basis.D_dn_basis[j],orb*basis.Length + site);
+                value=one*(1.0*bit_value(basis.D_dn_basis[j],orb*basis.Length + site));
             }
 
             if(value!=zero){
@@ -828,10 +828,10 @@ void MODEL_1_orb_Hubb_chain::Initialize_one_point_to_calculate(BASIS_1_orb_Hubb_
 
                     //n_orb_spin[site]:
                     if(spin==0){
-                        value=one*bit_value(basis.D_up_basis[i],orb*basis.Length + site);
+                        value=one*(1.0*bit_value(basis.D_up_basis[i],orb*basis.Length + site));
                     }
                     else{
-                        value=one*bit_value(basis.D_dn_basis[j],orb*basis.Length + site);
+                        value=one*(1.0*bit_value(basis.D_dn_basis[j],orb*basis.Length + site));
                     }
 
 
@@ -876,7 +876,7 @@ void MODEL_1_orb_Hubb_chain::Initialize_two_point_operator_sites_specific(string
                                 bit_value(basis.D_dn_basis[j], site2) )
                               );
                 if(value!=0){
-                    OPR.value.push_back(value);
+                    OPR.value.push_back(value*one);
                     OPR.rows.push_back(m);
                     OPR.columns.push_back(m);
                 }
@@ -928,7 +928,7 @@ void MODEL_1_orb_Hubb_chain::Initialize_two_point_operator_sites_specific(string
 
 
                     //assert(m_new<m);
-                    OPR.value.push_back(sign_FM);
+                    OPR.value.push_back(sign_FM*one);
                     OPR.rows.push_back(m_new);
                     OPR.columns.push_back(m);
                 }
@@ -941,7 +941,7 @@ void MODEL_1_orb_Hubb_chain::Initialize_two_point_operator_sites_specific(string
                              )
                             )
                     {
-                        OPR.value.push_back(1.0);
+                        OPR.value.push_back(one);
                         OPR.rows.push_back(m);
                         OPR.columns.push_back(m);
                     }
@@ -995,7 +995,7 @@ void MODEL_1_orb_Hubb_chain::Initialize_two_point_operator_sites_specific(string
 
 
                     //assert(m_new<m);
-                    OPR.value.push_back(sign_FM);
+                    OPR.value.push_back(sign_FM*one);
                     OPR.rows.push_back(m_new);
                     OPR.columns.push_back(m);
                 }
@@ -1008,7 +1008,7 @@ void MODEL_1_orb_Hubb_chain::Initialize_two_point_operator_sites_specific(string
                              )
                             )
                     {
-                        OPR.value.push_back(1.0);
+                        OPR.value.push_back(one);
                         OPR.rows.push_back(m);
                         OPR.columns.push_back(m);
                     }
@@ -1086,7 +1086,7 @@ void MODEL_1_orb_Hubb_chain::Initialize_two_point_to_calculate(BASIS_1_orb_Hubb_
 
 
                             if(value!=0){
-                                Two_point_oprts[opr_no][site][site2].value.push_back(value);
+                                Two_point_oprts[opr_no][site][site2].value.push_back(value*one);
                                 Two_point_oprts[opr_no][site][site2].rows.push_back(m);
                                 Two_point_oprts[opr_no][site][site2].columns.push_back(m);
                             }
@@ -1165,7 +1165,7 @@ void MODEL_1_orb_Hubb_chain::Initialize_two_point_to_calculate(BASIS_1_orb_Hubb_
 
                                 //assert(m_new<m);
 
-                                Two_point_oprts[opr_no][site][site2].value.push_back(sign_FM);
+                                Two_point_oprts[opr_no][site][site2].value.push_back(sign_FM*one);
                                 Two_point_oprts[opr_no][site][site2].rows.push_back(m_new);
                                 Two_point_oprts[opr_no][site][site2].columns.push_back(m);
 
@@ -1182,7 +1182,7 @@ void MODEL_1_orb_Hubb_chain::Initialize_two_point_to_calculate(BASIS_1_orb_Hubb_
                                          )
                                         )
                                 {
-                                    Two_point_oprts[opr_no][site][site2].value.push_back(1.0);
+                                    Two_point_oprts[opr_no][site][site2].value.push_back(one);
                                     Two_point_oprts[opr_no][site][site2].rows.push_back(m);
                                     Two_point_oprts[opr_no][site][site2].columns.push_back(m);
 
@@ -1248,7 +1248,7 @@ void MODEL_1_orb_Hubb_chain::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_chain 
 
 
                         if(value!=0){
-                            Oprs_local[site].value.push_back(value);
+                            Oprs_local[site].value.push_back(value*one);
                             Oprs_local[site].rows.push_back(m);
                             Oprs_local[site].columns.push_back(m);
                         }
@@ -1261,16 +1261,46 @@ void MODEL_1_orb_Hubb_chain::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_chain 
             //In Momentum space for OBC only-----------------------------------------------------
 
             Matrix_COO temp;
-            temp=Oprs_local[0];
-            double value1, value2;
-            for(int site=0;site<basis.Length-1;site++){
+            vector< int >().swap( Dyn_opr.columns );
+            vector< int >().swap( Dyn_opr.rows );
+            vector< double_type >().swap( Dyn_opr.value );
 
-                value2=sin((site+2)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
-                if(site==0){
-                    value1=sin((site+1)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
-                    Sum(temp, Oprs_local[site+1], temp, value1, value2);}
-                else{
-                    Sum(temp, Oprs_local[site+1], temp, 1.0, value2);
+            if(!PBC){
+                temp=Oprs_local[0];
+                double_type value1, value2;
+                for(int site=0;site<basis.Length-1;site++){
+
+                    value2=one*sin((site+2)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
+                    if(site==0){
+                        value1=one*sin((site+1)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
+                        Sum(temp, Oprs_local[site+1], temp, value1, value2);}
+                    else{
+                        Sum(temp, Oprs_local[site+1], temp, 1.0, value2);
+                    }
+
+                }
+            }
+            else{
+                double_type value1, value2;
+                temp.value.clear();
+                temp.rows.clear();
+                temp.columns.clear();
+                temp.nrows = basis.D_up_basis.size()*basis.D_dn_basis.size() ;
+                temp.ncols = temp.nrows;
+
+                for(int site=0;site<basis.Length;site++){
+
+#ifdef USE_COMPLEX
+                    value2=exp(iota_comp*((Dyn_Momentum*PI*site) ))*sqrt(1.0/(basis.Length));
+#endif
+#ifndef USE_COMPLEX
+                    cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
+#endif
+
+
+                    Sum(temp, Oprs_local[site], temp, 1.0, value2);
+
+
                 }
 
             }
@@ -1290,12 +1320,7 @@ void MODEL_1_orb_Hubb_chain::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_chain 
 
             }
 
-
-
-
-
         }
-
 
     }
 
@@ -1360,10 +1385,10 @@ void MODEL_1_orb_Hubb_chain::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_chain 
 
                             if((Hopping_mat_NN[0][0])!=0){
 
-                                Opr.value.push_back(1.0*sign_FM*(Hopping_mat_NN[0][0]));
+                                Opr.value.push_back(one*sign_FM*(Hopping_mat_NN[0][0]));
                                 Opr.rows.push_back((m_new));
                                 Opr.columns.push_back((m));
-                                Opr.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[0][0]));
+                                Opr.value.push_back(-1.0*one*sign_FM*(Hopping_mat_NN[0][0]));
                                 Opr.rows.push_back((m));
                                 Opr.columns.push_back((m_new));
 
@@ -1402,10 +1427,10 @@ void MODEL_1_orb_Hubb_chain::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_chain 
 
                             if((Hopping_mat_NN[0][0])!=0){
 
-                                Opr.value.push_back(1.0*sign_FM*(Hopping_mat_NN[0][0]));
+                                Opr.value.push_back(one*sign_FM*(Hopping_mat_NN[0][0]));
                                 Opr.rows.push_back((m_new));
                                 Opr.columns.push_back((m));
-                                Opr.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[0][0]));
+                                Opr.value.push_back(-1.0*one*sign_FM*(Hopping_mat_NN[0][0]));
                                 Opr.rows.push_back((m));
                                 Opr.columns.push_back((m_new));
 
@@ -1675,4 +1700,4 @@ void MODEL_1_orb_Hubb_chain::Get_cdagger_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hu
 
 }
 
-#endif
+//#endif

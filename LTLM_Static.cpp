@@ -85,14 +85,14 @@ void LTLM_STATIC::Perform_LTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
     Conf_Hamil.resize(N_Temperature_points);
     Conf_Hamil2.resize(N_Temperature_points);
     for(int n=0;n<No_of_oprts;n++){
-    Conf_Opr_val[n].resize(N_Temperature_points);
+        Conf_Opr_val[n].resize(N_Temperature_points);
     }
 
     Sum_Partition_Func.resize(N_Temperature_points);
     Sum_Hamil.resize(N_Temperature_points);
     Sum_Hamil2.resize(N_Temperature_points);
     for(int n=0;n<No_of_oprts;n++){
-    Sum_Opr_val[n].resize(N_Temperature_points);
+        Sum_Opr_val[n].resize(N_Temperature_points);
     }
 
     for(int t=0;t<N_Temperature_points;t++){
@@ -100,7 +100,7 @@ void LTLM_STATIC::Perform_LTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
         Sum_Hamil[t]=zero;
         Sum_Hamil2[t]=zero;
         for(int n=0;n<No_of_oprts;n++){
-        Sum_Opr_val[n][t]=zero;
+            Sum_Opr_val[n][t]=zero;
         }
 
     }
@@ -122,7 +122,7 @@ void LTLM_STATIC::Perform_LTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
             Conf_Hamil[Temp_point] =zero;
             Conf_Hamil2[Temp_point] =zero;
             for(int n=0;n<No_of_oprts;n++){
-            Conf_Opr_val[n][Temp_point] =zero;
+                Conf_Opr_val[n][Temp_point] =zero;
             }
         }
 
@@ -130,13 +130,13 @@ void LTLM_STATIC::Perform_LTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
         for(int l=0;l<M_;l++){
 
             for(int n=0;n<No_of_oprts;n++){
-            Matrix_COO_vector_multiplication("FULL", OPR_[n], Lanczos_.Eig_vecs[l], Vec_Temp[n]);
+                Matrix_COO_vector_multiplication("FULL", OPR_[n], Lanczos_.Eig_vecs[l], Vec_Temp[n]);
             }
 
             for(int j=0;j<M_;j++){
 
                 for(int n=0;n<No_of_oprts;n++){
-                Opr_val[n] = dot_product(Vec_Temp[n], Lanczos_.Eig_vecs[j]);
+                    Opr_val[n] = dot_product(Vec_Temp[n], Lanczos_.Eig_vecs[j]);
                 }
 
 
@@ -146,23 +146,23 @@ void LTLM_STATIC::Perform_LTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
 
 
                     for(int n=0;n<No_of_oprts;n++){
-                    Conf_Opr_val[n][Temp_point] += exp(-Beta*( (Lanczos_.Evals_Tri_all[Lanc_steps-1][j] + Lanczos_.Evals_Tri_all[Lanc_steps-1][l])*0.5 - offset_E ))*
-                            Opr_val[n]
-                            *conj(Lanczos_.red_eig_vecs[l][0])*(Lanczos_.red_eig_vecs[j][0]);
+                        Conf_Opr_val[n][Temp_point] += exp(-Beta*( (Lanczos_.Evals_Tri_all[Lanc_steps-1][j] + Lanczos_.Evals_Tri_all[Lanc_steps-1][l])*0.5 - offset_E ))*
+                                Opr_val[n]
+                                *conjugate(Lanczos_.red_eig_vecs[l][0])*(Lanczos_.red_eig_vecs[j][0]);
                     }
 
 
                     if(j==l){
-                    Conf_Hamil2[Temp_point] += exp(-Beta*( (Lanczos_.Evals_Tri_all[Lanc_steps-1][j] + Lanczos_.Evals_Tri_all[Lanc_steps-1][l])*0.5 - offset_E ))*
-                            Lanczos_.Evals_Tri_all[Lanc_steps-1][j]*Lanczos_.Evals_Tri_all[Lanc_steps-1][j]
-                            *conj(Lanczos_.red_eig_vecs[l][0])*(Lanczos_.red_eig_vecs[j][0]);
+                        Conf_Hamil2[Temp_point] += exp(-Beta*( (Lanczos_.Evals_Tri_all[Lanc_steps-1][j] + Lanczos_.Evals_Tri_all[Lanc_steps-1][l])*0.5 - offset_E ))*
+                                Lanczos_.Evals_Tri_all[Lanc_steps-1][j]*Lanczos_.Evals_Tri_all[Lanc_steps-1][j]
+                                *conjugate(Lanczos_.red_eig_vecs[l][0])*(Lanczos_.red_eig_vecs[j][0]);
 
-                    Conf_Hamil[Temp_point] += exp(-Beta*( (Lanczos_.Evals_Tri_all[Lanc_steps-1][j] + Lanczos_.Evals_Tri_all[Lanc_steps-1][l])*0.5 - offset_E ))*
-                            Lanczos_.Evals_Tri_all[Lanc_steps-1][j]
-                            *conj(Lanczos_.red_eig_vecs[l][0])*(Lanczos_.red_eig_vecs[j][0]);
+                        Conf_Hamil[Temp_point] += exp(-Beta*( (Lanczos_.Evals_Tri_all[Lanc_steps-1][j] + Lanczos_.Evals_Tri_all[Lanc_steps-1][l])*0.5 - offset_E ))*
+                                Lanczos_.Evals_Tri_all[Lanc_steps-1][j]
+                                *conjugate(Lanczos_.red_eig_vecs[l][0])*(Lanczos_.red_eig_vecs[j][0]);
 
-                    Conf_Partition_Func[Temp_point] += exp(-Beta*( (Lanczos_.Evals_Tri_all[Lanc_steps-1][j] + Lanczos_.Evals_Tri_all[Lanc_steps-1][l])*0.5 - offset_E ))
-                            *conj(Lanczos_.red_eig_vecs[l][0])*(Lanczos_.red_eig_vecs[j][0]);
+                        Conf_Partition_Func[Temp_point] += exp(-Beta*( (Lanczos_.Evals_Tri_all[Lanc_steps-1][j] + Lanczos_.Evals_Tri_all[Lanc_steps-1][l])*0.5 - offset_E ))
+                                *conjugate(Lanczos_.red_eig_vecs[l][0])*(Lanczos_.red_eig_vecs[j][0]);
                     }
 
                 }
@@ -180,7 +180,7 @@ void LTLM_STATIC::Perform_LTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
             Sum_Partition_Func[Temp_point] += Conf_Partition_Func[Temp_point];
 
             for(int n=0;n<No_of_oprts;n++){
-            Sum_Opr_val[n][Temp_point] +=Conf_Opr_val[n][Temp_point];
+                Sum_Opr_val[n][Temp_point] +=Conf_Opr_val[n][Temp_point];
             }
 
             Sum_Hamil[Temp_point] += Conf_Hamil[Temp_point];
@@ -190,10 +190,25 @@ void LTLM_STATIC::Perform_LTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
             Quantum_Avg_Hamil[Temp_point] = Sum_Hamil[Temp_point] / Sum_Partition_Func[Temp_point];
             Quantum_Avg_Hamil2[Temp_point] = Sum_Hamil2[Temp_point] / Sum_Partition_Func[Temp_point];
 
-            cout<<"Run_no = "<<run_no<<"  "<<"Temperature = "<<Temperature<<"   "<<Sum_Hamil[Temp_point].real()<<"   "<<Sum_Hamil[Temp_point].imag()<<"  "<<Sum_Hamil2[Temp_point].real()<<"   "<<Sum_Hamil2[Temp_point].imag()<<"   "<<Sum_Partition_Func[Temp_point].real()<<"   "<<Sum_Partition_Func[Temp_point].imag()<<"   ";
+            cout<<"Run_no = "<<run_no<<"  "<<"Temperature = "<<Temperature<<"   ";
+#ifdef USE_COMPLEX
+            cout<<Sum_Hamil[Temp_point].real()<<"   "<<Sum_Hamil[Temp_point].imag()<<"  "<<Sum_Hamil2[Temp_point].real()<<"   "<<Sum_Hamil2[Temp_point].imag()<<"   "<<Sum_Partition_Func[Temp_point].real()<<"   "<<Sum_Partition_Func[Temp_point].imag()<<"   ";
+#endif
+#ifndef USE_COMPLEX
+            cout<<Sum_Hamil[Temp_point]<<"  "<<Sum_Hamil2[Temp_point]<<"   "<<Sum_Partition_Func[Temp_point]<<"   ";
+#endif
+
 
             for(int n=0;n<No_of_oprts;n++){
-              cout<<Sum_Opr_val[n][Temp_point].real()<<"   "<<Sum_Opr_val[n][Temp_point].imag()<<"   ";
+
+#ifdef USE_COMPLEX
+                cout<<Sum_Opr_val[n][Temp_point].real()<<"   "<<Sum_Opr_val[n][Temp_point].imag()<<"   ";
+#endif
+#ifndef USE_COMPLEX
+                cout<<Sum_Opr_val[n][Temp_point]<<"   ";
+#endif
+
+
             }
             cout<<endl;
         }

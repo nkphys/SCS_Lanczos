@@ -36,6 +36,11 @@ public:
     Mat_1_int Dx_Period;
     Mat_1_int Dy_Period;
 
+    //array saving repeations of same state in the class
+    Mat_1_int Dm_bar;
+
+    //array saving gammas: see notes
+    Mat_1_doub Dgamma;
 
     //arrays below save range of the basis index int which Dup is present
     Mat_1_intpair Dup_Range;

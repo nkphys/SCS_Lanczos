@@ -525,6 +525,74 @@ void MODEL_1_orb_Hubb_2D_KSector::Add_connections(BASIS_1_orb_Hubb_2D_KSector &b
 
 }
 
+void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2D_KSector &basis ,BASIS_1_orb_Hubb_2D_KSector & basis_Kminusq){
+
+    //HERE
+
+    vector< int >().swap( Dyn_opr.columns );
+    vector< int >().swap( Dyn_opr.rows );
+    vector< double_type >().swap( Dyn_opr.value );
+
+    Dyn_opr.value.clear();Dyn_opr.rows.clear();
+    Dyn_opr.columns.clear();
+    Dyn_opr.ncols = basis.D_up_basis.size();
+    Dyn_opr.nrows = basis_Kminusq.D_up_basis.size();
+
+    int ix, iy, site;
+    double value;
+    double_type value2, szq_val, value_final;
+
+    for (int i=0;i<basis.D_up_basis.size();i++){
+        for (int j=0;j<basis_Kminusq.D_up_basis.size();j++){
+            if( (basis_Kminusq.D_up_basis[j]==basis.D_up_basis[i])
+                    &&
+                    (basis_Kminusq.D_dn_basis[j]==basis.D_dn_basis[i])
+                    ){
+
+                assert(basis.Dm_bar[i]==basis_Kminusq.Dm_bar[j]);
+                szq_val=zero;
+                for(ix=0;ix<basis.Lx;ix++){
+                    for(iy=0;iy<basis.Ly;iy++){
+
+                        site = ix + iy*(basis.Lx);
+
+                        value=0.5*(1.0)*
+                                ( ( bit_value(basis.D_up_basis[i], site) -
+                                    bit_value(basis.D_dn_basis[i], site) )
+                                  );
+
+#ifdef USE_COMPLEX
+                        value2=exp(iota_comp*((Dyn_Momentum_x*PI*ix) + (Dyn_Momentum_y*PI*iy)))*sqrt(1.0/(basis.Length));
+#endif
+#ifndef USE_COMPLEX
+                        cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
+#endif
+
+                        szq_val += value2*value;
+
+                    }
+                }
+
+                if(szq_val !=zero){
+
+                    value_final=(conjugate(basis_Kminusq.Dgamma[j])*basis.Dgamma[i])*
+                            szq_val*( (1.0*basis.Lx*basis.Ly)/(basis.Dm_bar[i])  )*
+                           (1.0/sqrt(basis_Kminusq.D_Norm[j]*basis.D_Norm[i]));
+
+                    Dyn_opr.columns.push_back(i);
+                    Dyn_opr.rows.push_back(j);
+                    Dyn_opr.value.push_back(value_final);
+                }
+
+
+            } //if both have same Representative state
+        }
+    }
+
+
+}
+
+/*
 void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2D_KSector &basis){
 
 
@@ -607,11 +675,102 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2
             }
         }
 
-
         Dyn_opr = temp;
         vector< int >().swap( temp.columns );
         vector< int >().swap( temp.rows );
         vector< double_type >().swap( temp.value );
+
+
+
+        //Now multiplying with sum_{lx,ly}exp(iota*k.l) where l leads to distinct classes
+        Mat_1_int lx_; //saves l for creating distinct states of class
+        Mat_1_int ly_;
+        Mat_1_int D_up_states,D_dn_states;
+        int D_up, D_up_temp, D_up_temp_Xtrans;
+        int D_dn, D_dn_temp, D_dn_temp_Xtrans;
+        int distinct_states;
+        bool distinct_, distinct_up, distinct_dn;
+        int index;
+        double_type coeff;
+
+        for (int row=0;row<Dyn_opr.rows.size();row++){
+
+            index=Dyn_opr.rows[row];
+            D_up =basis.D_up_basis[index];
+            D_dn =basis.D_dn_basis[index];
+
+            D_up_temp=D_up;
+            D_dn_temp=D_dn;
+            distinct_states=0;
+            lx_.clear();
+            ly_.clear();
+            D_up_states.clear();
+            D_dn_states.clear();
+            coeff=zero;
+            for(int inv_trnsltns_x=0;inv_trnsltns_x<basis.Lx;inv_trnsltns_x++){
+                if(inv_trnsltns_x>0 && basis.Lx>1){
+
+                    for(int iy_=0;iy_<basis.Ly;iy_++){
+                        D_dn_temp = Act_Translation_2D_alongX_assuming_PBC(D_dn_temp,basis.Lx, basis.Ly, iy_);
+                        D_up_temp = Act_Translation_2D_alongX_assuming_PBC(D_up_temp,basis.Lx, basis.Ly, iy_);
+                    }
+                }
+                D_dn_temp_Xtrans = D_dn_temp;
+                D_up_temp_Xtrans = D_up_temp;
+
+                for(int inv_trnsltns_y=0;inv_trnsltns_y<basis.Ly;inv_trnsltns_y++){
+
+                    if(inv_trnsltns_y>0 && basis.Ly>1){
+
+                        for(int ix_=0;ix_<basis.Lx;ix_++){
+                            D_dn_temp = Act_Translation_2D_alongY_assuming_PBC(D_dn_temp,basis.Lx, basis.Ly, ix_);
+                            D_up_temp = Act_Translation_2D_alongY_assuming_PBC(D_up_temp,basis.Lx, basis.Ly, ix_);
+                        }
+
+                    }
+
+                    if(distinct_states==0)
+                    {
+                        lx_.push_back(inv_trnsltns_x);
+                        ly_.push_back(inv_trnsltns_y);
+                        D_up_states.push_back(D_up_temp);
+                        D_dn_states.push_back(D_dn_temp);
+                        distinct_states++;
+                    }
+                    else{
+                        distinct_up = !(Is_int_in_array(D_up_temp, D_up_states));
+                        distinct_dn = !(Is_int_in_array(D_dn_temp, D_dn_states));
+                        distinct_ = (distinct_up && distinct_dn);
+                        if(distinct_){
+                            lx_.push_back(inv_trnsltns_x);
+                            ly_.push_back(inv_trnsltns_y);
+                            D_up_states.push_back(D_up_temp);
+                            D_dn_states.push_back(D_dn_temp);
+                            distinct_states++;
+                        }
+                    }
+                }
+
+                D_up_temp=D_up_temp_Xtrans ;
+                D_dn_temp=D_dn_temp_Xtrans ;
+
+            }
+
+
+            for(int l=0;l<lx_.size();l++){
+#ifdef USE_COMPLEX
+                coeff +=exp(iota_comp*((Dyn_Momentum_x*PI*lx_[l]) + (Dyn_Momentum_y*PI*ly_[l])));
+#endif
+#ifndef USE_COMPLEX
+                cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
+#endif
+            }
+
+            Dyn_opr.value[row] = Dyn_opr.value[row]*(coeff)*(1.0/(distinct_states*1.0));
+
+
+
+        } //i basis
 
 
     }
@@ -621,6 +780,22 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2
     }
 
 
+
+
+}
+
+*/
+void MODEL_1_orb_Hubb_2D_KSector::Getting_Local_Sz_Opr(BASIS_1_orb_Hubb_2D_KSector &basis, Matrix_COO & OPR_LOCAL, int site){
+
+    vector< int >().swap( OPR_LOCAL.columns );
+    vector< int >().swap( OPR_LOCAL.rows );
+    vector< double_type >().swap(OPR_LOCAL.value );
+    OPR_LOCAL.ncols = Hamil.ncols;
+    OPR_LOCAL.nrows = Hamil.nrows;
+
+    double value;
+
+    assert(false);
 
 
 }

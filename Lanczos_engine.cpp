@@ -1279,7 +1279,7 @@ void LANCZOS::Get_Dynamics_seed(Matrix_COO &Opr){
     tmpnrm=sqrt(tmpnrm_type_double);
 
 
-    for(int j=0;j<Eig_vec.size();j++){
+    for(int j=0;j<Dynamics_seed.size();j++){
         Dynamics_seed[j] = (Dynamics_seed[j]/(tmpnrm));
 
     }

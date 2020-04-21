@@ -93,6 +93,8 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
         Dx_Period.clear();
         Dy_Period.clear();
         D_Norm.clear();
+        Dm_bar.clear();
+        Dgamma.clear();
         D_up_basis.clear();
         D_dn_basis.clear();
         Dup_Range.clear();
@@ -252,6 +254,8 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
                         Dx_Period.push_back(-10);
                         Dy_Period.push_back(-10);
                         D_Norm.push_back((Lx*Ly*abs(gamma_)*abs(gamma_)*1.0)/(m_bar*1.0));
+                        Dgamma.push_back(gamma_);
+                        Dm_bar.push_back(m_bar);
                         D_up_basis.push_back(D_up_basis_All[state_up]);
                         D_dn_basis.push_back(D_dn_basis_All[state_dn]);
 
@@ -260,9 +264,7 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
                         }
                         state_up_count++;
                     }
-
                 }
-
             }
 
             if(state_up_count==0){
