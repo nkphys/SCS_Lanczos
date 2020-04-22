@@ -119,7 +119,7 @@ void LTLM_DYNAMICS::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
         }
 
         //Creating Seed for Lanczos2_
-        Lanczos2_.Seed_used.resize(OPR_.ncols);
+        Lanczos2_.Seed_used.resize(OPR_.nrows);
         for(int i=0;i<Lanczos2_.Seed_used.size();i++){Lanczos2_.Seed_used[i]=zero;}
 
         for(int l=0;l<M_;l++){
@@ -127,9 +127,9 @@ void LTLM_DYNAMICS::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
         Subtract(Lanczos2_.Seed_used, -1.0*temp_coeff, Lanczos2_.Vecs_FTLM[l]);
         }
 
-        double_type check_orth;
-        check_orth = dot_product(Lanczos2_.Seed_used , Lanczos1_.Eig_vec);
-        cout<<"|<Lanczos-2_SEED|Lanczos_1_GS>| = "<<abs(check_orth)<<endl;
+        //double_type check_orth;
+        //check_orth = dot_product(Lanczos2_.Seed_used , Lanczos1_.Eig_vec);
+        //cout<<"|<Lanczos-2_SEED|Lanczos_1_GS>| = "<<abs(check_orth)<<endl;
 
 
         cout<<"-------LANCZOS-2 PERFORMED FOR CONFIGURATION NO. "<<run_no<<" with seed = OPR|"<<Lanczos1_.Random_seed_value<<">";
