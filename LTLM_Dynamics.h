@@ -35,6 +35,8 @@ public:
     double Sum_Partition_Func;
 
     Matrix_COO Hamil;
+    Matrix_COO Hamil_intrmd;
+
 
     Mat_1_real Evals1, Evals2;
 

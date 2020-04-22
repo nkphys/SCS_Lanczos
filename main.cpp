@@ -185,9 +185,6 @@ int main(int argc, char** argv){
                 _MODEL_Kminusq.Read_parameters(_BASIS_Kminusq, inp_filename);
                 _MODEL_Kminusq.Read_parameters_for_dynamics(inp_filename);
 
-              //  int Momentum_qx_int = int (((_MODEL_Kminusq.Dyn_Momentum_x*_BASIS.Lx)/2.0) +0.5);
-              //  int Momentum_qy_int = int (((_MODEL_Kminusq.Dyn_Momentum_y*_BASIS.Ly)/2.0) +0.5);
-
                 _BASIS_Kminusq.Momentum_nx = (_BASIS.Momentum_nx - _MODEL_Kminusq.Dyn_Momentum_x + _BASIS.Lx )%_BASIS.Lx;
                 _BASIS_Kminusq.Momentum_ny = (_BASIS.Momentum_ny - _MODEL_Kminusq.Dyn_Momentum_y + _BASIS.Ly )%_BASIS.Ly;
 
@@ -252,11 +249,11 @@ int main(int argc, char** argv){
 
         if(Static_Finite_Temp){
 
-//            FTLM_STATIC _FTLM_STATIC;
-//            _FTLM_STATIC.Hamil = _MODEL.Hamil;
-//            _MODEL.Read_parameters_for_dynamics(inp_filename);
-//            _MODEL.Initialize_Oprs_for_meausurement(_BASIS);
-//            _FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Oprts_array);
+            //            FTLM_STATIC _FTLM_STATIC;
+            //            _FTLM_STATIC.Hamil = _MODEL.Hamil;
+            //            _MODEL.Read_parameters_for_dynamics(inp_filename);
+            //            _MODEL.Initialize_Oprs_for_meausurement(_BASIS);
+            //            _FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Oprts_array);
 
             LTLM_STATIC _LTLM_STATIC;
             _LTLM_STATIC.Hamil = _MODEL.Hamil;
@@ -268,23 +265,52 @@ int main(int argc, char** argv){
 
 
         if(Dynamics_Finite_Temp){
-//            FTLM_DYNAMICS _FTLM_DYNAMICS;
-//            _FTLM_DYNAMICS.Hamil = _MODEL.Hamil;
+            //            FTLM_DYNAMICS _FTLM_DYNAMICS;
+            //            _FTLM_DYNAMICS.Hamil = _MODEL.Hamil;
 
-//            _MODEL.Read_parameters_for_dynamics(inp_filename);
-//            _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+            //            _MODEL.Read_parameters_for_dynamics(inp_filename);
+            //            _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
 
-//            _FTLM_DYNAMICS.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
+            //            _FTLM_DYNAMICS.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
 
 
             if(true){
-            LTLM_DYNAMICS _LTLM_DYNAMICS;
-            _LTLM_DYNAMICS.Hamil = _MODEL.Hamil;
 
-            _MODEL.Read_parameters_for_dynamics(inp_filename);
-           // _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+                MODEL_1_orb_Hubb_2D_KSector _MODEL_Kminusq;
+                BASIS_1_orb_Hubb_2D_KSector _BASIS_Kminusq;
 
-            _LTLM_DYNAMICS.Perform_LTLM(inp_filename, _MODEL.Dyn_opr);
+                _MODEL_Kminusq.Read_parameters(_BASIS_Kminusq, inp_filename);
+                _MODEL_Kminusq.Read_parameters_for_dynamics(inp_filename);
+
+                _BASIS_Kminusq.Momentum_nx = (_BASIS.Momentum_nx - _MODEL_Kminusq.Dyn_Momentum_x + _BASIS.Lx )%_BASIS.Lx;
+                _BASIS_Kminusq.Momentum_ny = (_BASIS.Momentum_ny - _MODEL_Kminusq.Dyn_Momentum_y + _BASIS.Ly )%_BASIS.Ly;
+
+                _BASIS_Kminusq.file_read_basis = _MODEL_Kminusq.file_read_basis_Kminusq;
+                _BASIS_Kminusq.Construct_basis();
+
+                _MODEL_Kminusq.Add_diagonal_terms(_BASIS_Kminusq);
+                _MODEL_Kminusq.Add_connections(_BASIS_Kminusq);
+
+
+                _MODEL_Kminusq.Initialize_Opr_for_Dynamics(_BASIS, _BASIS_Kminusq);
+
+
+                LTLM_DYNAMICS _LTLM_DYNAMICS;
+                _LTLM_DYNAMICS.Hamil = _MODEL.Hamil;
+                vector < int >().swap(_MODEL.Hamil.columns);
+                vector < int >().swap(_MODEL.Hamil.rows);
+                vector < double_type >().swap(_MODEL.Hamil.value);
+
+                _LTLM_DYNAMICS.Hamil_intrmd = _MODEL_Kminusq.Hamil;
+                vector < int >().swap(_MODEL_Kminusq.Hamil.columns);
+                vector < int >().swap(_MODEL_Kminusq.Hamil.rows);
+                vector < double_type >().swap(_MODEL_Kminusq.Hamil.value);
+
+
+                //_MODEL.Read_parameters_for_dynamics(inp_filename);
+                // _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+
+                _LTLM_DYNAMICS.Perform_LTLM(inp_filename, _MODEL_Kminusq.Dyn_opr);
             }
 
         }
@@ -313,15 +339,15 @@ int main(int argc, char** argv){
         _LANCZOS.Dynamics_performed=false;
         _LANCZOS.Read_Lanczos_parameters(inp_filename);
 
-         if( !(Dynamics_Finite_Temp || Static_Finite_Temp) ){
-        _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
-        _LANCZOS.Write_full_spectrum();
-        Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS.txt");
+        if( !(Dynamics_Finite_Temp || Static_Finite_Temp) ){
+            _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
+            _LANCZOS.Write_full_spectrum();
+            Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS.txt");
 
-        _MODEL.Initialize_one_point_to_calculate_from_file(_BASIS);
-        _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0);
-        _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0, model_name);
-         }
+            _MODEL.Initialize_one_point_to_calculate_from_file(_BASIS);
+            _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0);
+            _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0, model_name);
+        }
 
         cout<<"Dynamics startedXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
 
@@ -358,43 +384,43 @@ int main(int argc, char** argv){
             FTLM_STATIC _FTLM_STATIC;
             _FTLM_STATIC.Hamil = _MODEL.Hamil;
 
-           // _FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
+            // _FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
 
         }
 
         if(Dynamics_Finite_Temp){
 
             if(false){
-            FTLM_DYNAMICS _FTLM_DYNAMICS;
-            _FTLM_DYNAMICS.Hamil = _MODEL.Hamil;
+                FTLM_DYNAMICS _FTLM_DYNAMICS;
+                _FTLM_DYNAMICS.Hamil = _MODEL.Hamil;
 
-            _MODEL.Read_parameters_for_dynamics(inp_filename);
-            if(!_MODEL.Dyn_Momentum_Resolved){
-                int site_=0;
-                _MODEL.Initialize_Opr_for_Dynamics(_BASIS, site_);}
-            else{
-                _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+                _MODEL.Read_parameters_for_dynamics(inp_filename);
+                if(!_MODEL.Dyn_Momentum_Resolved){
+                    int site_=0;
+                    _MODEL.Initialize_Opr_for_Dynamics(_BASIS, site_);}
+                else{
+                    _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+                }
+
+                _FTLM_DYNAMICS.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
+
             }
 
-            _FTLM_DYNAMICS.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
+            if(true){
+                LTLM_DYNAMICS _LTLM_DYNAMICS;
+                _LTLM_DYNAMICS.Hamil = _MODEL.Hamil;
 
-        }
+                _MODEL.Read_parameters_for_dynamics(inp_filename);
+                if(!_MODEL.Dyn_Momentum_Resolved){
+                    int site_=0;
+                    _MODEL.Initialize_Opr_for_Dynamics(_BASIS, site_);}
+                else{
+                    _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+                }
 
-        if(true){
-            LTLM_DYNAMICS _LTLM_DYNAMICS;
-            _LTLM_DYNAMICS.Hamil = _MODEL.Hamil;
+                _LTLM_DYNAMICS.Perform_LTLM(inp_filename, _MODEL.Dyn_opr);
 
-            _MODEL.Read_parameters_for_dynamics(inp_filename);
-            if(!_MODEL.Dyn_Momentum_Resolved){
-                int site_=0;
-                _MODEL.Initialize_Opr_for_Dynamics(_BASIS, site_);}
-            else{
-                _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
             }
-
-            _LTLM_DYNAMICS.Perform_LTLM(inp_filename, _MODEL.Dyn_opr);
-
-        }
 
         }
 
@@ -2230,7 +2256,7 @@ int main(int argc, char** argv){
 
 
 
-//#ifndef USE_COMPLEX
+    //#ifndef USE_COMPLEX
     if (model_name=="1_orb_Hubbard_chain") {
 
         Mat_1_doub Null_double_vec;
@@ -2273,7 +2299,7 @@ int main(int argc, char** argv){
             DO_FULL_DIAGONALIZATION=true;
         }
         else{
-          DO_FULL_DIAGONALIZATION=false;
+            DO_FULL_DIAGONALIZATION=false;
         }
         if(DO_FULL_DIAGONALIZATION==true){
             double EG;
@@ -2569,12 +2595,12 @@ int main(int argc, char** argv){
 
             FTLM_STATIC _FTLM_STATIC;
             _FTLM_STATIC.Hamil = _MODEL.Hamil;
-           // _FTLM_STATIC.Perform_FTLM(inp_filename);
+            // _FTLM_STATIC.Perform_FTLM(inp_filename);
 
         }
 
     }
-//#endif
+    //#endif
 
 
     //=======================================================================================================================================================================================================//

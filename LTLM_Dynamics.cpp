@@ -11,7 +11,8 @@ using namespace std;
 void LTLM_DYNAMICS::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
 
 
-    LANCZOS Lanczos1_;LANCZOS Lanczos2_;
+    LANCZOS Lanczos1_;
+    LANCZOS Lanczos2_;
 
     double offset_E;
 
@@ -48,8 +49,7 @@ void LTLM_DYNAMICS::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
 
 
     M_=Lanczos1_.M_FTLM;
-
-    M_=min(Hamil.nrows, Lanczos1_.M_FTLM);
+    M_=min(Hamil_intrmd.nrows ,min(Hamil.nrows, Lanczos1_.M_FTLM));
     Lanczos1_.M_FTLM=M_;
     Lanczos2_.M_FTLM=M_;
     Total_Random_States=Lanczos1_.Total_Random_States_for_FTLM;
@@ -134,7 +134,7 @@ void LTLM_DYNAMICS::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
 
         cout<<"-------LANCZOS-2 PERFORMED FOR CONFIGURATION NO. "<<run_no<<" with seed = OPR|"<<Lanczos1_.Random_seed_value<<">";
         cout<<"------------------"<<endl;
-        Lanczos2_.Perform_LANCZOS(Hamil);
+        Lanczos2_.Perform_LANCZOS(Hamil_intrmd);
         Evals2 = Lanczos2_.Evals_Tri_all[Lanc_steps-1];
 
         Conf_Partition_Func = 0.0;
