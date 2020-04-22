@@ -202,7 +202,9 @@ int main(int argc, char** argv){
                 _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
                 _LANCZOS_Dynamics.GS_energy=_LANCZOS.GS_energy;
 
+                cout<<"initializing dynamics operator xxxxxxxxxxxxxxxxxxxxxxx"<<endl;
                 _MODEL_Kminusq.Initialize_Opr_for_Dynamics(_BASIS, _BASIS_Kminusq);
+                cout<<"Dyn_opr created xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"<<endl;
 
                 _LANCZOS_Dynamics.Get_Dynamics_seed(_MODEL_Kminusq.Dyn_opr);
 

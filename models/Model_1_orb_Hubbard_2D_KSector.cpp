@@ -541,52 +541,93 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2
     int ix, iy, site;
     double value;
     double_type value2, szq_val, value_final;
+    int j, D_up_temp, D_dn_temp, i_new;
+    bool row_found_;
+    int range_min, range_max;
 
     for (int i=0;i<basis.D_up_basis.size();i++){
-        for (int j=0;j<basis_Kminusq.D_up_basis.size();j++){
-            if( (basis_Kminusq.D_up_basis[j]==basis.D_up_basis[i])
-                    &&
-                    (basis_Kminusq.D_dn_basis[j]==basis.D_dn_basis[i])
-                    ){
+        D_up_temp = basis.D_up_basis[i];
+        D_dn_temp = basis.D_dn_basis[i];
+        //for (int j=0;j<basis_Kminusq.D_up_basis.size();j++){
+        //            if( (basis_Kminusq.D_up_basis[j]==basis.D_up_basis[i])
+        //                    &&
+        //                    (basis_Kminusq.D_dn_basis[j]==basis.D_dn_basis[i])
+        //                    ){
 
-                assert(basis.Dm_bar[i]==basis_Kminusq.Dm_bar[j]);
-                szq_val=zero;
-                for(ix=0;ix<basis.Lx;ix++){
-                    for(iy=0;iy<basis.Ly;iy++){
+        //---searching same up,dn basis in Kmq sector-----------
+        if(D_up_temp>=basis_Kminusq.Dup_Range.size())
+        {
+            row_found_=false;
+        }
+        else
+        {
+            assert(D_up_temp<basis_Kminusq.Dup_Range.size());
+            range_min=basis_Kminusq.Dup_Range[D_up_temp].first;
+            range_max=basis_Kminusq.Dup_Range[D_up_temp].second;
+            if(range_min==-1)
+            {
+                row_found_=false;
+                assert(range_max==-1);
+            }
+            else
+            {
+                i_new = Find_int_in_part_of_intarray(D_dn_temp, basis_Kminusq.D_dn_basis, range_min, range_max);
+                if(i_new==-1){
+                    row_found_=false;
+                }
+                else{
+                    row_found_=true;
+                }
+            }
+        }
 
-                        site = ix + iy*(basis.Lx);
+        j = i_new;
+        //------------------------------------------------------
 
-                        value=0.5*(1.0)*
-                                ( ( bit_value(basis.D_up_basis[i], site) -
-                                    bit_value(basis.D_dn_basis[i], site) )
-                                  );
+
+
+        if(row_found_){
+            assert(basis.Dm_bar[i]==basis_Kminusq.Dm_bar[j]);
+            szq_val=zero;
+            for(ix=0;ix<basis.Lx;ix++){
+                for(iy=0;iy<basis.Ly;iy++){
+
+                    site = ix + iy*(basis.Lx);
+
+                    value=0.5*(1.0)*
+                            ( ( bit_value(basis.D_up_basis[i], site) -
+                                bit_value(basis.D_dn_basis[i], site) )
+                              );
 
 #ifdef USE_COMPLEX
-                        value2=exp(iota_comp*(((2.0/(1.0*basis.Lx))*Dyn_Momentum_x*PI*ix) + ((2.0/(1.0*basis.Ly))*Dyn_Momentum_y*PI*iy)))*sqrt(1.0/(basis.Length));
+                    value2=exp(iota_comp*(((2.0/(1.0*basis.Lx))*Dyn_Momentum_x*PI*ix) + ((2.0/(1.0*basis.Ly))*Dyn_Momentum_y*PI*iy)))*sqrt(1.0/(basis.Length));
 #endif
 #ifndef USE_COMPLEX
-                        cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
+                    cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
 #endif
 
-                        szq_val += value2*value;
+                    szq_val += value2*value;
 
-                    }
                 }
+            }
 
-                if(szq_val !=zero){
+            if(szq_val !=zero){
 
-                    value_final=(conjugate(basis_Kminusq.Dgamma[j])*basis.Dgamma[i])*
-                            szq_val*( (1.0*basis.Lx*basis.Ly)/(basis.Dm_bar[i])  )*
-                           (1.0/sqrt(basis_Kminusq.D_Norm[j]*basis.D_Norm[i]));
+                value_final=(conjugate(basis_Kminusq.Dgamma[j])*basis.Dgamma[i])*
+                        szq_val*( (1.0*basis.Lx*basis.Ly)/(basis.Dm_bar[i])  )*
+                        (1.0/sqrt(basis_Kminusq.D_Norm[j]*basis.D_Norm[i]));
 
-                    Dyn_opr.columns.push_back(i);
-                    Dyn_opr.rows.push_back(j);
-                    Dyn_opr.value.push_back(value_final);
-                }
+                Dyn_opr.columns.push_back(i);
+                Dyn_opr.rows.push_back(j);
+                Dyn_opr.value.push_back(value_final);
+            }
 
 
-            } //if both have same Representative state
         }
+
+
+        //} //if both have same Representative state
+        //}
     }
 
 
