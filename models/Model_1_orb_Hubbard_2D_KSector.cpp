@@ -7,6 +7,9 @@ This class includes the Model for which Lanczos is being done
 #include <string>
 using namespace std;
 #define PI 3.14159265358979323846
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 /*convention for basis:
 
 1)  for "up-spin" basis
@@ -78,8 +81,16 @@ void MODEL_1_orb_Hubb_2D_KSector::Add_non_diagonal_terms(BASIS_1_orb_Hubb_2D_KSe
 void MODEL_1_orb_Hubb_2D_KSector::Add_connections(BASIS_1_orb_Hubb_2D_KSector &basis){
 
 
+#ifdef _OPENMP
+    double begin_time_connections, end_time_connections;
+    begin_time_connections = omp_get_wtime();
+#endif
+
+
     cout<<"Started Hamiltonian construction: Connections"<<endl;
     assert(basis.D_up_basis.size()==basis.D_dn_basis.size());
+
+
 
     Hamil.nrows = basis.D_up_basis.size();
     Hamil.ncols = Hamil.nrows;
@@ -523,11 +534,19 @@ void MODEL_1_orb_Hubb_2D_KSector::Add_connections(BASIS_1_orb_Hubb_2D_KSector &b
 
     cout<<"Done Hamiltonian construction: Connections"<<endl;
 
+#ifdef _OPENMP
+    end_time_connections = omp_get_wtime();
+    cout<<"Time for adding connections to Hamil [using OpenMP] = "<<double(end_time_connections - begin_time_connections)<<endl;
+#endif
+
 }
 
 void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2D_KSector &basis ,BASIS_1_orb_Hubb_2D_KSector & basis_Kminusq){
 
-    //HERE
+#ifdef _OPENMP
+    double begin_time_dynopr, end_time_dynopr;
+    begin_time_dynopr = omp_get_wtime();
+#endif
 
     vector< int >().swap( Dyn_opr.columns );
     vector< int >().swap( Dyn_opr.rows );
@@ -630,6 +649,11 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2
         //}
     }
 
+
+#ifdef _OPENMP
+    end_time_dynopr = omp_get_wtime();
+    cout<<"Time for Creating DYN_OPR [using OpenMP] = "<<double(end_time_dynopr - begin_time_dynopr)<<endl;
+#endif
 
 }
 

@@ -87,7 +87,11 @@ int main(int argc, char** argv){
         _BASIS.Construct_basis();
 
         _MODEL.Add_diagonal_terms(_BASIS);
+
+
         _MODEL.Add_connections(_BASIS);
+
+
 
         //Print_Matrix_COO(_MODEL.Hamil);
 
