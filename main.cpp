@@ -127,6 +127,7 @@ int main(int argc, char** argv){
             _MODEL.Read_parameters_for_dynamics(inp_filename);
 
 
+            /*
             cout<<"-------SzSz(qx,qy)-----------"<<endl;
             for(int nx=0;nx<_BASIS.Lx;nx++){
                 for(int ny=0;ny<_BASIS.Ly;ny++){
@@ -155,6 +156,8 @@ int main(int argc, char** argv){
                 cout<<_MODEL.obs_string[i]<<"  "<<Opr_val<<endl;
                 vector< double_type >().swap(Vec_Temp);
             }
+
+            */
 
 
 
@@ -294,7 +297,10 @@ int main(int argc, char** argv){
                 _MODEL_Kminusq.Add_connections(_BASIS_Kminusq);
 
 
+                cout<<"initializing dynamics operator xxxxxxxxxxxxxxxxxxxxxxx"<<endl;
                 _MODEL_Kminusq.Initialize_Opr_for_Dynamics(_BASIS, _BASIS_Kminusq);
+                cout<<"Dyn_opr created xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"<<endl;
+
 
 
                 LTLM_DYNAMICS _LTLM_DYNAMICS;
