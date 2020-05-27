@@ -1,0 +1,155 @@
+Do_Dynamics =0
+Max threads which can be used parallely = 8
+No. of threads used parallely = 6
+No of Basis states without targeting Momentum Sector = 36
+state_up = 0 done
+No of Basis states in Momentum Sector = (2, 0) is 10
+Started Hamiltonian construction: Diagonal
+Done Hamiltonian construction: Diagonal
+Started Hamiltonian construction: Connections
+Done Hamiltonian construction: Connections
+Time for adding connections to Hamil [using OpenMP] = 7.4133e-05
+No of Basis states without targeting Momentum Sector = 36
+state_up = 0 done
+No of Basis states in Momentum Sector = (0, 0) is 10
+Started Hamiltonian construction: Diagonal
+Done Hamiltonian construction: Diagonal
+Started Hamiltonian construction: Connections
+Done Hamiltonian construction: Connections
+Time for adding connections to Hamil [using OpenMP] = 7.6545e-05
+initializing dynamics operator xxxxxxxxxxxxxxxxxxxxxxx
+Time for Creating DYN_OPR [using OpenMP] = 3.6033e-05
+Dyn_opr created xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+For Temperature = 0.001
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+-------LANCZOS-1 PERFORMED FOR CONFIGURATION NO. 0 with seed = |13>------------------
+Time to operate Hamiltonian : 0.374313
+Overlap b/w 0th and Kvector_np1 : (2.66454e-15,-1.66533e-16)
+Overlap b/w 0th and Normalized Kvector_np1 : (4.16334e-16,-5.55112e-17)
+iter = 0 diff_E = 10.0045 E0 = 10.0045 E0_old = 0
+Overlap b/w low energy eigenvectors with Krylov vector-0:
+<K0|Psi0> = (1,0)
+Time for 1 LAnczos iter : 0.521432
+Time to operate Hamiltonian : 8.9e-05
+Overlap b/w 0th and Kvector_np1 : (-1.83187e-15,-2.42861e-16)
+Reorthogonalization performed
+Overlap b/w 0th and Normalized Kvector_np1 : (-4.16334e-17,-2.08167e-17)
+iter = 1 diff_E = 3.88848 E0 = 6.11606 E0_old = 10.0045
+Overlap b/w low energy eigenvectors with Krylov vector-0:
+<K0|Psi0> = (-0.831821,0)
+<K0|Psi1> = (0.555044,0)
+Time for 1 LAnczos iter : 0.025121
+Time to operate Hamiltonian : 9.6e-05
+Overlap b/w 0th and Kvector_np1 : (-2.498e-15,4.996e-16)
+Reorthogonalization performed
+Overlap b/w 0th and Normalized Kvector_np1 : (1.38778e-17,-2.77556e-17)
+iter = 2 diff_E = 5.59614 E0 = 0.519919 E0_old = 6.11606
+Overlap b/w low energy eigenvectors with Krylov vector-0:
+<K0|Psi0> = (0.292035,0)
+<K0|Psi1> = (0.836398,-0)
+<K0|Psi2> = (0.292035,0)
+Time for 1 LAnczos iter : 0.000894
+Time to operate Hamiltonian : 9.4e-05
+Overlap b/w 0th and Kvector_np1 : (4.64906e-16,7.99708e-16)
+Reorthogonalization performed
+Overlap b/w 0th and Normalized Kvector_np1 : (-2.77556e-17,0)
+iter = 3 diff_E = 1.50616 E0 = -0.986246 E0_old = 0.519919
+Overlap b/w low energy eigenvectors with Krylov vector-0:
+<K0|Psi0> = (0.209136,-0)
+<K0|Psi1> = (-0.379708,0)
+<K0|Psi2> = (-0.447356,0)
+<K0|Psi3> = (-0.447356,0)
+Time for 1 LAnczos iter : 0.129218
+Time to operate Hamiltonian : 0.00011
+Overlap b/w 0th and Kvector_np1 : (-2.22045e-16,1.66533e-16)
+Reorthogonalization performed
+Overlap b/w 0th and Normalized Kvector_np1 : (-1.38778e-17,-1.73472e-18)
+iter = 4 diff_E = 0.0396507 E0 = -1.0259 E0_old = -0.986246
+Overlap b/w low energy eigenvectors with Krylov vector-0:
+<K0|Psi0> = (-0.206767,0)
+<K0|Psi1> = (0.759738,0)
+<K0|Psi2> = (0.759738,0)
+<K0|Psi3> = (0.759738,0)
+<K0|Psi4> = (0.759738,0)
+Time for 1 LAnczos iter : 0.189872
+Time to operate Hamiltonian : 0.063138
+Overlap b/w 0th and Kvector_np1 : (-3.88578e-16,-1.11022e-16)
+Reorthogonalization performed
+Overlap b/w 0th and Normalized Kvector_np1 : (-3.46945e-17,0)
+iter = 5 diff_E = 0.0210158 E0 = -1.04691 E0_old = -1.0259
+Overlap b/w low energy eigenvectors with Krylov vector-0:
+<K0|Psi0> = (-0.204964,0)
+<K0|Psi1> = (0.0984266,0)
+<K0|Psi2> = (-0.776423,0)
+<K0|Psi3> = (-0.378976,0)
+<K0|Psi4> = (0.0944026,-0)
+<K0|Psi5> = (-0.776423,0)
+Time for 1 LAnczos iter : 0.541773
+Time to operate Hamiltonian : 0.31521
+Overlap b/w 0th and Kvector_np1 : (1.249e-16,4.71845e-16)
+Reorthogonalization performed
+Overlap b/w 0th and Normalized Kvector_np1 : (2.77556e-17,-2.77556e-17)
+iter = 6 diff_E = 0.0525471 E0 = -1.09946 E0_old = -1.04691
+Overlap b/w low energy eigenvectors with Krylov vector-0:
+<K0|Psi0> = (-0.195415,0)
+<K0|Psi1> = (-0.0738892,0)
+<K0|Psi2> = (0.761126,0)
+<K0|Psi3> = (-0.327092,0)
+<K0|Psi4> = (0.26345,0)
+<K0|Psi5> = (0.308619,-0)
+<K0|Psi6> = (-0.324655,0)
+Time for 1 LAnczos iter : 0.713082
+Time to operate Hamiltonian : 0.000121
+Overlap b/w 0th and Kvector_np1 : (-5.33604e-16,1.64302e-16)
+Reorthogonalization performed
+Overlap b/w 0th and Normalized Kvector_np1 : (-2.63678e-16,-8.32667e-17)
+iter = 7 diff_E = 0.000418414 E0 = -1.09988 E0_old = -1.09946
+Overlap b/w low energy eigenvectors with Krylov vector-0:
+<K0|Psi0> = (-0.195306,0)
+<K0|Psi1> = (0.0741411,0)
+<K0|Psi2> = (0.760754,0)
+<K0|Psi3> = (0.281611,0)
+<K0|Psi4> = (0.179036,0)
+<K0|Psi5> = (-0.256146,0)
+<K0|Psi6> = (-0.310005,0)
+<K0|Psi7> = (0.323325,0)
+Time for 1 LAnczos iter : 0.341563
+Time to operate Hamiltonian : 0.281805
+Overlap b/w 0th and Kvector_np1 : (7.19326e-16,2.02675e-15)
+Reorthogonalization performed
+Overlap b/w 0th and Normalized Kvector_np1 : (2.6576e-15,1.58207e-15)
+iter = 8 diff_E = 0 E0 = -1.09988 E0_old = -1.09988
+Overlap b/w low energy eigenvectors with Krylov vector-0:
+<K0|Psi0> = (-0.195306,0)
+<K0|Psi1> = (0.0741411,0)
+<K0|Psi2> = (0.760754,0)
+<K0|Psi3> = (0.281611,0)
+<K0|Psi4> = (0,0)
+<K0|Psi5> = (0.179036,0)
+<K0|Psi6> = (-0.256146,0)
+<K0|Psi7> = (-0.310005,0)
+<K0|Psi8> = (0.323325,0)
+Time for 1 LAnczos iter : 0.839213
+Time to operate Hamiltonian : 0.342373
+Overlap b/w 0th and Kvector_np1 : (-6.38932e-15,-1.32922e-14)
+Reorthogonalization performed
+Overlap b/w 0th and Normalized Kvector_np1 : (-0.112189,-0.0477161)
+iter = 9 diff_E = 0 E0 = -1.09988 E0_old = -1.09988
+Overlap b/w low energy eigenvectors with Krylov vector-0:
+<K0|Psi0> = (-0.195306,0)
+<K0|Psi1> = (0.0741411,0)
+<K0|Psi2> = (0.760754,0)
+<K0|Psi3> = (0.281611,0)
+<K0|Psi4> = (0,0)
+<K0|Psi5> = (-0.256146,0)
+<K0|Psi6> = (0.760754,0)
+<K0|Psi7> = (-0.256146,0)
+<K0|Psi8> = (0.760754,0)
+<K0|Psi9> = (0.760754,0)
+Time for 1 LAnczos iter : 0.576315
+Perform_LANCZOS: NO. of iterations required to get convergence in LANCZOS(pass 1) = 10
+Perform_LANCZOS: Energy(GS) is Energy = -1.09987777274973752561e+00   Lanczos_error = 0.00000000000000000000e+00
+Perform_LANCZOS: LANCZOS(pass 2) STARTING FOR Eigenvectors, , Size of Matrix(SB) = 10
+
+-------LANCZOS-2 PERFORMED FOR CONFIGURATION NO. 0 with seed = OPR|13>------------------

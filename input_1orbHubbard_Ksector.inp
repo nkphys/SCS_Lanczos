@@ -1,19 +1,19 @@
 Model = 1_orb_Hubbard_2D_KSector
 ------------------------------------------
 PBC = true
-Lx = 12
+Lx = 6
 Ly = 1
-Momentum_nx = 6
+Momentum_nx = 0
 Momentum_ny = 0
-Ndown = 6
-Nup = 6
+Ndown = 3
+Nup = 3
 Hopping_NN = 1.0
 
 U = 10.0
 H_mag = 0
 ----------------------------------------
 
-Read_Basis_bool = true
+Read_Basis_bool = false
 Read_File_Basis = Kx6Ky0_L12
 
 Write_Basis_bool = false
@@ -45,24 +45,24 @@ file_out_local_obs_for_states_to_look = local_obs_for_state_no
 
 Static_Finite_Temperature = false
 Dynamics_Finite_Temperature = false
-Number_of_Random_States = 2
+Number_of_Random_States = 1
 Number_of_LowKrylov_States_used = 198
 Temperature_Range = 0.1 0.01 1.0
-Energy_Offset_FTLM = -3.23238286153424914104
+Energy_Offset_FTLM = -1.66436273328732275978e+00
 Temperature_LTLM_Dynamics = 0.001
 ----------------------------------
-Perform_Dynamics = true
+Perform_Dynamics = false
 check_omega = 0.01
 Opr_for_Dynamics = Sz
 Momentum_resolved = true
-kx_for_dynamics = 6
+kx_for_dynamics = 3
 ky_for_dynamics = 0
-file_dynamics_out = Sz_k6_L12_dyn_basis_new.txt
+file_dynamics_out = Sz_k4_L6_dyn_T0.txt
 Read_File_Basis_Kminusq = Kx0Ky0_L12
 ---------------------------------
 
 ---------------For both RIXS and std. dynamics---------
-eta = 0.1
+eta = 0.01
 omega_max = 20.0
 omega_min = 0.001
 d_omega = 0.001

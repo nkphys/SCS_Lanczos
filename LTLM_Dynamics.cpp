@@ -79,6 +79,7 @@ void LTLM_DYNAMICS::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
 
 
     int Lanc_steps;
+    int Lanc_steps2;
 
     double Conf_Partition_Func;
 
@@ -96,6 +97,8 @@ void LTLM_DYNAMICS::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
     }
 
     offset_E = Lanczos1_.Energy_Offset_FTLM;
+
+    double Normalization_offset1, Normalization_offset2, Normalization_offset3 ;
 
     double_type temp_coeff;
     for(int run_no=0;run_no<Total_Random_States;run_no++){
@@ -118,6 +121,10 @@ void LTLM_DYNAMICS::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
             vector < double_type >().swap(Lanczos1_.Eig_vecs[i]);
         }
 
+        Normalization_offset1 = exp(Beta*0.5*(Evals1[0] - offset_E));
+        Normalization_offset2 = abs(Lanczos1_.red_eig_vecs[0][0]);
+        Normalization_offset3 = sqrt(Norm(Lanczos2_.Vecs_FTLM[0]));
+
         //Creating Seed for Lanczos2_
         Lanczos2_.Seed_used.resize(OPR_.nrows);
         for(int i=0;i<Lanczos2_.Seed_used.size();i++){Lanczos2_.Seed_used[i]=zero;}
@@ -135,7 +142,10 @@ void LTLM_DYNAMICS::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
         cout<<"-------LANCZOS-2 PERFORMED FOR CONFIGURATION NO. "<<run_no<<" with seed = OPR|"<<Lanczos1_.Random_seed_value<<">";
         cout<<"------------------"<<endl;
         Lanczos2_.Perform_LANCZOS(Hamil_intrmd);
-        Evals2 = Lanczos2_.Evals_Tri_all[Lanc_steps-1];
+
+        Lanc_steps2 = Lanczos2_.Evals_Tri_all.size();
+        Evals2.clear();
+        Evals2 = Lanczos2_.Evals_Tri_all[Lanc_steps2-1];
 
         Conf_Partition_Func = 0.0;
         for(int j=0;j<M_;j++){
@@ -186,11 +196,13 @@ void LTLM_DYNAMICS::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
                 omega = Lanczos1_.omega_min + (point*Lanczos1_.d_omega);
 
 #ifdef USE_COMPLEX
-                filerun_out<<omega<<"    "<<Sum_Cw[point].real()<<"   "<<Sum_Cw[point].imag()<<"   "<<Sum_Partition_Func<<endl;
+                filerun_out<<omega<<"    "<<Sum_Cw[point].real()<<"   "<<Sum_Cw[point].imag()<<"   "<<Sum_Partition_Func;
 #endif
 #ifndef USE_COMPLEX
-                filerun_out<<omega<<"    "<<Sum_Cw[point]<<"   "<<Sum_Partition_Func<<endl;
+                filerun_out<<omega<<"    "<<Sum_Cw[point]<<"   "<<Sum_Partition_Func;
 #endif
+
+                filerun_out<<"   "<<Normalization_offset1<<"   "<<Normalization_offset2<<"   "<<Normalization_offset3<<endl;
             }
         }
 

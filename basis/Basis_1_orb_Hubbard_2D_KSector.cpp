@@ -24,7 +24,7 @@ using namespace std;
 
 
 void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
-
+#ifdef USE_COMPLEX
 
     double epsilon=0.000001;
     int n_int;
@@ -421,7 +421,7 @@ void BASIS_1_orb_Hubb_2D_KSector::Construct_basis(){
 
     }
 
-
+#endif
 }
 
 
@@ -429,3 +429,5 @@ void BASIS_1_orb_Hubb_2D_KSector::clear(){
     D_up_basis.clear();
     D_dn_basis.clear();
 }
+
+

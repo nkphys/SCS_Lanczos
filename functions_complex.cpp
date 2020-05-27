@@ -18,7 +18,7 @@ complex<double> conjugate(complex<double> val){
 
 double Lorentzian(double eta, double x){
     double val;
-    val = (1.0/PI_)*( (eta/1.0) / (  (x*x) + ((eta*eta)/2)   ) );
+    val = (1.0/PI_)*( (eta/1.0) / (  (x*x) + ((eta*eta)/1.0)   ) );
     return val;
 }
 
