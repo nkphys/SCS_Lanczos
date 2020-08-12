@@ -2409,6 +2409,7 @@ int main(int argc, char** argv){
                 double_type value_two_point;
                 cout<<"Two point observables:"<<endl;
                 opr_type_.clear();
+                opr_type_.push_back("denden");
                 opr_type_.push_back("SzSz");
                 opr_type_.push_back("SpSm");
                 opr_type_.push_back("SmSp");
@@ -2420,6 +2421,7 @@ int main(int argc, char** argv){
                     Sum_=0.0;
                     for(int site1=0;site1<_BASIS.Length;site1++){
                         for(int site2=0;site2<_BASIS.Length;site2++){
+
                             OPR_.columns.clear();
                             OPR_.rows.clear();
                             OPR_.value.clear();
@@ -2427,6 +2429,11 @@ int main(int argc, char** argv){
                             value_two_point=_LANCZOS.Measure_observable(OPR_, state_no);
                             cout<<value_two_point<<"  ";
                             Sum_+=value_two_point;
+
+                            vector< int >().swap( OPR_.columns );
+                            vector< int >().swap( OPR_.rows );
+                            vector< double_type >().swap( OPR_.value );
+
                         }
                         cout<<endl;
                     }
@@ -2434,9 +2441,7 @@ int main(int argc, char** argv){
 
                 }
 
-                vector< int >().swap( OPR_.columns );
-                vector< int >().swap( OPR_.rows );
-                vector< double_type >().swap( OPR_.value );
+
             }
         }
         else{

@@ -17,7 +17,9 @@ class MODEL_1_orb_Hubb_chain{
 public:
     double U;
 
-    Mat_2_real Hopping_mat_NN;//Nearest neighbour hopping matrix
+    Mat_2_real Hopping_mat_NN;//LongRange hopping matrix(_NN is misnomer)
+    Mat_2_real NonLocalInteractions_mat;//LongRange interactions
+
     Mat_1_real H_field;
     Mat_1_real Onsite_Energy;
     bool PBC;
@@ -43,7 +45,6 @@ public:
     string LongRangeHoppingfilepath;
     string LongRangeInteractionfilepath;
 
-    Mat_2_doub DenDen_Interaction_mat;
     Mat_2_doub Hopping_mat;
 
     Mat_1_doub State_c_on_GS;

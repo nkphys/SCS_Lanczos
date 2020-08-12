@@ -36,7 +36,7 @@ void MODEL_1_orb_Hubb_chain::Add_diagonal_terms(BASIS_1_orb_Hubb_chain &basis){
             m=basis.D_dn_basis.size()*i + j;
 
             value=0;
-            //intra-orbital coulomb repulsion:
+            //coulomb repulsion:
             value+=U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
 
 
@@ -56,6 +56,21 @@ void MODEL_1_orb_Hubb_chain::Add_diagonal_terms(BASIS_1_orb_Hubb_chain &basis){
                             bit_value(basis.D_dn_basis[j],site) )
                           );
                 //  cout<<"site = "<<site<<" : "<<Onsite_Energy[site]<<endl;
+            }
+
+            //LongRange interactions ninj
+            for(int site_i=0;site_i<basis.Length;site_i++){
+                for(int site_j=0;site_j<basis.Length;site_j++){
+
+                    if(NonLocalInteractions_mat[site_i][site_j]!=0.0){
+
+                        value+=1.0*NonLocalInteractions_mat[site_i][site_j]*(
+                                    ( bit_value(basis.D_up_basis[i],site_i) + bit_value(basis.D_dn_basis[j],site_i))*
+                                    ( bit_value(basis.D_up_basis[i],site_j) + bit_value(basis.D_dn_basis[j],site_j))
+                                    );
+
+                    }
+                }
             }
 
 
@@ -90,15 +105,6 @@ void MODEL_1_orb_Hubb_chain::Add_connections(BASIS_1_orb_Hubb_chain &basis){
 
             for(int site=0;site<basis.Length ;site++){
                 for(int site_p=0;site_p<basis.Length ;site_p++){
-
-                    /*int neigh =site-site_p;
-
-                    if(PBC==true){
-                        if(site_p==0 && site==(basis.Length -1)){
-                            neigh=1;
-                        }
-                    }
-                    */
 
                     if((Hopping_mat_NN[site_p][site])!=0)
 
@@ -194,6 +200,7 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     string pbc_,PBC_ ="PBC = ";
     string length_x, Length_X = "Length_X = ";
     string length_y, Length_Y = "Length_Y = ";
+    string total_sites_, Total_Sites_ = "Total_Sites = ";
     string ndn, Ndn = "Ndown = ";
     string nup, Nup = "Nup = ";
     string ucoul, Ucoul = "U = ";
@@ -207,6 +214,9 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     string geometry_, Geometry_ = "Geometry = ";
 
     string file_onsite_energies_, File_Onsite_Energies_ = "File_Onsite_Energies = ";
+
+    string file_hopping_connections_, File_Hopping_Connections_ = "File_Hopping_Connections = ";
+    string file_nonlocal_int_connections_, File_NonLocal_Int_Connections_ = "File_NonLocal_Int_Connections = ";
 
     string read_onsite_energies;
 
@@ -235,6 +245,9 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
             if ((offset = line.find(Length_Y, 0)) != string::npos) {
                 length_y = line.substr (offset + Length_Y.length());		}
 
+            if ((offset = line.find(Total_Sites_, 0)) != string::npos) {
+                total_sites_ = line.substr (offset + Total_Sites_.length());		}
+
             if ((offset = line.find(Ndn, 0)) != string::npos) {
                 ndn = line.substr (offset + Ndn.length());		}
 
@@ -256,6 +269,12 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
             if ((offset = line.find(File_Onsite_Energies_, 0)) != string::npos) {
                 file_onsite_energies_ = line.substr (offset+File_Onsite_Energies_.length());				}
 
+            if ((offset = line.find(File_Hopping_Connections_, 0)) != string::npos) {
+                file_hopping_connections_ = line.substr (offset+File_Hopping_Connections_.length());				}
+
+            if ((offset = line.find(File_NonLocal_Int_Connections_, 0)) != string::npos) {
+                file_nonlocal_int_connections_ = line.substr (offset+File_NonLocal_Int_Connections_.length());				}
+
         }
         inputfile.close();
     }
@@ -274,9 +293,11 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
         PBC=false;
     }
 
-    int Length_X_int, Length_Y_int;
+    int Length_X_int, Length_Y_int, Total_Sites_int;
     Length_X_int=atoi(length_x.c_str());
     Length_Y_int=atoi(length_y.c_str());
+
+
 
     basis.Length=Length_X_int*Length_Y_int;
     basis.Ndn=atoi(ndn.c_str());
@@ -347,9 +368,11 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     Hopping_mat_NN.clear();
 
 
-    assert(geometry_ == "NN_chain" || geometry_ == "NN_2D_Lattice" || geometry_ == "NNN_2D_Lattice");
+    assert(geometry_ == "NN_chain" || geometry_ == "NN_2D_Lattice" || geometry_ == "NNN_2D_Lattice" || geometry_ == "LongRange");
 
     if(geometry_=="NN_chain"){
+
+        Total_Sites_int=Length_X_int;
         cout<<"1 dimensional chain with nearest neighbour hopping is solved"<<endl;
         assert(Length_Y_int==1);
         Hopping_mat_NN.resize(basis.Length);
@@ -407,8 +430,11 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
 
 
         //SITE LABELING XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX//
-        int Total_sites = Length_X_int*Length_Y_int;
-        basis.Length=Total_sites;
+
+        int Total_sites;
+        Total_Sites_int = Length_X_int*Length_Y_int;
+        basis.Length=Total_Sites_int;
+        Total_sites = Total_Sites_int;
 
         vector<int> indx_, indy_;
         Mat_2_int Nc_;
@@ -511,8 +537,10 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
 
 
         //SITE LABELING XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX//
-        int Total_sites = Length_X_int*Length_Y_int;
-        basis.Length=Total_sites;
+        int Total_sites;
+        Total_Sites_int = Length_X_int*Length_Y_int;
+        basis.Length=Total_Sites_int;
+        Total_sites = Total_Sites_int;
 
         vector<int> indx_, indy_;
         Mat_2_int Nc_;
@@ -660,8 +688,52 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     }
 
 
+    if(geometry_ == "LongRange"){
+
+
+        cout<<"Length_X, Length_Y, Hopping, Hopping_NN, and PBC from the input file are not used in LongRange, Only Total_Sites is used."<<endl;
+        Total_Sites_int = atoi(total_sites_.c_str());
+        basis.Length=Total_Sites_int;
+
+
+        //Hoppings Mat(i,j)ci^{dagger}cj
+        Hopping_mat_NN.resize(Total_Sites_int);
+        for(int site_=0;site_<Total_Sites_int;site_++){
+            Hopping_mat_NN[site_].resize(Total_Sites_int);
+        }
+
+        ifstream inputfile_hopping_connections(file_hopping_connections_.c_str());
+        for(int site_i=0;site_i<Total_Sites_int;site_i++){
+            for(int site_j=0;site_j<Total_Sites_int;site_j++){
+                inputfile_hopping_connections>>Hopping_mat_NN[site_i][site_j];
+            }
+        }
+
+
+
+
+        //Interactions  Mat(i,j)ninj
+        NonLocalInteractions_mat.resize(Total_Sites_int);
+        for(int site_=0;site_<Total_Sites_int;site_++){
+            NonLocalInteractions_mat[site_].resize(Total_Sites_int);
+        }
+
+        ifstream inputfile_nonlocal_int_connections(file_nonlocal_int_connections_.c_str());
+        for(int site_i=0;site_i<Total_Sites_int;site_i++){
+            for(int site_j=0;site_j<Total_Sites_int;site_j++){
+                inputfile_nonlocal_int_connections>>NonLocalInteractions_mat[site_i][site_j];
+            }
+        }
+
+
+
+    }
+
+
     //  cout<<"PRINTING HOPPING MATRIX"<<endl;
     //  Print_Matrix(Hopping_mat_NN);
+
+    //Print_Matrix(NonLocalInteractions_mat);
     //  cout<<"**************************"<<endl;
 
 
@@ -864,6 +936,26 @@ void MODEL_1_orb_Hubb_chain::Initialize_two_point_operator_sites_specific(string
     int m;
     double value;
 
+
+
+    if(opr_type=="denden"){
+        for (int i=0;i<basis.D_up_basis.size();i++){
+            for (int j=0;j<basis.D_dn_basis.size();j++){
+                m=basis.D_dn_basis.size()*i + j;
+                value=0;
+                value+=1.0*( ( bit_value(basis.D_up_basis[i], site) +
+                                bit_value(basis.D_dn_basis[j], site) )*
+                              ( bit_value(basis.D_up_basis[i], site2) +
+                                bit_value(basis.D_dn_basis[j], site2) )
+                              );
+                if(value!=0){
+                    OPR.value.push_back(value*one);
+                    OPR.rows.push_back(m);
+                    OPR.columns.push_back(m);
+                }
+            }
+        }
+    }
 
     if(opr_type=="SzSz"){
         for (int i=0;i<basis.D_up_basis.size();i++){
