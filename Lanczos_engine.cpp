@@ -307,202 +307,202 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
     if(Dynamics_performed==false){
         if(Eig_vecs_required){
 
-        if(Get_Full_Spectrum == false){
-            red_eig_vecs.clear();
-            red_eig_vecs.resize(1);
-            red_eig_vecs[0]=red_eig_vec;
-        }
-
-        int temp_Target_state;
-        Eig_vecs.clear();
-        Eig_vecs.resize(states_to_look.size());
-        for(int Ts=0;Ts<states_to_look.size();Ts++){
-
-            temp_Target_state=states_to_look[Ts];
-            if(Ts==0){
-                assert(temp_Target_state==0);
+            if(Get_Full_Spectrum == false){
+                red_eig_vecs.clear();
+                red_eig_vecs.resize(1);
+                red_eig_vecs[0]=red_eig_vec;
             }
-            srand(seed_lanczos);
 
-            //------Creating Seed--------------------//
-            if(Read_the_seed==false){
+            int temp_Target_state;
+            Eig_vecs.clear();
+            Eig_vecs.resize(states_to_look.size());
+            for(int Ts=0;Ts<states_to_look.size();Ts++){
 
-                if(Get_SeedVec_from_another_routine){
-                    Kvector_n = Seed_used;
-                    tmpnrm_type_double=Norm(Kvector_n);
-                    tmpnrm=sqrt(tmpnrm_type_double);
+                temp_Target_state=states_to_look[Ts];
+                if(Ts==0){
+                    assert(temp_Target_state==0);
+                }
+                srand(seed_lanczos);
+
+                //------Creating Seed--------------------//
+                if(Read_the_seed==false){
+
+                    if(Get_SeedVec_from_another_routine){
+                        Kvector_n = Seed_used;
+                        tmpnrm_type_double=Norm(Kvector_n);
+                        tmpnrm=sqrt(tmpnrm_type_double);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(shared)
 #endif
-                    for(int j=0;j<Hamil.nrows;j++){
-                        Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
+                        for(int j=0;j<Hamil.nrows;j++){
+                            Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
+                        }
+                    }
+                    else{
+                        for(int j=0;j<Hamil.nrows;j++){
+#ifdef USE_COMPLEX
+                            temp1_type_double.real((rand()%RAND_MAX));
+                            temp1_type_double.imag((rand()%RAND_MAX));
+#endif
+#ifndef USE_COMPLEX
+                            temp1_type_double = (rand()%RAND_MAX);
+#endif
+                            temp1_type_double=(temp1_type_double)*(1.0/(RAND_MAX*1.0));
+                            Kvector_n.push_back(temp1_type_double);
+                        }
+
+                        tmpnrm_type_double=Norm(Kvector_n);
+                        tmpnrm=sqrt(tmpnrm_type_double);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
+                        for(int j=0;j<Hamil.nrows;j++){
+                            Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
+                        }
+
                     }
                 }
                 else{
+                    ifstream infile_seed(seed_file_in.c_str());
                     for(int j=0;j<Hamil.nrows;j++){
 #ifdef USE_COMPLEX
-                        temp1_type_double.real((rand()%RAND_MAX));
-                        temp1_type_double.imag((rand()%RAND_MAX));
+                        infile_seed>>tmpnrm;joker_double.real(tmpnrm);infile_seed>>tmpnrm;joker_double.imag(tmpnrm);
 #endif
 #ifndef USE_COMPLEX
-                        temp1_type_double = (rand()%RAND_MAX);
+                        infile_seed>>joker_double;
 #endif
-                        temp1_type_double=(temp1_type_double)*(1.0/(RAND_MAX*1.0));
-                        Kvector_n.push_back(temp1_type_double);
+                        Kvector_n.push_back(joker_double);
                     }
-
-                    tmpnrm_type_double=Norm(Kvector_n);
-                    tmpnrm=sqrt(tmpnrm_type_double);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(shared)
-#endif
-                    for(int j=0;j<Hamil.nrows;j++){
-                        Kvector_n[j] = (Kvector_n[j]/(tmpnrm));
-                    }
-
                 }
-            }
-            else{
-                ifstream infile_seed(seed_file_in.c_str());
+                //---------Seed Created----------------------//
+
+                Eig_vecs[Ts].clear();
                 for(int j=0;j<Hamil.nrows;j++){
-#ifdef USE_COMPLEX
-                    infile_seed>>tmpnrm;joker_double.real(tmpnrm);infile_seed>>tmpnrm;joker_double.imag(tmpnrm);
-#endif
-#ifndef USE_COMPLEX
-                    infile_seed>>joker_double;
-#endif
-                    Kvector_n.push_back(joker_double);
-                }
-            }
-            //---------Seed Created----------------------//
-
-            Eig_vecs[Ts].clear();
-            for(int j=0;j<Hamil.nrows;j++){
-                Eig_vecs[Ts].push_back(0);
-            }
-
-            if(save_all_Krylov_space_vecs==true){
-                for(int lanc_iter2=0;lanc_iter2<lanc_iter;lanc_iter2=lanc_iter2+1){
-                    Subtract(Eig_vecs[Ts], (-1.0*(red_eig_vecs[Ts][lanc_iter2])), Krylov_space_vecs[lanc_iter2]);
+                    Eig_vecs[Ts].push_back(0);
                 }
 
-            }
-            else{
-                for(int lanc_iter2=0;lanc_iter2<lanc_iter;lanc_iter2=lanc_iter2+1){
-                    Subtract(Eig_vecs[Ts], (-1.0*(red_eig_vecs[Ts][lanc_iter2])), Kvector_n);
-
-                    // saved in K_vector_np1
-                    Matrix_COO_vector_multiplication("U", Hamil, Kvector_n, Kvector_np1);
-
-                    Subtract(Kvector_np1, A[lanc_iter2], Kvector_n);
-                    if(lanc_iter2!=0){
-                        Subtract(Kvector_np1, sqrt(B2[lanc_iter2]), Kvector_nm1);
+                if(save_all_Krylov_space_vecs==true){
+                    for(int lanc_iter2=0;lanc_iter2<lanc_iter;lanc_iter2=lanc_iter2+1){
+                        Subtract(Eig_vecs[Ts], (-1.0*(red_eig_vecs[Ts][lanc_iter2])), Krylov_space_vecs[lanc_iter2]);
                     }
 
-                    //Normalizaton of Knp1 , not included in std. Lanczos
-                    tmpnrm_type_double = Norm(Kvector_np1); //new
-                    tmpnrm=sqrt(tmpnrm_type_double);
-                    for(int i=0;i<Kvector_np1.size();i++){
-                        Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm));
-                    }
-                    Kvector_nm1=Kvector_n;
-                    Kvector_n=Kvector_np1;
                 }
-            }
+                else{
+                    for(int lanc_iter2=0;lanc_iter2<lanc_iter;lanc_iter2=lanc_iter2+1){
+                        Subtract(Eig_vecs[Ts], (-1.0*(red_eig_vecs[Ts][lanc_iter2])), Kvector_n);
 
-            double norm_ev=Norm(Eig_vecs[Ts]);
+                        // saved in K_vector_np1
+                        Matrix_COO_vector_multiplication("U", Hamil, Kvector_n, Kvector_np1);
+
+                        Subtract(Kvector_np1, A[lanc_iter2], Kvector_n);
+                        if(lanc_iter2!=0){
+                            Subtract(Kvector_np1, sqrt(B2[lanc_iter2]), Kvector_nm1);
+                        }
+
+                        //Normalizaton of Knp1 , not included in std. Lanczos
+                        tmpnrm_type_double = Norm(Kvector_np1); //new
+                        tmpnrm=sqrt(tmpnrm_type_double);
+                        for(int i=0;i<Kvector_np1.size();i++){
+                            Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm));
+                        }
+                        Kvector_nm1=Kvector_n;
+                        Kvector_n=Kvector_np1;
+                    }
+                }
+
+                double norm_ev=Norm(Eig_vecs[Ts]);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(shared)
 #endif
-            for(int j=0;j<Hamil.nrows;j++){
-                Eig_vecs[Ts][j] = (Eig_vecs[Ts][j]/(sqrt(norm_ev)));
+                for(int j=0;j<Hamil.nrows;j++){
+                    Eig_vecs[Ts][j] = (Eig_vecs[Ts][j]/(sqrt(norm_ev)));
+                }
+
+                if(Get_insitu_FTLM_overlaps){
+                    for(int ip=0;ip<Mat_elements.size();ip++){
+                        Mat_elements[ip][Ts] = dot_product(Eig_vecs[Ts], Vecs_FTLM[ip]);
+                    }
+                    if(Ts>0){
+                        vector < double_type >().swap(Eig_vecs[Ts]);
+                    }
+                }
+
+                Kvector_n.clear();Kvector_nm1.clear();Kvector_np1.clear();
             }
 
-            if(Get_insitu_FTLM_overlaps){
-                for(int ip=0;ip<Mat_elements.size();ip++){
-                    Mat_elements[ip][Ts] = dot_product(Eig_vecs[Ts], Vecs_FTLM[ip]);
-                }
-                if(Ts>0){
-                vector < double_type >().swap(Eig_vecs[Ts]);
-                }
-            }
+            Eig_vec=Eig_vecs[0];
 
-            Kvector_n.clear();Kvector_nm1.clear();Kvector_np1.clear();
-        }
+            if(get_overlap_with_basis==true){
+                Overlaps_bare.clear();
+                Overlaps_bare.resize(Eig_vecs.size());
+                int bi_new;
 
-        Eig_vec=Eig_vecs[0];
-
-        if(get_overlap_with_basis==true){
-            Overlaps_bare.clear();
-            Overlaps_bare.resize(Eig_vecs.size());
-            int bi_new;
-
-            Overlaps.clear();
-            Overlaps.resize(Eig_vecs.size());
-            for(int Ts=0;Ts<Eig_vecs.size();Ts++){
-                Overlaps[Ts].resize(Eig_vecs[0].size());
-
-                for(int bi=0;bi<Eig_vecs[0].size();bi++){
-
-                    Overlaps[Ts][bi].first=abs( Eig_vecs[Ts][bi])*abs( Eig_vecs[Ts][bi]) ;
-                    Overlaps[Ts][bi].second=bi;
-                }
-                cout<<"sorting for state = "<<states_to_look[Ts]<<endl;
-                sort(Overlaps[Ts].begin(), Overlaps[Ts].end(), comp_greater_pair_double_int);
-            }
-
-            for(int Ts=0;Ts<Eig_vecs.size();Ts++){
-                Overlaps_bare[Ts].resize(Eig_vecs[0].size());
-                for(int bi=0;bi<Eig_vecs[0].size();bi++){
-                    bi_new = Overlaps[Ts][bi].second;
-                    Overlaps_bare[Ts][bi].first=Eig_vecs[Ts][bi_new];
-                    Overlaps_bare[Ts][bi].second=bi_new;
-                }
-            }
-
-            ofstream outfile_overlap(overlap_out_file.c_str());
-            for(int bi=0;bi<Eig_vecs[0].size();bi++){
-                outfile_overlap<<bi;
+                Overlaps.clear();
+                Overlaps.resize(Eig_vecs.size());
                 for(int Ts=0;Ts<Eig_vecs.size();Ts++){
-                    outfile_overlap<<"  "<<Overlaps_bare[Ts][bi].first<<"   "<<Overlaps[Ts][bi].first;
+                    Overlaps[Ts].resize(Eig_vecs[0].size());
+
+                    for(int bi=0;bi<Eig_vecs[0].size();bi++){
+
+                        Overlaps[Ts][bi].first=abs( Eig_vecs[Ts][bi])*abs( Eig_vecs[Ts][bi]) ;
+                        Overlaps[Ts][bi].second=bi;
+                    }
+                    cout<<"sorting for state = "<<states_to_look[Ts]<<endl;
+                    sort(Overlaps[Ts].begin(), Overlaps[Ts].end(), comp_greater_pair_double_int);
                 }
+
                 for(int Ts=0;Ts<Eig_vecs.size();Ts++){
-                    outfile_overlap<<"  "<<Overlaps_bare[Ts][bi].second;
+                    Overlaps_bare[Ts].resize(Eig_vecs[0].size());
+                    for(int bi=0;bi<Eig_vecs[0].size();bi++){
+                        bi_new = Overlaps[Ts][bi].second;
+                        Overlaps_bare[Ts][bi].first=Eig_vecs[Ts][bi_new];
+                        Overlaps_bare[Ts][bi].second=bi_new;
+                    }
                 }
-                outfile_overlap<<endl;
-            }
+
+                ofstream outfile_overlap(overlap_out_file.c_str());
+                for(int bi=0;bi<Eig_vecs[0].size();bi++){
+                    outfile_overlap<<bi;
+                    for(int Ts=0;Ts<Eig_vecs.size();Ts++){
+                        outfile_overlap<<"  "<<Overlaps_bare[Ts][bi].first<<"   "<<Overlaps[Ts][bi].first;
+                    }
+                    for(int Ts=0;Ts<Eig_vecs.size();Ts++){
+                        outfile_overlap<<"  "<<Overlaps_bare[Ts][bi].second;
+                    }
+                    outfile_overlap<<endl;
+                }
 
 
 
 
-            if(Check_Ghosts==true){
-                string out3 = "ghost.txt";
-                ofstream file_out3(out3.c_str());
+                if(Check_Ghosts==true){
+                    string out3 = "ghost.txt";
+                    ofstream file_out3(out3.c_str());
 
-                for(int Ts1=0;Ts1<Eig_vecs.size();Ts1++){
+                    for(int Ts1=0;Ts1<Eig_vecs.size();Ts1++){
 
-                    for(int Ts2=0;Ts2<Eig_vecs.size();Ts2++){
-                        file_out3<<dot_product(Eig_vecs[Ts1],Eig_vecs[Ts2])<<"  ";
+                        for(int Ts2=0;Ts2<Eig_vecs.size();Ts2++){
+                            file_out3<<dot_product(Eig_vecs[Ts1],Eig_vecs[Ts2])<<"  ";
+
+                        }
+                        file_out3<<endl;
 
                     }
-                    file_out3<<endl;
-
                 }
+
+
             }
 
 
-        }
-
-
-        /*
+            /*
 bool comp(int i, int j) { return i > j; }
 sort(numbers.begin(), numbers.end(), comp);
  */
 
-    }
+        }
     }
 
     else{
@@ -719,7 +719,7 @@ void LANCZOS::Measure_one_point_observables(Mat_1_string one_point_obs, Hamilton
 
 
 void LANCZOS::Measure_two_point_observables_smartly(Mat_1_string one_point_obs, Hamiltonian_2_COO &One_point_oprts, int T_sites, int state_no, string _model_){
-    cout<<"Two-point Measurement is done smartly = "<<states_to_look[state_no]<<endl;
+    cout<<"Two-point Measurement is done smartly for state no = "<<states_to_look[state_no]<<endl;
 
     double_type value;
     Mat_1_doub temp_vec, temp_vec2;
@@ -781,37 +781,48 @@ void LANCZOS::Measure_two_point_observables_smartly(Mat_1_string one_point_obs, 
 #ifdef USE_COMPLEX
     if(_model_=="3_orb_Hubbard_chain_GC"){
 
-        for(int opr_no=14;opr_no<=32;opr_no++){
-            cout<<"("<<one_point_obs[opr_no]<<"(i)|gs>)^\\dagger "<<one_point_obs[opr_no]<<"(j)|gs>"<<endl;
-            for(int site=0;site<T_sites;site++){
-                for(int site2=0;site2<T_sites;site2++){
-                    if(site2>=site){
-                        value=zero;
-                        //TEMP_COO = Dagger(Sz[site2]);
-                        TEMP_COO = (One_point_oprts[opr_no][site]);
-                        Matrix_COO_vector_multiplication("Full", One_point_oprts[opr_no][site2], Eig_vecs[state_no], temp_vec);
-                        Matrix_COO_vector_multiplication("Full", TEMP_COO, Eig_vecs[state_no], temp_vec2);
-                        value = dot_product(temp_vec2,temp_vec);
-                        corr[0][site][site2]=value;
-                        corr[0][site2][site]=value;
-                        cout<<value<<"  ";
-                    }
-                    else{
-                        cout<<zero<<"  ";
-                    }
-                }
-                cout<<endl;
-            }
+        if(false){
+            cout<<"2point OBSERVABLES specifically for 3_orb_Hubbard_chain_GC"<<endl;
+
+            //        Mat_1_int oprs_index;
+            //        Mat_1_string oprs_string;
+            //        oprs_string.push_back();
 
 
-            double_type sum_all=zero;
-            for(int site=0;site<T_sites;site++){
-                for(int site2=0;site2<T_sites;site2++){
-                    sum_all = sum_all + corr[0][site][site2];
+            for(int opr_no=14;opr_no<=32;opr_no++){
+                cout<<"("<<one_point_obs[opr_no]<<"(i)|gs>)^\\dagger "<<one_point_obs[opr_no]<<"(j)|gs>"<<endl;
+                for(int site=0;site<T_sites;site++){
+                    for(int site2=0;site2<T_sites;site2++){
+                        if(site2>=site){
+                            value=zero;
+                            //TEMP_COO = Dagger(Sz[site2]);
+                            TEMP_COO = (One_point_oprts[opr_no][site]);
+                            Matrix_COO_vector_multiplication("Full", One_point_oprts[opr_no][site2], Eig_vecs[state_no], temp_vec);
+                            Matrix_COO_vector_multiplication("Full", TEMP_COO, Eig_vecs[state_no], temp_vec2);
+                            value = dot_product(temp_vec2,temp_vec);
+                            corr[0][site][site2]=value;
+                            corr[0][site2][site]=value;
+                            cout<<value<<"  ";
+                        }
+                        else{
+                            cout<<zero<<"  ";
+                        }
+                    }
+                    cout<<endl;
                 }
+
+
+                double_type sum_all=zero;
+                for(int site=0;site<T_sites;site++){
+                    for(int site2=0;site2<T_sites;site2++){
+                        sum_all = sum_all + corr[0][site][site2];
+                    }
+                }
+                cout<<"sum_all = "<<sum_all<<endl;
             }
-            cout<<"sum_all = "<<sum_all<<endl;
         }
+
+
     }
 #endif
 

@@ -4,23 +4,24 @@ This class includes the Basis used for Model for which Lanczos is being done
 #include "../tensor_type.h"
 #include "../binary_decimal.h"
 #include "../Base_to_Decimal.h"
-//#include "../Base_to_Decimal.cpp"
 
 using namespace std;
 
-#ifndef Basis_Spins
-#define Basis_Spins
-class BASIS_Spins{
+#ifndef Basis_Spins_Target_Sz
+#define Basis_Spins_Target_Sz
+class BASIS_Spins_Target_Sz{
 
 public:
     int Length;
     int TwoTimesSpin;
+    double Target_Total_Sz;
+    int Target_Total_Value;
     double SPIN;
     int BASE;
-    int basis_size;
+    unsigned long long int basis_size;
 
-    Mat_1_int D_basis;
-    Mat_1_int inverse_D;
+
+    Mat_1_ullint D_basis;
     unsigned long long int D_min, D_max;
 
 

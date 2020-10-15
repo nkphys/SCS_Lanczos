@@ -438,7 +438,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_connections(){
 
 
     if(USE_LONG_RANGE_HOPPINGS){
-    //Hopping_mat_LongRange
+        //Hopping_mat_LongRange
         double_type value;
         value=one;
         int m,j;
@@ -468,9 +468,9 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_connections(){
                             check_val = Hopping_mat_LongRange[site_p + gamma_p*basis.Length][site + gamma*basis.Length];
 
                             if(
-                                (site + gamma*basis.Length)>(site_p + gamma_p*basis.Length)
+                                    (site + gamma*basis.Length)>(site_p + gamma_p*basis.Length)
                                     &&
-                                (check_val!=zero)
+                                    (check_val!=zero)
                                     )
                             {
 
@@ -538,21 +538,21 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_connections(){
 
 
                                     if(!basis.Restricted){
-                                            assert(m_new<m);
-                                            Hamil.value.push_back(-1.0*sign_FM*(check_val)*one*value);
-                                            Hamil.rows.push_back((m_new));
-                                            Hamil.columns.push_back((m));
+                                        assert(m_new<m);
+                                        Hamil.value.push_back(-1.0*sign_FM*(check_val)*one*value);
+                                        Hamil.rows.push_back((m_new));
+                                        Hamil.columns.push_back((m));
 
-                                            Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(check_val)*one*value);
-                                            Macro_oprts[num_Hopping].rows.push_back((m_new));
-                                            Macro_oprts[num_Hopping].columns.push_back((m));
+                                        Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(check_val)*one*value);
+                                        Macro_oprts[num_Hopping].rows.push_back((m_new));
+                                        Macro_oprts[num_Hopping].columns.push_back((m));
 
                                     }
                                     else{
                                         if(    Is_int_in_array(N1_temp, basis.Local_occupations_allowed)
-                                                &&
-                                                Is_int_in_array(N2_temp, basis.Local_occupations_allowed)
-                                                ){
+                                               &&
+                                               Is_int_in_array(N2_temp, basis.Local_occupations_allowed)
+                                               ){
                                             assert(m_new<m);
                                             Hamil.value.push_back(-1.0*sign_FM*(check_val)*one*value);
                                             Hamil.rows.push_back((m_new));
@@ -623,14 +623,14 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_connections(){
 
 
                                     if(!basis.Restricted){
-                                            assert(m_new<m);
-                                            Hamil.value.push_back(-1.0*sign_FM*(check_val)*one*value);
-                                            Hamil.rows.push_back((m_new));
-                                            Hamil.columns.push_back((m));
+                                        assert(m_new<m);
+                                        Hamil.value.push_back(-1.0*sign_FM*(check_val)*one*value);
+                                        Hamil.rows.push_back((m_new));
+                                        Hamil.columns.push_back((m));
 
-                                            Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(check_val)*one*value);
-                                            Macro_oprts[num_Hopping].rows.push_back((m_new));
-                                            Macro_oprts[num_Hopping].columns.push_back((m));
+                                        Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(check_val)*one*value);
+                                        Macro_oprts[num_Hopping].rows.push_back((m_new));
+                                        Macro_oprts[num_Hopping].columns.push_back((m));
 
                                     }
                                     else{
@@ -666,301 +666,301 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_connections(){
 
         } // "i" i.e up_decimals
 
-    //LONG RANGE DONE
+        //LONG RANGE DONE
     }
     else
     {
-    bool make_blocks=false;
-    double_type value;
-    int m,j;
-    int D_up,D_dn;
-    int i_new,j_new;
-    int nup_temp, ndn_temp;
-    int N1_temp, N2_temp;
-    int m_new;
-    double sign_FM;
-    int sign_pow_up, sign_pow_dn;
-    int l,lp;
-    bool Boundary_Connected;
-    complex<double> iota_(0.0,1.0);
-    double_type boundary_value;
+        bool make_blocks=false;
+        double_type value;
+        int m,j;
+        int D_up,D_dn;
+        int i_new,j_new;
+        int nup_temp, ndn_temp;
+        int N1_temp, N2_temp;
+        int m_new;
+        double sign_FM;
+        int sign_pow_up, sign_pow_dn;
+        int l,lp;
+        bool Boundary_Connected;
+        complex<double> iota_(0.0,1.0);
+        double_type boundary_value;
 
 
-    if(PBC==false && TBC==false){
-        //it is OBC
-        Boundary_Connected=false;
-        boundary_value=zero;
-    }
-    else if(PBC==true && TBC==false){
-        //it is PBC
-        Boundary_Connected=true;
-        boundary_value=one;
-    }
-    else if(PBC==false && TBC==true){
-        //it is TBC
-        Boundary_Connected=true;
+        if(PBC==false && TBC==false){
+            //it is OBC
+            Boundary_Connected=false;
+            boundary_value=zero;
+        }
+        else if(PBC==true && TBC==false){
+            //it is PBC
+            Boundary_Connected=true;
+            boundary_value=one;
+        }
+        else if(PBC==false && TBC==true){
+            //it is TBC
+            Boundary_Connected=true;
 #ifdef USE_COMPLEX
-        boundary_value=exp(iota_*((2.0*PI*basis.Boundary_phase_exponent)/(1.0*basis.No_of_sys_copies)));
+            boundary_value=exp(iota_*((2.0*PI*basis.Boundary_phase_exponent)/(1.0*basis.No_of_sys_copies)));
 #endif
 #ifndef USE_COMPLEX
-        cout<<"To use TBC, please use DUSE_COMPLEX"<<endl;
-        assert(1==0);
+            cout<<"To use TBC, please use DUSE_COMPLEX"<<endl;
+            assert(1==0);
 #endif
-    }
+        }
 
 
 
 
 
-    for (int i=0;i<basis.D_up_basis.size();i++){
-        //cout<<i<<" done"<<endl;
-        m=i;
-        j=i;
+        for (int i=0;i<basis.D_up_basis.size();i++){
+            //cout<<i<<" done"<<endl;
+            m=i;
+            j=i;
 
-        for(int site=0;site<basis.Length ;site++){
+            for(int site=0;site<basis.Length ;site++){
 
-            for(int gamma=0;gamma<3;gamma++){
+                for(int gamma=0;gamma<3;gamma++){
 
-                for(int site_p=0;site_p<basis.Length ;site_p++){
-                    int neigh =site-site_p;
+                    for(int site_p=0;site_p<basis.Length ;site_p++){
+                        int neigh =site-site_p;
 
-                    for(int gamma_p=gamma;gamma_p>=0;gamma_p--){
+                        for(int gamma_p=gamma;gamma_p>=0;gamma_p--){
 
-                        if( ((abs(neigh)==1) && (gamma_p<gamma))
-                                ||
-                                ((neigh==1) && (gamma_p==gamma))
-                                ||
-                                (
+                            if( ((abs(neigh)==1) && (gamma_p<gamma))
+                                    ||
+                                    ((neigh==1) && (gamma_p==gamma))
+                                    ||
                                     (
-                                        ((abs(neigh)==(basis.Length - 1) ) && (gamma_p<gamma))
-                                        ||
-                                        ((neigh==(basis.Length - 1) ) && (gamma_p==gamma))
+                                        (
+                                            ((abs(neigh)==(basis.Length - 1) ) && (gamma_p<gamma))
+                                            ||
+                                            ((neigh==(basis.Length - 1) ) && (gamma_p==gamma))
+                                            )
+                                        &&
+                                        Boundary_Connected
                                         )
-                                    &&
-                                    Boundary_Connected
-                                    )
 
-                                )
-                        {
-
-
-                            //IS BOUNDARY CONNECTED??
-                            if((
-                                        ((abs(neigh)==(basis.Length - 1) ) && (gamma_p<gamma))
-                                        ||
-                                        ((neigh==(basis.Length - 1) ) && (gamma_p==gamma))
-                                        )==true){
-                                //Yes, It is boundary
-                                value=boundary_value;
-
-                            }
-                            else{
-                                //No, it is not boundary
-                                value=one;
-                            }
-
-                            //if(site == 1 && make_blocks==true){
-                            //  value=0.0*one;
-                            //}
-
-
-
-                            //---------------Hopping for up electrons-------------------//
-                            //there have to be one up electron in gamma, site
-                            //there have to be no up electron in gamma_p, site_p
-                            if(
-                                    (bit_value(basis.D_up_basis[i],gamma*basis.Length + site)==1)
-                                    &&
-                                    (bit_value(basis.D_up_basis[i],gamma_p*basis.Length + site_p)==0)
                                     )
                             {
 
 
-
-                                D_up = (int) (basis.D_up_basis[i] + pow(2,gamma_p*basis.Length + site_p)
-                                              - pow(2,gamma*basis.Length + site) );
-                                D_dn = basis.D_dn_basis[j];
-
-                                //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,basis.D_dn_basis);
-
-                                if(basis.Restricted==true){
-                                    nup_temp = __builtin_popcount(D_up);
-                                    ndn_temp = __builtin_popcount(D_dn);
-                                    // m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
-                                    //       basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
-                                    m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
-
-                                    N1_temp =0;
-                                    N2_temp =0;
-                                    for(int orb_temp=0;orb_temp<3;orb_temp++){
-                                        N1_temp += bit_value(D_up,orb_temp*basis.Length + site) +
-                                                bit_value(D_dn,orb_temp*basis.Length + site);
-                                        N2_temp += bit_value(D_up,orb_temp*basis.Length + site_p) +
-                                                bit_value(D_dn,orb_temp*basis.Length + site_p);
-
-                                    }
-
-
-
-
-
+                                //IS BOUNDARY CONNECTED??
+                                if((
+                                            ((abs(neigh)==(basis.Length - 1) ) && (gamma_p<gamma))
+                                            ||
+                                            ((neigh==(basis.Length - 1) ) && (gamma_p==gamma))
+                                            )==true){
+                                    //Yes, It is boundary
+                                    value=boundary_value;
 
                                 }
                                 else{
-                                    i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
-                                    j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
-
-                                    m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
-                                            basis.Nup_offsets[__builtin_popcount(D_up)].first;
+                                    //No, it is not boundary
+                                    value=one;
                                 }
 
-                                //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,
-                                //basis.D_dn_basis,__builtin_popcount(D_up),basis.Nup_offsets);
-
-                                l=gamma*basis.Length + site;
-                                lp=gamma_p*basis.Length + site_p;
-
-                                sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
-
-                                sign_FM = pow(-1.0, sign_pow_up);
+                                //if(site == 1 && make_blocks==true){
+                                //  value=0.0*one;
+                                //}
 
 
-                                if(!basis.Restricted){
-                                    if( (Hopping_mat_NN[gamma_p][gamma])!=0){
-                                        assert(m_new<m);
-                                        Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
-                                        Hamil.rows.push_back((m_new));
-                                        Hamil.columns.push_back((m));
 
-                                        Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
-                                        Macro_oprts[num_Hopping].rows.push_back((m_new));
-                                        Macro_oprts[num_Hopping].columns.push_back((m));
-
-                                    }
-                                }
-                                else{
-                                    if( (Hopping_mat_NN[gamma_p][gamma])!=0 &&
-                                            Is_int_in_array(N1_temp, basis.Local_occupations_allowed)
-                                            &&
-                                            Is_int_in_array(N2_temp, basis.Local_occupations_allowed)
-                                            ){
-                                        assert(m_new<m);
-                                        Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
-                                        Hamil.rows.push_back((m_new));
-                                        Hamil.columns.push_back((m));
-
-                                        Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
-                                        Macro_oprts[num_Hopping].rows.push_back((m_new));
-                                        Macro_oprts[num_Hopping].columns.push_back((m));
+                                //---------------Hopping for up electrons-------------------//
+                                //there have to be one up electron in gamma, site
+                                //there have to be no up electron in gamma_p, site_p
+                                if(
+                                        (bit_value(basis.D_up_basis[i],gamma*basis.Length + site)==1)
+                                        &&
+                                        (bit_value(basis.D_up_basis[i],gamma_p*basis.Length + site_p)==0)
+                                        )
+                                {
 
 
-                                    }
-                                }
 
-                            } // if up hopping possible
+                                    D_up = (int) (basis.D_up_basis[i] + pow(2,gamma_p*basis.Length + site_p)
+                                                  - pow(2,gamma*basis.Length + site) );
+                                    D_dn = basis.D_dn_basis[j];
 
+                                    //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,basis.D_dn_basis);
 
-                            //---------------Hopping for dn electrons-------------------//
-                            //there have to be one dn electron in gamma, site
-                            //there have to be no dn electron in gamma_p, site_p
-                            if(
-                                    (bit_value(basis.D_dn_basis[j],gamma*basis.Length + site)==1)
-                                    &&
-                                    (bit_value(basis.D_dn_basis[j],gamma_p*basis.Length + site_p)==0)
-                                    )
-                            {
+                                    if(basis.Restricted==true){
+                                        nup_temp = __builtin_popcount(D_up);
+                                        ndn_temp = __builtin_popcount(D_dn);
+                                        // m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
+                                        //       basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
+                                        m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
 
-                                D_up = basis.D_up_basis[i];
-                                D_dn = (int) (basis.D_dn_basis[j] + pow(2,gamma_p*basis.Length + site_p)
-                                              - pow(2,gamma*basis.Length + site) );
+                                        N1_temp =0;
+                                        N2_temp =0;
+                                        for(int orb_temp=0;orb_temp<3;orb_temp++){
+                                            N1_temp += bit_value(D_up,orb_temp*basis.Length + site) +
+                                                    bit_value(D_dn,orb_temp*basis.Length + site);
+                                            N2_temp += bit_value(D_up,orb_temp*basis.Length + site_p) +
+                                                    bit_value(D_dn,orb_temp*basis.Length + site_p);
 
-
-                                //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,basis.D_dn_basis);
-                                if(basis.Restricted==true){
-                                    nup_temp = __builtin_popcount(D_up);
-                                    ndn_temp = __builtin_popcount(D_dn);
-                                    //  m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
-                                    //        basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
-                                    m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
-
-                                    N1_temp =0;
-                                    N2_temp =0;
-                                    for(int orb_temp=0;orb_temp<3;orb_temp++){
-                                        N1_temp += bit_value(D_up,orb_temp*basis.Length + site) +
-                                                bit_value(D_dn,orb_temp*basis.Length + site);
-                                        N2_temp += bit_value(D_up,orb_temp*basis.Length + site_p) +
-                                                bit_value(D_dn,orb_temp*basis.Length + site_p);
-
-                                    }
-
-                                }
-                                else{
-                                    i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
-                                    j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
-
-                                    m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
-                                            basis.Nup_offsets[__builtin_popcount(D_up)].first;
-                                }
-
-                                //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,
-                                //basis.D_dn_basis,__builtin_popcount(D_up),basis.Nup_offsets);
-
-                                l=gamma*basis.Length + site;
-                                lp=gamma_p*basis.Length + site_p;
-
-                                sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
-
-                                sign_FM = pow(-1.0, sign_pow_dn);
+                                        }
 
 
-                                if(!basis.Restricted){
-                                    if( (Hopping_mat_NN[gamma_p][gamma])!=0){
-                                        assert(m_new<m);
-                                        Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
-                                        Hamil.rows.push_back((m_new));
-                                        Hamil.columns.push_back((m));
 
-                                        Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
-                                        Macro_oprts[num_Hopping].rows.push_back((m_new));
-                                        Macro_oprts[num_Hopping].columns.push_back((m));
+
 
 
                                     }
-                                }
-                                else{
-                                    if( (Hopping_mat_NN[gamma_p][gamma])!=0 &&
-                                            Is_int_in_array(N1_temp, basis.Local_occupations_allowed)
-                                            &&
-                                            Is_int_in_array(N2_temp, basis.Local_occupations_allowed)
-                                            ){
-                                        assert(m_new<m);
-                                        Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
-                                        Hamil.rows.push_back((m_new));
-                                        Hamil.columns.push_back((m));
+                                    else{
+                                        i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                                        j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
 
-                                        Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
-                                        Macro_oprts[num_Hopping].rows.push_back((m_new));
-                                        Macro_oprts[num_Hopping].columns.push_back((m));
+                                        m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                                                basis.Nup_offsets[__builtin_popcount(D_up)].first;
+                                    }
 
+                                    //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,
+                                    //basis.D_dn_basis,__builtin_popcount(D_up),basis.Nup_offsets);
+
+                                    l=gamma*basis.Length + site;
+                                    lp=gamma_p*basis.Length + site_p;
+
+                                    sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+
+                                    sign_FM = pow(-1.0, sign_pow_up);
+
+
+                                    if(!basis.Restricted){
+                                        if( (Hopping_mat_NN[gamma_p][gamma])!=0){
+                                            assert(m_new<m);
+                                            Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
+                                            Hamil.rows.push_back((m_new));
+                                            Hamil.columns.push_back((m));
+
+                                            Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
+                                            Macro_oprts[num_Hopping].rows.push_back((m_new));
+                                            Macro_oprts[num_Hopping].columns.push_back((m));
+
+                                        }
+                                    }
+                                    else{
+                                        if( (Hopping_mat_NN[gamma_p][gamma])!=0 &&
+                                                Is_int_in_array(N1_temp, basis.Local_occupations_allowed)
+                                                &&
+                                                Is_int_in_array(N2_temp, basis.Local_occupations_allowed)
+                                                ){
+                                            assert(m_new<m);
+                                            Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
+                                            Hamil.rows.push_back((m_new));
+                                            Hamil.columns.push_back((m));
+
+                                            Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
+                                            Macro_oprts[num_Hopping].rows.push_back((m_new));
+                                            Macro_oprts[num_Hopping].columns.push_back((m));
+
+
+                                        }
+                                    }
+
+                                } // if up hopping possible
+
+
+                                //---------------Hopping for dn electrons-------------------//
+                                //there have to be one dn electron in gamma, site
+                                //there have to be no dn electron in gamma_p, site_p
+                                if(
+                                        (bit_value(basis.D_dn_basis[j],gamma*basis.Length + site)==1)
+                                        &&
+                                        (bit_value(basis.D_dn_basis[j],gamma_p*basis.Length + site_p)==0)
+                                        )
+                                {
+
+                                    D_up = basis.D_up_basis[i];
+                                    D_dn = (int) (basis.D_dn_basis[j] + pow(2,gamma_p*basis.Length + site_p)
+                                                  - pow(2,gamma*basis.Length + site) );
+
+
+                                    //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,basis.D_dn_basis);
+                                    if(basis.Restricted==true){
+                                        nup_temp = __builtin_popcount(D_up);
+                                        ndn_temp = __builtin_popcount(D_dn);
+                                        //  m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
+                                        //        basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
+                                        m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+                                        N1_temp =0;
+                                        N2_temp =0;
+                                        for(int orb_temp=0;orb_temp<3;orb_temp++){
+                                            N1_temp += bit_value(D_up,orb_temp*basis.Length + site) +
+                                                    bit_value(D_dn,orb_temp*basis.Length + site);
+                                            N2_temp += bit_value(D_up,orb_temp*basis.Length + site_p) +
+                                                    bit_value(D_dn,orb_temp*basis.Length + site_p);
+
+                                        }
 
                                     }
-                                }
+                                    else{
+                                        i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                                        j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+                                        m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                                                basis.Nup_offsets[__builtin_popcount(D_up)].first;
+                                    }
+
+                                    //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,
+                                    //basis.D_dn_basis,__builtin_popcount(D_up),basis.Nup_offsets);
+
+                                    l=gamma*basis.Length + site;
+                                    lp=gamma_p*basis.Length + site_p;
+
+                                    sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+
+                                    sign_FM = pow(-1.0, sign_pow_dn);
 
 
-                            } // if dn hopping possible
+                                    if(!basis.Restricted){
+                                        if( (Hopping_mat_NN[gamma_p][gamma])!=0){
+                                            assert(m_new<m);
+                                            Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
+                                            Hamil.rows.push_back((m_new));
+                                            Hamil.columns.push_back((m));
+
+                                            Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
+                                            Macro_oprts[num_Hopping].rows.push_back((m_new));
+                                            Macro_oprts[num_Hopping].columns.push_back((m));
 
 
-                        }//nearest neighbour
-                    } //gamma_p
+                                        }
+                                    }
+                                    else{
+                                        if( (Hopping_mat_NN[gamma_p][gamma])!=0 &&
+                                                Is_int_in_array(N1_temp, basis.Local_occupations_allowed)
+                                                &&
+                                                Is_int_in_array(N2_temp, basis.Local_occupations_allowed)
+                                                ){
+                                            assert(m_new<m);
+                                            Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
+                                            Hamil.rows.push_back((m_new));
+                                            Hamil.columns.push_back((m));
 
-                }//site_p
+                                            Macro_oprts[num_Hopping].value.push_back(-1.0*sign_FM*(Hopping_mat_NN[gamma_p][gamma])*one*value);
+                                            Macro_oprts[num_Hopping].rows.push_back((m_new));
+                                            Macro_oprts[num_Hopping].columns.push_back((m));
 
-            } //gamma
+
+                                        }
+                                    }
 
 
-        } // site
+                                } // if dn hopping possible
 
-    } // "i" i.e up_decimals
+
+                            }//nearest neighbour
+                        } //gamma_p
+
+                    }//site_p
+
+                } //gamma
+
+
+            } // site
+
+        } // "i" i.e up_decimals
 
     }
 
@@ -1490,8 +1490,8 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
     }
 
     if(USE_LONG_RANGE_HOPPINGS){
-    cout<<"Reading hopping matrix from : "<<LongRangeHoppingfilepath<<endl;
-    Read_matrix_from_file(LongRangeHoppingfilepath, Hopping_mat_LongRange , 3*basis.Length, 3*basis.Length);
+        cout<<"Reading hopping matrix from : "<<LongRangeHoppingfilepath<<endl;
+        Read_matrix_from_file(LongRangeHoppingfilepath, Hopping_mat_LongRange , 3*basis.Length, 3*basis.Length);
     }
 
 }
@@ -3386,13 +3386,34 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_one_point_to_calculate(){
         }
 
         for(int site=0;site<basis.Length;site++){
-            Get_CdaggerC_type_Opr(AMat, One_point_oprts[opr_no][site], site); //Create this
+            Get_CdaggerC_type_Opr(AMat, One_point_oprts[opr_no][site], site);
         }
 
     }
 
 
 #endif
+
+
+    one_point_obs.resize(39);
+    one_point_obs[38]="Tau_Z";
+    One_point_oprts.resize(39);
+    One_point_oprts[38].resize(basis.Length);
+    Mat_2_doub BMat, BMat0; //[sigma,alpha][sigma_p,beta]
+    BMat.resize(6);BMat0.resize(6);
+    for(int ind=0;ind<6;ind++){
+        BMat[ind].resize(6);
+        BMat0[ind].resize(6);
+    }
+    //(n0-n1)/0.5=tauz // use B[(sigma*3) + gamma][sigma_p,gamma_p]*c^{dagger}(sigma,gamma)*c(sigma_p,gamma_p)
+    BMat[(0*3) + 0][(0*3) + 0]=(0.5*one);BMat[(1*3) + 0][(1*3) + 0]=(0.5*one);
+    BMat[(0*3) + 1][(0*3) + 1]=(-0.5*one);BMat[(1*3) + 1][(1*3) + 1]=(-0.5*one);
+    for(int site=0;site<basis.Length;site++){
+        Get_CdaggerC_type_Opr(BMat, One_point_oprts[38][site], site);
+    }
+
+
+
 
 
 }

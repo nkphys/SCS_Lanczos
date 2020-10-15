@@ -3,7 +3,7 @@ This class includes the Model for which Lanczos is being done
 */
 
 #ifndef HIDDEN
-#include "Model_Spins.h"
+#include "Model_Spins_Target_Sz.h"
 #include <stdlib.h>
 using namespace std;
 #define PI 3.14159265
@@ -21,7 +21,7 @@ using namespace std;
     m=basis.D_up_basis.size();
 */
 
-void MODEL_Spins::Add_diagonal_terms(BASIS_Spins &basis){
+void MODEL_Spins_Target_Sz::Add_diagonal_terms(BASIS_Spins_Target_Sz &basis){
 
 
     Hamil.value.clear();
@@ -79,24 +79,24 @@ void MODEL_Spins::Add_diagonal_terms(BASIS_Spins &basis){
 }
 
 
-void MODEL_Spins::Add_non_diagonal_terms(BASIS_Spins &basis){
+void MODEL_Spins_Target_Sz::Add_non_diagonal_terms(BASIS_Spins_Target_Sz &basis){
 
 
 }
 
-void MODEL_Spins::Add_connections(BASIS_Spins &basis){
+void MODEL_Spins_Target_Sz::Add_connections(BASIS_Spins_Target_Sz &basis){
 
     double_type phase;
     double_type value;
     int m,j;
-    unsigned long long int i_new, i_new_temp;
-    unsigned long long int m_new;
+    int i_new, i_new_temp;
+    int m_new;
     int Val_site, Val_site_p;
     int Val_site_new, Val_site_p_new;
     double_type Factor;
     complex<double> iota_(0.0,1.0);
 
-    for (unsigned long long int i=basis.D_min;i<basis.D_max+1;i++){
+    for (int i=basis.D_min;i<basis.D_max+1;i++){
 
         value=zero;
 
@@ -104,7 +104,7 @@ void MODEL_Spins::Add_connections(BASIS_Spins &basis){
             Val_site_p = value_at_pos(i, site_p, basis.BASE);
 
             for(int site=site_p+1;site<basis.Length ;site++){
-                Val_site = value_at_pos<unsigned long long int>(i, site, basis.BASE);
+                Val_site = value_at_pos(i, site, basis.BASE);
 
 
                 if((Jpm_Exchange_mat[site_p][site]!=zero)){
@@ -127,8 +127,8 @@ void MODEL_Spins::Add_connections(BASIS_Spins &basis){
                         Val_site_new = Val_site - 1;
 
 
-                        i_new_temp = Updated_decimal_with_value_at_pos<unsigned long long int>(i, site, basis.BASE, Val_site_new);
-                        i_new = Updated_decimal_with_value_at_pos<unsigned long long int>(i_new_temp, site_p, basis.BASE, Val_site_p_new);
+                        i_new_temp = Updated_decimal_with_value_at_pos(i, site, basis.BASE, Val_site_new);
+                        i_new = Updated_decimal_with_value_at_pos(i_new_temp, site_p, basis.BASE, Val_site_p_new);
 
 
                         Factor = sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
@@ -157,13 +157,15 @@ void MODEL_Spins::Add_connections(BASIS_Spins &basis){
 }
 
 
-void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
+void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string filename){
 
 
     string filepath = filename;
     string pbc_,PBC_ ="PBC = ";
     string length, Length = "Length = ";
     string twotimesspin, TwoTimesSpin = "TwoTimesSpin = ";
+
+    string twotimestotalsztarget, TwoTimesTotalSzTarget = "TwoTimesTotalSzTarget = ";
 
     string hmag, Hmag = "H_mag = ";
     string d_anisotropy_, D_Anisotropy_ = "D_anisotropy = ";
@@ -204,6 +206,9 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
             if ((offset = line.find(Length, 0)) != string::npos) {
                 length = line.substr (offset + Length.length());		}
 
+            if ((offset = line.find(TwoTimesTotalSzTarget, 0)) != string::npos) {
+                twotimestotalsztarget = line.substr (offset + TwoTimesTotalSzTarget.length());		}
+
             if ((offset = line.find(TwoTimesSpin, 0)) != string::npos) {
                 twotimesspin = line.substr (offset + TwoTimesSpin.length());		}
 
@@ -228,6 +233,7 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
     }
 
     basis.Length=atoi(length.c_str());
+    basis.Target_Total_Sz = 0.5*(atof(twotimestotalsztarget.c_str()));
     basis.TwoTimesSpin=atoi(twotimesspin.c_str());
 
     No_of_onepoint_obs=atoi(no_of_onepoint_obs_.c_str());
@@ -332,7 +338,7 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
 
 
 
-void MODEL_Spins::Read_parameters_for_dynamics(string filename){
+void MODEL_Spins_Target_Sz::Read_parameters_for_dynamics(string filename){
 
     string dyn_momentum_, Dyn_Momentum_ = "k = ";
     string dyn_momentum_resolved_, Dyn_Momentum_Resolved_ = "Momentum_resolved = ";
@@ -379,7 +385,7 @@ void MODEL_Spins::Read_parameters_for_dynamics(string filename){
 
 
 
-void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis, int site_){
+void MODEL_Spins_Target_Sz::Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &basis, int site_){
 
     vector< int >().swap( Dyn_opr.columns );
     vector< int >().swap( Dyn_opr.rows );
@@ -390,15 +396,15 @@ void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis, int site_){
     double_type value;
     int Val_site, Val_site_new;
     double Factor;
-    unsigned long long int i_new;
+    int i_new;
 
 
     if(Dyn_opr_string=="Sz"){
-        for (unsigned long long int i=basis.D_min;i<basis.D_max + 1;i++){
+        for (int i=basis.D_min;i<basis.D_max + 1;i++){
             value=zero;
             //Sz[site]
             value=one*
-                    ( ( (1.0*value_at_pos<unsigned long long int>(i, site_, basis.BASE)) - (0.5*basis.TwoTimesSpin)) );
+                    ( ( (1.0*value_at_pos(i, site_, basis.BASE)) - (0.5*basis.TwoTimesSpin)) );
 
 
             if(value!=zero){
@@ -410,10 +416,10 @@ void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis, int site_){
     }
     else if(Dyn_opr_string=="Sm"){
 
-        for (unsigned long long int i=basis.D_min;i<basis.D_max+1;i++){
+        for (int i=basis.D_min;i<basis.D_max+1;i++){
 
             value=zero;
-            Val_site = value_at_pos<unsigned long long int>(i, site_, basis.BASE);
+            Val_site = value_at_pos(i, site_, basis.BASE);
 
             //Sm[site]:
             //site cannot be in -Spin
@@ -421,7 +427,7 @@ void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis, int site_){
             if(Val_site != 0)
             {
                 Val_site_new = Val_site - 1;
-                i_new = Updated_decimal_with_value_at_pos<unsigned long long int>(i, site_, basis.BASE, Val_site_new);
+                i_new = Updated_decimal_with_value_at_pos(i, site_, basis.BASE, Val_site_new);
 
                 Factor = sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
                                ((Val_site - (0.5*basis.TwoTimesSpin))*
@@ -443,7 +449,7 @@ void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis, int site_){
 
 }
 
-void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis){
+void MODEL_Spins_Target_Sz::Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &basis){
 
 
 
@@ -471,17 +477,17 @@ void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis){
     double_type value;
     int Val_site, Val_site_new;
     double Factor;
-    unsigned long long int i_new;
+    int i_new;
 
 
     if(Dyn_opr_string=="Sz"){
 
         for(int site_=0;site_<basis.Length;site_++){
-            for (unsigned long long int i=basis.D_min;i<basis.D_max + 1;i++){
+            for (int i=basis.D_min;i<basis.D_max + 1;i++){
                 value=zero;
                 //Sz[site]
                 value=one*
-                        ( ( (1.0*value_at_pos<unsigned long long int>(i, site_, basis.BASE)) - (0.5*basis.TwoTimesSpin)) );
+                        ( ( (1.0*value_at_pos(i, site_, basis.BASE)) - (0.5*basis.TwoTimesSpin)) );
 
                 if(value!=zero){
                     Oprs_local[site_].value.push_back(value*one);
@@ -494,10 +500,10 @@ void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis){
     else if(Dyn_opr_string=="Sm"){
 
         for(int site_=0;site_<basis.Length;site_++){
-            for (unsigned long long int i=basis.D_min;i<basis.D_max+1;i++){
+            for (int i=basis.D_min;i<basis.D_max+1;i++){
 
                 value=zero;
-                Val_site = value_at_pos<unsigned long long int>(i, site_, basis.BASE);
+                Val_site = value_at_pos(i, site_, basis.BASE);
 
                 //Sm[site]:
                 //site cannot be in -Spin
@@ -505,7 +511,7 @@ void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis){
                 if(Val_site != 0)
                 {
                     Val_site_new = Val_site - 1;
-                    i_new = Updated_decimal_with_value_at_pos<unsigned long long int>(i, site_, basis.BASE, Val_site_new);
+                    i_new = Updated_decimal_with_value_at_pos(i, site_, basis.BASE, Val_site_new);
 
                     Factor = sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
                                    ((Val_site - (0.5*basis.TwoTimesSpin))*
@@ -581,7 +587,7 @@ void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis){
 }
 
 
-void MODEL_Spins::Initialize_one_point_to_calculate_from_file(BASIS_Spins &basis){
+void MODEL_Spins_Target_Sz::Initialize_one_point_to_calculate_from_file(BASIS_Spins_Target_Sz &basis){
 
     One_point_oprts_onsite.resize(No_of_onepoint_obs);
 
@@ -610,7 +616,7 @@ void MODEL_Spins::Initialize_one_point_to_calculate_from_file(BASIS_Spins &basis
 
 
         //Remember OPR[l][m]=<l|OPR|m>
-        unsigned long long int j;
+        int j;
         double_type value;
 
 
@@ -627,9 +633,9 @@ void MODEL_Spins::Initialize_one_point_to_calculate_from_file(BASIS_Spins &basis
 
 
                         if(row_local !=col_local){
-                            for (unsigned long long int i=0;i<basis.basis_size;i++){
-                                if(value_at_pos<unsigned long long int>(i, site, basis.BASE) == col_local){
-                                    j = Updated_decimal_with_value_at_pos<unsigned long long int>(i, site, basis.BASE, row_local);
+                            for (int i=0;i<basis.basis_size;i++){
+                                if(value_at_pos(i, site, basis.BASE) == col_local){
+                                    j = Updated_decimal_with_value_at_pos(i, site, basis.BASE, row_local);
                                     value = One_point_oprts_onsite[opr_no][row_local][col_local];
 
                                     One_point_oprts[opr_no][site].value.push_back(value);
@@ -640,7 +646,7 @@ void MODEL_Spins::Initialize_one_point_to_calculate_from_file(BASIS_Spins &basis
                         }
                         else{
                             for (int i=0;i<basis.basis_size;i++){
-                                if(value_at_pos<unsigned long long int>(i, site, basis.BASE) == col_local){
+                                if(value_at_pos(i, site, basis.BASE) == col_local){
                                     value = One_point_oprts_onsite[opr_no][row_local][col_local];
                                     One_point_oprts[opr_no][site].value.push_back(value);
                                     One_point_oprts[opr_no][site].rows.push_back(i);

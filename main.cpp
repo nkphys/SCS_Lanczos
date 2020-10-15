@@ -22,6 +22,8 @@
 #include "basis/Basis_1_orb_tJ.h"
 #include "basis/Basis_Spins.h"
 #include "models/Model_Spins.h"
+#include "basis/Basis_Spins_Target_Sz.h"
+#include "models/Model_Spins_Target_Sz.h"
 #include "models/Model_3_orb_Hubbard_chain_GC.h"
 #include "models/Model_1_orb_Hubbard_GC.h"
 #include "basis/Basis_3_orb_Hubbard_chain_GC.h"
@@ -436,11 +438,16 @@ int main(int argc, char** argv){
 
         }
 
+    }
 
 
+    if(model_name=="SpinOnlyTargetSz"){
+        cout<<"Model :" <<model_name<<endl;
+        MODEL_Spins_Target_Sz _MODEL;
+        BASIS_Spins_Target_Sz _BASIS;
 
-
-
+        _MODEL.Read_parameters(_BASIS, inp_filename);
+        _BASIS.Construct_basis();
 
 
     }
@@ -1811,9 +1818,9 @@ int main(int argc, char** argv){
     if (model_name=="3_orb_Hubbard_chain_GC" && Restricted_Basis==false) {
 
 
-        bool Dynamics_SPDOS = true;
-        bool Above_mu = true;
-        bool Below_mu= true;
+        bool Dynamics_SPDOS = false;
+        bool Above_mu = false;
+        bool Below_mu= false;
 
         BASIS_3_orb_Hubb_chain_GC _BASIS;
         MODEL_3_orb_Hubb_chain_GC<BASIS_3_orb_Hubb_chain_GC> _MODEL(_BASIS);
