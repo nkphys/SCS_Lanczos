@@ -4666,6 +4666,436 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_Opr_for_Dynamics(LANCZOS 
         }
 
 
+
+        if(Dyn_opr_string == "Mz"){
+
+
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].nrows = basis.D_up_basis.size();
+                Oprs_local[site].ncols = Oprs_local[site].nrows;
+            }
+
+            //creating Local opeartors-------------------------------------------
+            //Remember OPR[l][m]=<l|OPR|m>
+            int m,j;
+            double value;
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].value.clear();
+                Oprs_local[site].rows.clear();
+                Oprs_local[site].columns.clear();
+
+                Oprs_local[site] = One_point_oprts[23][site];
+
+            }
+            //local operators created ----------------------------------------------
+
+            //In Momentum space--only PBC---------------------------------------------------
+
+            Matrix_COO temp;
+            temp=Oprs_local[0];
+            complex<double> value1, value2;
+            for(int site=0;site<basis.Length-1;site++){
+                //value2=sin((site+2)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
+                value2 = exp((site+1)*Dyn_Momentum*PI*iota_temp)*sqrt(1.0/(basis.Length));
+                if(site==0){
+                    value1=exp((site)*Dyn_Momentum*PI*iota_temp)*sqrt(1.0/(basis.Length));
+                    //value1=sin((site+1)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
+                    Sum(temp, Oprs_local[site+1], temp, value1, value2);}
+                else{
+                    Sum(temp, Oprs_local[site+1], temp, 1.0, value2);
+                }
+
+            }
+
+            Dyn_opr=temp;
+
+            //----------------------------------------------------------------------
+
+
+            vector< int >().swap( temp.columns );
+            vector< int >().swap( temp.rows );
+            vector< double_type >().swap( temp.value );
+
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].value.clear();
+                Oprs_local[site].rows.clear();
+                Oprs_local[site].columns.clear();
+
+            }
+
+        }
+
+
+
+        //------
+        if(Dyn_opr_string == "Mz_kPBC"){
+
+
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].nrows = basis.D_up_basis.size();
+                Oprs_local[site].ncols = Oprs_local[site].nrows;
+            }
+
+            //creating Local opeartors-------------------------------------------
+            //Remember OPR[l][m]=<l|OPR|m>
+            int m,j;
+            double value;
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].value.clear();
+                Oprs_local[site].rows.clear();
+                Oprs_local[site].columns.clear();
+
+                Oprs_local[site] = One_point_oprts[23][site];
+
+            }
+            //local operators created ----------------------------------------------
+
+            //In Momentum space--only OBC---------------------------------------------------
+
+            Matrix_COO temp;
+            temp=Oprs_local[0];
+            complex<double> value1, value2;
+            value1 = one_comp*sin(Dyn_Momentum*PI*(0+1))*sqrt(1.0/(basis.Length + 1));
+
+            for(int site=1;site<basis.Length;site++){
+                //value2=sin((site+2)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
+                value2 = one_comp*sin(Dyn_Momentum*PI*(site+1))*sqrt(1.0/(basis.Length + 1));
+                if(site>1){
+                    value1=one_comp;
+                }
+                Sum(temp, Oprs_local[site], temp, value1, value2);
+            }
+
+            Dyn_opr=temp;
+
+            //----------------------------------------------------------------------
+
+
+            vector< int >().swap( temp.columns );
+            vector< int >().swap( temp.rows );
+            vector< double_type >().swap( temp.value );
+
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].value.clear();
+                Oprs_local[site].rows.clear();
+                Oprs_local[site].columns.clear();
+
+            }
+
+        }
+        //-----
+
+
+
+
+        if(Dyn_opr_string == "Mplus"){
+
+
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].nrows = basis.D_up_basis.size();
+                Oprs_local[site].ncols = Oprs_local[site].nrows;
+            }
+
+            //creating Local opeartors-------------------------------------------
+            //Remember OPR[l][m]=<l|OPR|m>
+            int m,j;
+            double value;
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].value.clear();
+                Oprs_local[site].rows.clear();
+                Oprs_local[site].columns.clear();
+
+                Oprs_local[site] = One_point_oprts[24][site];
+
+            }
+            //local operators created ----------------------------------------------
+
+            //In Momentum space--only OBC---------------------------------------------------
+
+            Matrix_COO temp;
+            temp=Oprs_local[0];
+            complex<double> value1, value2;
+            for(int site=0;site<basis.Length-1;site++){
+                //value2=sin((site+2)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
+                value2 = exp((site+1)*Dyn_Momentum*PI*iota_temp)*sqrt(1.0/(basis.Length));
+                if(site==0){
+                    value1=exp((site)*Dyn_Momentum*PI*iota_temp)*sqrt(1.0/(basis.Length));
+                    //value1=sin((site+1)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
+                    Sum(temp, Oprs_local[site+1], temp, value1, value2);}
+                else{
+                    Sum(temp, Oprs_local[site+1], temp, 1.0, value2);
+                }
+
+            }
+
+            Dyn_opr=temp;
+
+            //----------------------------------------------------------------------
+
+
+            vector< int >().swap( temp.columns );
+            vector< int >().swap( temp.rows );
+            vector< double_type >().swap( temp.value );
+
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].value.clear();
+                Oprs_local[site].rows.clear();
+                Oprs_local[site].columns.clear();
+
+            }
+
+        }
+
+        if(Dyn_opr_string == "Mplus_kPBC"){
+
+
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].nrows = basis.D_up_basis.size();
+                Oprs_local[site].ncols = Oprs_local[site].nrows;
+            }
+
+            //creating Local opeartors-------------------------------------------
+            //Remember OPR[l][m]=<l|OPR|m>
+            int m,j;
+            double value;
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].value.clear();
+                Oprs_local[site].rows.clear();
+                Oprs_local[site].columns.clear();
+
+                Oprs_local[site] = One_point_oprts[24][site];
+
+            }
+            //local operators created ----------------------------------------------
+
+            //In Momentum space--only OBC---------------------------------------------------
+
+            Matrix_COO temp;
+            temp=Oprs_local[0];
+            complex<double> value1, value2;
+            value1 = one_comp*sin(Dyn_Momentum*PI*(0+1))*sqrt(1.0/(basis.Length + 1));
+
+            for(int site=1;site<basis.Length;site++){
+                //value2=sin((site+2)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
+                value2 = one_comp*sin(Dyn_Momentum*PI*(site+1))*sqrt(1.0/(basis.Length + 1));
+                if(site>1){
+                    value1=one_comp;
+                }
+                Sum(temp, Oprs_local[site], temp, value1, value2);
+            }
+
+            Dyn_opr=temp;
+
+            //----------------------------------------------------------------------
+
+
+            vector< int >().swap( temp.columns );
+            vector< int >().swap( temp.rows );
+            vector< double_type >().swap( temp.value );
+
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].value.clear();
+                Oprs_local[site].rows.clear();
+                Oprs_local[site].columns.clear();
+
+            }
+
+        }
+
+
+        if(Dyn_opr_string == "Mminus"){
+
+
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].nrows = basis.D_up_basis.size();
+                Oprs_local[site].ncols = Oprs_local[site].nrows;
+            }
+
+            //creating Local opeartors-------------------------------------------
+            //Remember OPR[l][m]=<l|OPR|m>
+            int m,j;
+            double value;
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].value.clear();
+                Oprs_local[site].rows.clear();
+                Oprs_local[site].columns.clear();
+
+                Oprs_local[site] = One_point_oprts[25][site];
+
+            }
+            //local operators created ----------------------------------------------
+
+            //In Momentum space--only OBC---------------------------------------------------
+
+            Matrix_COO temp;
+            temp=Oprs_local[0];
+            complex<double> value1, value2;
+            for(int site=0;site<basis.Length-1;site++){
+                //value2=sin((site+2)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
+                value2 = exp((site+1)*Dyn_Momentum*PI*iota_temp)*sqrt(1.0/(basis.Length));
+                if(site==0){
+                    value1=exp((site)*Dyn_Momentum*PI*iota_temp)*sqrt(1.0/(basis.Length));
+                    //value1=sin((site+1)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
+                    Sum(temp, Oprs_local[site+1], temp, value1, value2);}
+                else{
+                    Sum(temp, Oprs_local[site+1], temp, 1.0, value2);
+                }
+
+            }
+
+            Dyn_opr=temp;
+
+            //----------------------------------------------------------------------
+
+
+            vector< int >().swap( temp.columns );
+            vector< int >().swap( temp.rows );
+            vector< double_type >().swap( temp.value );
+
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].value.clear();
+                Oprs_local[site].rows.clear();
+                Oprs_local[site].columns.clear();
+
+            }
+
+        }
+
+        if(Dyn_opr_string == "Mminus_kPBC"){
+
+
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].nrows = basis.D_up_basis.size();
+                Oprs_local[site].ncols = Oprs_local[site].nrows;
+            }
+
+            //creating Local opeartors-------------------------------------------
+            //Remember OPR[l][m]=<l|OPR|m>
+            int m,j;
+            double value;
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].value.clear();
+                Oprs_local[site].rows.clear();
+                Oprs_local[site].columns.clear();
+
+                Oprs_local[site] = One_point_oprts[25][site];
+
+            }
+            //local operators created ----------------------------------------------
+
+            //In Momentum space--only OBC---------------------------------------------------
+
+            Matrix_COO temp;
+            temp=Oprs_local[0];
+            complex<double> value1, value2;
+            value1 = one_comp*sin(Dyn_Momentum*PI*(0+1))*sqrt(1.0/(basis.Length + 1));
+
+            for(int site=1;site<basis.Length;site++){
+                //value2=sin((site+2)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
+                value2 = one_comp*sin(Dyn_Momentum*PI*(site+1))*sqrt(1.0/(basis.Length + 1));
+                if(site>1){
+                    value1=one_comp;
+                }
+                Sum(temp, Oprs_local[site], temp, value1, value2);
+            }
+
+            Dyn_opr=temp;
+
+            //----------------------------------------------------------------------
+
+
+            vector< int >().swap( temp.columns );
+            vector< int >().swap( temp.rows );
+            vector< double_type >().swap( temp.value );
+
+            for(int site=0;site<basis.Length;site++){
+                Oprs_local[site].value.clear();
+                Oprs_local[site].rows.clear();
+                Oprs_local[site].columns.clear();
+
+            }
+
+        }
+
+
+        if(Dyn_opr_string == "Mz_Local"){
+
+            int Local_site=int((basis.Length/2.0) - 0.5);
+
+
+            //creating Local opeartors-------------------------------------------
+            //Remember OPR[l][m]=<l|OPR|m>
+
+            for(int site=0;site<basis.Length;site++){
+                //Iden_temp=Identity_COO(One_point_oprts[12][site].nrows,One_point_oprts[12][site].ncols);
+                //Sum(One_point_oprts[12][site],Iden_temp , Oprs_local[site], one, (-1.0*lanczos_GS.One_point_observables_values[12][site]));
+                Oprs_local[site] = One_point_oprts[23][site];
+
+
+            }
+            //local operators created ----------------------------------------------
+
+            Dyn_opr=Oprs_local[Local_site];
+            cout <<"OPERATOR FOR DYNAMICS = " << one_point_obs[23]<<  "[site="<<Local_site<<"]"<<endl;
+
+            //----------------------------------------------------------------------
+
+
+        }
+
+        if(Dyn_opr_string == "Mplus_Local"){
+
+            int Local_site=int((basis.Length/2.0) - 0.5);
+
+
+            //creating Local opeartors-------------------------------------------
+            //Remember OPR[l][m]=<l|OPR|m>
+
+            for(int site=0;site<basis.Length;site++){
+                //Iden_temp=Identity_COO(One_point_oprts[12][site].nrows,One_point_oprts[12][site].ncols);
+                //Sum(One_point_oprts[12][site],Iden_temp , Oprs_local[site], one, (-1.0*lanczos_GS.One_point_observables_values[12][site]));
+                Oprs_local[site] = One_point_oprts[24][site];
+
+
+            }
+            //local operators created ----------------------------------------------
+
+            Dyn_opr=Oprs_local[Local_site];
+            cout <<"OPERATOR FOR DYNAMICS = " << one_point_obs[24]<<  "[site="<<Local_site<<"]"<<endl;
+
+            //----------------------------------------------------------------------
+
+
+        }
+
+        if(Dyn_opr_string == "Mminus_Local"){
+
+            int Local_site=int((basis.Length/2.0) - 0.5);
+
+
+            //creating Local opeartors-------------------------------------------
+            //Remember OPR[l][m]=<l|OPR|m>
+
+            for(int site=0;site<basis.Length;site++){
+                //Iden_temp=Identity_COO(One_point_oprts[12][site].nrows,One_point_oprts[12][site].ncols);
+                //Sum(One_point_oprts[12][site],Iden_temp , Oprs_local[site], one, (-1.0*lanczos_GS.One_point_observables_values[12][site]));
+                Oprs_local[site] = One_point_oprts[25][site];
+
+
+            }
+            //local operators created ----------------------------------------------
+
+            Dyn_opr=Oprs_local[Local_site];
+            cout <<"OPERATOR FOR DYNAMICS = " << one_point_obs[25]<<  "[site="<<Local_site<<"]"<<endl;
+
+            //----------------------------------------------------------------------
+
+
+        }
+
+
+
+
 #endif
 
 

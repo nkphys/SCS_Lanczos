@@ -106,7 +106,7 @@ void MODEL_1_orb_Hubb_chain::Add_connections(BASIS_1_orb_Hubb_chain &basis){
             for(int site=0;site<basis.Length ;site++){
                 for(int site_p=0;site_p<basis.Length ;site_p++){
 
-                    if((Hopping_mat_NN[site_p][site])!=0)
+                    if((Hopping_mat_NN[site_p][site])!=zero)
 
                     {
 
@@ -1475,7 +1475,7 @@ void MODEL_1_orb_Hubb_chain::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_chain 
 
 
 
-                            if((Hopping_mat_NN[0][0])!=0){
+                            if((Hopping_mat_NN[0][0])!=zero){
 
                                 Opr.value.push_back(one*sign_FM*(Hopping_mat_NN[0][0]));
                                 Opr.rows.push_back((m_new));
@@ -1517,7 +1517,7 @@ void MODEL_1_orb_Hubb_chain::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_chain 
 
 
 
-                            if((Hopping_mat_NN[0][0])!=0){
+                            if((Hopping_mat_NN[0][0])!=zero){
 
                                 Opr.value.push_back(one*sign_FM*(Hopping_mat_NN[0][0]));
                                 Opr.rows.push_back((m_new));
