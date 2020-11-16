@@ -7,6 +7,7 @@ using namespace std;
 
 
 
+#define ulli unsigned long long int
 
 #ifdef USE_COMPLEX
 #define double_type complex<double>

@@ -4,20 +4,20 @@ Model = 1_orb_Hubbard_chain
 PBC = true
 Length_X = 2000
 Length_Y = 1000
-Total_Sites = 4
-Ndown = 2
-Nup = 2
+Total_Sites = 2
+Ndown = 1
+Nup = 1
  
 Hopping = 1.0
 Hopping_NN = 0.0
-U = 0.0
+U = 10.0
 H_mag = 0
 File_Onsite_Energies = false onsite_ener.txt
-File_Hopping_Connections = Hoppings_L4_Triangular.txt
-File_NonLocal_Int_Connections = Interactions_L4_Triangular.txt
+File_Hopping_Connections = Hoppings_L2.txt
+File_NonLocal_Int_Connections = Interactions_L2.txt
 ----------------------------------------
 -------------------------------------
-Lanc_Error = -10e-12
+Lanc_Error = 10e-10
 max_steps = 200
 file_eval_spectrum = out0.txt
 save_all_Krylov_space_vecs = tru
@@ -60,4 +60,7 @@ Static_Finite_Temperature = false
 Number_of_Random_States = 300
 Number_of_LowKrylov_States_used = 100
 Temperature = 0.2
+
+
+Processors = 8
 

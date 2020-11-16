@@ -39,8 +39,13 @@ public:
     string LongRangeExchangeZZfilepath;
     string LongRangeExchangePMfilepath;
 
+    string LongRangeJ1_filepath, LongRangeJ2_filepath, LongRangeJ3_filepath  ;
+
     Mat_2_doub Jzz_Exchange_mat;
     Mat_2_doub Jpm_Exchange_mat;
+    Mat_2_doub J1_mat;
+    Mat_4_doub J2_mat;
+    Mat_4_doub J3_mat;
 
 
 void Read_parameters(BASIS_Spins_Target_Sz &basis, string filename);
@@ -51,7 +56,8 @@ void Read_parameters_for_dynamics(string filename);
 void Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &basis, int site);
 void Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &basis);
 void Initialize_one_point_to_calculate_from_file(BASIS_Spins_Target_Sz &basis);
-
+void Act_SiSj(int &site_i, int &site_j, ulli &m, Mat_1_ullint &m_out_array, Mat_1_doub &Coeff_out_Array, BASIS_Spins_Target_Sz &basis);
+void Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR_ , int site1, int site2, BASIS_Spins_Target_Sz &basis);
 
 //void Initialize_one_point_to_calculate(BASIS_1_orb_tJ &basis);
 //void Initialize_two_point_to_calculate(BASIS_1_orb_tJ &basis);

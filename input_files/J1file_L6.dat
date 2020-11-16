@@ -1,0 +1,16 @@
+0 2  Term_SS
+2 4  Term_SS
+4 6  Term_SS
+6 8  Term_SS
+8 10 Term_SS
+1 3  Term_LL
+3 5  Term_LL
+5 7  Term_LL
+7 9  Term_LL
+9 11 Term_LL
+0 1  Term_SL 
+2 3  Term_SL
+4 5  Term_SL
+6 7  Term_SL
+8 9  Term_SL
+10 11 Term_SL

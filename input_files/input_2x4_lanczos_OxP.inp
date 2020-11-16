@@ -2,27 +2,30 @@ Geometry = LongRange
 Model = 1_orb_Hubbard_chain
 ------------------------------------------
 PBC = true
-Length_X = 8
-Length_Y = 1
+Length_X = 2000
+Length_Y = 1000
+Total_Sites = 8
 Ndown = 4
 Nup = 4
- 
+
+Processors = 12
 Hopping = 1.0
 Hopping_NN = 0.0
-U = 0.0
+U = 28.1575
 H_mag = 0
-File_Onsite_Energies = true onsite_ener.txt
-
+File_Onsite_Energies = false onsite_ener.txt
+File_Hopping_Connections = Hoppings_2x4_Triangular_OxP.txt
+File_NonLocal_Int_Connections = Interactions_2x4_Triangular_OxP.txt
 ----------------------------------------
 -------------------------------------
-Lanc_Error = -10e-12
-max_steps = 100
+Lanc_Error = 10e-15
+max_steps = 800
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = true
+save_all_Krylov_space_vecs = false
 get_overlap_bw_eigstates_and_K_vecs = false
-lanczos_reorthogonalization = true
+lanczos_reorthogonalization = false
 Get_Full_Spectrum = true
-need_few_eig_vecs = true
+need_few_eig_vecs = false
 few = 6
 ----------------------------------------
 Get_overlap_with_basis = false
@@ -40,10 +43,10 @@ check_omega = 0.05
 omega_max = 20.0
 omega_min = -20.0
 d_omega = 0.001
-Opr_for_Dynamics = Sz
-Momentum_resolved = true
-k = 1.0
-file_dynamics_out = Szkw_L8_k1.0
+Opr_for_Dynamics = J
+Momentum_resolved = false
+k = 0.4
+file_dynamics_out = orb0_up_site1
 Dynamics_dos_operators = 1 1.0 0 1 1
 ---------------------------------
 
@@ -58,4 +61,3 @@ Static_Finite_Temperature = false
 Number_of_Random_States = 300
 Number_of_LowKrylov_States_used = 100
 Temperature = 0.2
-

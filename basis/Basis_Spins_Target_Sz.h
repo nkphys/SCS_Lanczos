@@ -19,6 +19,8 @@ public:
     double SPIN;
     int BASE;
     unsigned long long int basis_size;
+    Mat_1_ullint Partitions_Dec;
+    Mat_1_intpair Partitions_pos;
 
 
     Mat_1_ullint D_basis;

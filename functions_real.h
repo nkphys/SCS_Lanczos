@@ -15,6 +15,13 @@
 //#include <bits/stdc++.h>
 
 
+
+int partition(Mat_1_int &a, int s, int e);
+void quicksort(Mat_1_int &a, int s, int e);
+//Use quicksort(a, 0, a.size() -1);
+
+void Remove_repetitions(Mat_1_ullint & index_array, Mat_1_doub & val_array, Mat_1_ullint & index_new_array, Mat_1_doub & val_new_array);
+void Remove_repetitions(Mat_1_int & index_array, Mat_1_doub & val_array, Mat_1_int & index_new_array, Mat_1_doub & val_new_array);
 double conjugate(double val);
 double reading_pair(string double_no_str);
 void Normalize_vec(Mat_1_doub &vec_in);
@@ -31,7 +38,10 @@ int Find_intpair_in_intarraypair(int num1, int num2 ,Mat_1_int &array1, Mat_1_in
                                  int num1_sector, Mat_1_intpair &sectors_offset);
 int Find_intpair_in_intarraypair(int num1, int num2 ,Mat_1_int &array1, Mat_1_int &array2);
 int Find_int_in_intarray(int num, Mat_1_int &array);
+int Find_int_in_intarray(ulli num, Mat_1_ullint &array);
 int Find_int_in_part_of_intarray(int num, Mat_1_int &array, int min_i, int max_i);
+int Find_int_in_part_of_intarray(ulli num, Mat_1_ullint &array, int min_i, int max_i);
+
 int Find_int_in_intarray_smartly(int num,Mat_1_int &array,Mat_1_int &partition_indices,Mat_1_int &vals_at_partitions);
 void Print_Matrix_COO(Matrix_COO &A);
 void Print_Matrix(Mat_2_doub &A);

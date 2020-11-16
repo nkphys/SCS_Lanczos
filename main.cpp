@@ -442,12 +442,118 @@ int main(int argc, char** argv){
 
 
     if(model_name=="SpinOnlyTargetSz"){
+
+        bool Cheaper_SpinSpincorr=true;
         cout<<"Model :" <<model_name<<endl;
         MODEL_Spins_Target_Sz _MODEL;
         BASIS_Spins_Target_Sz _BASIS;
 
         _MODEL.Read_parameters(_BASIS, inp_filename);
         _BASIS.Construct_basis();
+
+        _MODEL.Add_connections(_BASIS);
+        //Print_Matrix_COO(_MODEL.Hamil);
+
+        LANCZOS _LANCZOS;
+        _LANCZOS.Dynamics_performed=false;
+        _LANCZOS.Read_Lanczos_parameters(inp_filename);
+
+        if( !(Dynamics_Finite_Temp || Static_Finite_Temp) ){
+            _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
+            _LANCZOS.Write_full_spectrum();
+            Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS.txt");
+
+
+
+            if(Cheaper_SpinSpincorr==true){
+
+                Matrix_COO OPR_;
+                for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
+                    cout<<"Spin-Spin correlations for state = "<<state_<<endl;
+
+                    double_type sum_;
+
+                    Mat_1_string opr_type_;
+                    opr_type_.push_back("Svec.Svec");
+
+                    Mat_2_doub Corr_;
+                    Corr_.resize(_BASIS.Length);
+                    for(int site1=0;site1<_BASIS.Length;site1++){
+                        Corr_[site1].resize(_BASIS.Length);
+                    }
+
+                    for(int type=0;type<opr_type_.size();type++){
+                        sum_=0.0;
+                        cout<<opr_type_[type]<<": "<<endl;
+
+                        for(int site1=0;site1<_BASIS.Length;site1++){
+                            for(int site2=site1;site2<_BASIS.Length;site2++){
+                                OPR_.columns.clear();
+                                OPR_.rows.clear();
+                                OPR_.value.clear();
+                                _MODEL.Initialize_two_point_operator_sites_specific(opr_type_[type] , OPR_, site1, site2, _BASIS);
+
+                                Corr_[site1][site2]=_LANCZOS.Measure_observable(OPR_, state_);
+                                if(site1 != site2){
+                                    Corr_[site2][site1]=Corr_[site1][site2];
+                                }
+                                vector< int >().swap( OPR_.columns );
+                                vector< int >().swap( OPR_.rows );
+                                vector< double_type >().swap( OPR_.value );
+                            }
+                        }
+                        cout<<scientific<<setprecision(4);
+                        for(int site1=0;site1<_BASIS.Length;site1++){
+                            for(int site2=0;site2<_BASIS.Length;site2++){
+
+                                cout<< Corr_[site1][site2]<<" ";
+                                sum_ +=Corr_[site1][site2];
+                            }
+                            cout<<endl;
+                        }
+                        cout<<"sum = "<<sum_<<endl;
+                    }
+
+
+                }
+            }
+
+
+
+
+
+
+
+//            _MODEL.Initialize_one_point_to_calculate_from_file(_BASIS);
+//            _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0);
+//            _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0, model_name);
+        }
+
+
+
+
+        Mat_1_real Eigen_ED;
+        Mat_2_doub vecs;
+        DO_FULL_DIAGONALIZATION==true;
+        if(_MODEL.Hamil.nrows>800){
+            DO_FULL_DIAGONALIZATION=false;
+        }
+        if(DO_FULL_DIAGONALIZATION){
+
+            string fl_ED_out = "EXACT_RESULTS.txt";
+            ofstream file_ED_out(fl_ED_out.c_str());
+            cout<<"-----------------------------------------------------------------------"<<endl;
+            cout<<"AFTER THIS EXACT DIAGONALIZATION RESULTS ARE WRITTEN IN EXACT_RESULTS.txt-------------------"<<endl;
+
+            file_ED_out<<"//*****************Exact Diagonalization Energies**************//"<<endl;
+            file_ED_out<<"//------------------------------------------------------------//"<<endl;
+            Diagonalize(_MODEL.Hamil, Eigen_ED, vecs);
+            for(int i=0;i<Eigen_ED.size();i++){
+                file_ED_out<<i<<"   "<<scientific<<setprecision(6)<<Eigen_ED[i]<<endl;
+            }
+        }
+
+
 
 
     }
@@ -2204,16 +2310,17 @@ int main(int argc, char** argv){
         _MODEL.Initialize_one_point_to_calculate();
         _MODEL.Initialize_two_point_to_calculate();
 
+
         for(int i=0;i<_LANCZOS.states_to_look.size();i++){
             cout<<"===================FOR STATE NO "<<i<<"============================="<<endl;
             _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, i);
-            cout<<"Energy = "<<_LANCZOS.Evals_Tri_all[_LANCZOS.Evals_Tri_all.size()-1][i]<<endl;
-            _LANCZOS.Measure_two_point_observables(_MODEL.two_point_obs, _MODEL.Two_point_oprts, _BASIS.Length, i, _MODEL.PBC);
-            _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs,_MODEL.One_point_oprts, _BASIS.Length, i, "3_orb_Hubbard_chain_GC");
-
+            // cout<<"Energy = "<<_LANCZOS.Evals_Tri_all[_LANCZOS.Evals_Tri_all.size()-1][i]<<endl;
+            //_LANCZOS.Measure_two_point_observables(_MODEL.two_point_obs, _MODEL.Two_point_oprts, _BASIS.Length, i, _MODEL.PBC);
+            _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs,_MODEL.One_point_oprts, _BASIS.Length, i,"3_orb_Hubbard_chain_GC");
             cout<<"============================================================================"<<endl;
-        }
 
+            _LANCZOS.Measure_macro_observables(_MODEL.macro_obs, _MODEL.Macro_oprts, i);
+        }
 
         // for(int i=0;i<19;i++){
         // _LANCZOS.Measure_two_point_observables(_MODEL.two_point_obs, _MODEL.Two_point_oprts, _BASIS.Length, 0, _MODEL.PBC);

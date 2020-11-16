@@ -145,6 +145,51 @@ char* fromDeci(char res[], int base, T inputNum)
 
 }
 
+
+
+template <typename T>
+void fromVecint_to_Deci(Mat_1_int &Vec_out, int base, T &outputNum, int sites)
+{
+
+    assert(Vec_out.size() == sites);
+
+    int power=1;
+    outputNum=0;
+
+    for(int i=0;i<sites;i++){
+    outputNum += Vec_out[i] * power;
+    power = power * base;
+    }
+
+}
+
+template <typename T>
+void fromDeci_to_Vecint(Mat_1_int &Vec_out, int base, T inputNum, int sites)
+{
+
+    assert( inputNum < (pow(base,sites) - 1));
+    Vec_out.clear();
+    Vec_out.resize(sites);
+    for(int i=0;i<sites;i++){
+        Vec_out[i]=0;
+    }
+
+    int index = 0;  // Initialize index of result
+
+
+    // Convert input number is given base by repeatedly
+    // dividing it by base and taking remainder
+    while (inputNum > 0)
+    {
+        Vec_out[index] = inputNum % base;
+        inputNum /= base;
+        index +=1;
+    }
+
+    assert(index<=sites);
+
+}
+
 template <typename T>
 int Sum_of_Values(T inputNum, int base){
 

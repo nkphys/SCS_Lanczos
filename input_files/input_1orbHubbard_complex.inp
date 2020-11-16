@@ -1,26 +1,26 @@
 Model = 1_orb_Hubbard_chain
 ------------------------------------------
-PBC = false
-Length = 8
-Ndown = 0
-Nup = 4
+PBC = true
+Length = 4
+Ndown = 2
+Nup = 2
  
-Hopping NN = -1.0
-U = 0
+Hopping NN = 1.0
+U = 10.0
 H_mag = 0
 LongRangeHopping = true
-LongRangeInteraction = false
-LongRangeHopping file = LongRangeinputs/hopp_L8.txt
-LongRangeInteraction file = LongRangeinputs/interaction_L8.txt
+LongRangeInteraction = true
+LongRangeHopping file = hopp_L8.txt
+LongRangeInteraction file = interaction_L8.txt
 ----------------------------------------
 
 No_of_onepoint_obs = 6
-One_point_oprt_path_1 = OPRTS/n_up.txt
-One_point_oprt_path_2 = OPRTS/n.txt
-One_point_oprt_path_3 = OPRTS/n_dn.txt
-One_point_oprt_path_4 = OPRTS/Sz.txt
-One_point_oprt_path_5 = OPRTS/Sz_2.txt
-One_point_oprt_path_6 = OPRTS/S_2.txt
+One_point_oprt_path_1 = n_up.txt
+One_point_oprt_path_2 = n.txt
+One_point_oprt_path_3 = n_dn.txt
+One_point_oprt_path_4 = Sz.txt
+One_point_oprt_path_5 = Sz_2.txt
+One_point_oprt_path_6 = S_2.txt
 
 --------------------------------------
 FourPointObservablesSites file = fourpoint.txt
@@ -28,11 +28,11 @@ FourPointObservablesSites file = fourpoint.txt
 Lanc_Error = -10e-15
 max_steps = 300
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = false
-get_overlap_bw_eigstates_and_K_vecs = false
-lanczos_reorthogonalization = false
+save_all_Krylov_space_vecs = true
+get_overlap_bw_eigstates_and_K_vecs = true
+lanczos_reorthogonalization = true
 Get_Full_Spectrum = true
-need_few_eig_vecs = false
+need_few_eig_vecs = true
 few = 6
 ----------------------------------------
 Get_overlap_with_basis = false

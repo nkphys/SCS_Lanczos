@@ -14,7 +14,10 @@
 //#include <bits/stdc++.h>
 #include "Matrix.h"
 
-
+int partition(Mat_1_int &a, int s, int e);
+void quicksort(Mat_1_int &a, int s, int e);
+void Remove_repetitions(Mat_1_ullint & index_array, Mat_1_doub & val_array, Mat_1_ullint & index_new_array, Mat_1_doub & val_new_array);
+void Remove_repetitions(Mat_1_int & index_array, Mat_1_doub & val_array, Mat_1_int & index_new_array, Mat_1_doub & val_new_array);
 complex<double> conjugate(complex<double> val);
 void Normalize_vec(Mat_1_doub &vec_in);
 void value_multiply_vector(complex<double> value, Mat_1_doub &vec_in);
@@ -27,8 +30,10 @@ int Find_intpair_in_intarraypair(int num1, int num2 ,Mat_1_int &array1, Mat_1_in
                                  int num1_sector, Mat_1_intpair &sectors_offset);
 int Find_intpair_in_intarraypair(int num1, int num2 ,Mat_1_int &array1, Mat_1_int &array2);
 int Find_int_in_intarray(int num, Mat_1_int &array);
+int Find_int_in_intarray(ulli num, Mat_1_ullint &array);
 int Find_int_in_intarray_smartly(int num,Mat_1_int &array,Mat_1_int &partition_indices,Mat_1_int &vals_at_partitions);
 int Find_int_in_part_of_intarray(int num, Mat_1_int &array, int min_i, int max_i);
+int Find_int_in_part_of_intarray(ulli num, Mat_1_ullint &array, int min_i, int max_i);
 void Print_Matrix_COO(Matrix_COO &A);
 void Print_vector_in_file(Mat_1_doub vec, string filename);
 void Diagonalize(Matrix_COO &X, double & EG, Mat_1_doub & vecG);

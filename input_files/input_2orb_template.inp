@@ -2,8 +2,8 @@ Model = 2_orb_Hubbard_chain
 ------------------------------------------
 PBC = false
 Length = 2
-Ndown = 0
-Nup = 4
+Ndown = 2
+Nup = 2
 CFS = 0.0 0.0
 
 Hopping_mat[0][orb] = 1.0 0.0

@@ -34,6 +34,9 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
 
     int Value;
     D_basis.clear();
+    Partitions_Dec.clear();
+    Partitions_pos.clear();
+    pair_int temp_pair;
     Mat_1_int Value_local;
     Value_local.resize(Length);
 
@@ -57,6 +60,7 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
         int n_min, n_max;
         unsigned long long int Dec_temp;
         Mat_1_ullint Dec_vec;
+
         char state_str[500];
         int length_state_str;
         int old_size;
@@ -65,7 +69,7 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
      NOTE following conditions must be satisfied:
      (1) \sum_{i=0}^{Length-1} n_{i}.i = Total_Value
      (2) \sum_{j=0}^{BASE-1} n_{i} = Length
-     n_{i} is Number os sites with value = "i"
+     n_{i} is Number of sites with value = "i"
 
     We define:
     index= \sum_{i=0}^{Length_new-1}n_{i}(BASE_new)^{i}
@@ -109,18 +113,40 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
                 }
 
                 //Now all permutations of Dec_temp are required
-                Dec_vec.clear();
+                Dec_vec.clear();                
                 fromDeci(state_str, BASE, Dec_temp);
+                Partitions_Dec.push_back(Dec_temp);
+
+                //------------REMOVE Later-------------
+//                stringstream ss_temp;
+//                string state_actual_str;
+//                ss_temp << state_str;
+//                ss_temp >> state_actual_str;
+//                cout<<state_actual_str<<"  |  "<< Dec_temp<<endl;
+                //----------------------------
+
                 length_state_str = strlen(state_str);
                 findPermutations(state_str, 0, length_state_str, Dec_vec, BASE);
 
+                //------------REMOVE Later-------------
+//                for(int i_temp=0;i_temp<Dec_vec.size();i_temp++){
+//                    cout<<Dec_vec[i_temp]<<"  ";
+//                }
+//                cout<<endl;
+                //-----------------------------------------
+
+
                 old_size = D_basis.size();
+                temp_pair.first = old_size;
                 D_basis.resize(D_basis.size() + Dec_vec.size());
                 for(int x=0;x<Dec_vec.size();x++){
                     D_basis[old_size + x] = Dec_vec[x];
                 }
 
-                cout<<"basis under construction : "<<D_basis.size()<<endl;
+                temp_pair.second = D_basis.size()-1;
+
+                Partitions_pos.push_back(temp_pair);
+                cout<<"basis under construction : "<<D_basis.size()<<endl;//<<endl<<endl;
                 vector < unsigned long long int >().swap(Dec_vec);
 
                 //cout<<"here 1"<<endl;

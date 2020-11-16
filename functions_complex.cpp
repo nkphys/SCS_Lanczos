@@ -10,6 +10,26 @@ extern "C" void zheev_(char *,char *,int *, complex<double> *, int *, double *,
 //extern "C" void dsyev_(char * , char * , int * , double * , int *, double *, double *, int *, int *);
 
 
+
+int Find_int_in_part_of_intarray(ulli num, Mat_1_ullint &array, int min_i, int max_i){
+
+    int pos;
+    bool not_found=true;
+
+    for(int ind=min_i;ind<=max_i;ind++){
+        if(num==array[ind]){
+            not_found=false;
+            pos=ind;
+            break;
+        }
+    }
+
+    if(not_found){
+        pos=-1;
+    }
+    return pos;
+}
+
 complex<double> conjugate(complex<double> val){
 
     return (conj(val));
@@ -450,6 +470,130 @@ int Find_int_in_intarray(int num, Mat_1_int &array){
     return pos;
 }
 
+int Find_int_in_intarray(ulli num, Mat_1_ullint &array){
+
+    int pos;
+    bool not_found=true;
+    int ind=0;
+    while(not_found){
+        assert(ind<array.size());
+        if(num==array[ind]){
+            pos=ind;
+            not_found = false;
+        }
+        ind++;
+    }
+
+    return pos;
+}
+
+void Remove_repetitions(Mat_1_int & index_array, Mat_1_doub & val_array, Mat_1_int & index_new_array, Mat_1_doub & val_new_array){
+
+
+    index_new_array.clear();
+    val_new_array.clear();
+
+    int m_min=-100;
+    int mi;
+    double_type val;
+    for(int i=0;i<index_array.size();i++){
+
+        mi = index_array[i];
+
+        if(mi!=m_min){
+            index_new_array.push_back(mi);
+            val=val_array[i];
+
+            for(int j=i+1;j<index_array.size();j++){
+
+                if(index_array[j]==mi){
+                    val +=val_array[j];
+
+                    index_array[j]=-100;
+                }
+
+            }
+
+            index_array[i]=-100;
+
+           val_new_array.push_back(val);
+        }
+    }
+
+}
+
+int partition(Mat_1_int &a, int s, int e)
+{
+    int piviot = a[e];
+    int pind = s;
+    int i, t;
+
+    for (i = s; i < e; i++) {
+        if (a[i] <= piviot) {
+            t = a[i];
+            a[i] = a[pind];
+            a[pind] = t;
+            pind++;
+        }
+    }
+
+    t = a[e];
+    a[e] = a[pind];
+    a[pind] = t;
+
+    return pind;
+}
+
+void quicksort(Mat_1_int &a, int s, int e)
+{
+    if (s < e) {
+        int pind = partition(a, s, e);
+        quicksort(a, s, pind - 1);
+        quicksort(a, pind + 1, e);
+    }
+}
+
+
+void Remove_repetitions(Mat_1_ullint & index_array, Mat_1_doub & val_array, Mat_1_ullint & index_new_array, Mat_1_doub & val_new_array){
+
+
+    index_new_array.clear();
+    val_new_array.clear();
+
+    Mat_1_int check;
+    check.resize(index_array.size());
+    for(int i=0;i<check.size();i++){
+        check[i]=0;
+    }
+
+
+    int mi;
+    double_type val;
+    for(int i=0;i<index_array.size();i++){
+
+        mi = index_array[i];
+
+        if(check[i]==0){
+            index_new_array.push_back(mi);
+            val=val_array[i];
+
+            for(int j=i+1;j<index_array.size();j++){
+
+                if(index_array[j]==mi){
+                    val +=val_array[j];
+
+                    check[j]=1;
+                }
+
+            }
+
+            check[i]=1;
+
+           val_new_array.push_back(val);
+        }
+    }
+
+}
 
 int Find_int_in_intarray_smartly(int num, Mat_1_int &array, Mat_1_int &partition_indices, Mat_1_int &vals_at_partitions){
 

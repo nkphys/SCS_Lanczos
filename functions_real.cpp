@@ -41,7 +41,7 @@ void Normalize_vec(Mat_1_doub &vec_in){
 void value_multiply_vector(double value, Mat_1_doub &vec_in){
 
     for(int i=0;i<vec_in.size();i++){
-    vec_in[i] = vec_in[i]*value;
+        vec_in[i] = vec_in[i]*value;
     }
 }
 
@@ -137,7 +137,7 @@ void Read_matrix_from_file(string filepath, Mat_2_doub &Mat, int row, int column
 
     if(!infile.is_open()){
         cout<<filepath<<" not present"<<endl;
-        }
+    }
 
     Mat.resize(row);
     for(int i=0;i<row;i++){
@@ -422,6 +422,25 @@ int Find_int_in_part_of_intarray(int num, Mat_1_int &array, int min_i, int max_i
     return pos;
 }
 
+int Find_int_in_part_of_intarray(ulli num, Mat_1_ullint &array, int min_i, int max_i){
+
+    int pos;
+    bool not_found=true;
+
+    for(int ind=min_i;ind<=max_i;ind++){
+        if(num==array[ind]){
+            not_found=false;
+            pos=ind;
+            break;
+        }
+    }
+
+    if(not_found){
+        pos=-1;
+    }
+    return pos;
+}
+
 int Find_intpair_in_intarraypair(int num1, int num2 ,Mat_1_int &array1, Mat_1_int &array2,
                                  int num1_sector, Mat_1_intpair &sectors_offset){
 
@@ -504,6 +523,130 @@ int Find_int_in_intarray(int num, Mat_1_int &array){
     }
 
     return pos;
+}
+
+int Find_int_in_intarray(ulli num, Mat_1_ullint &array){
+
+    int pos;
+    bool not_found=true;
+    int ind=0;
+    while(not_found){
+        assert(ind<array.size());
+        if(num==array[ind]){
+            pos=ind;
+            not_found = false;
+        }
+        ind++;
+    }
+
+    return pos;
+}
+
+void Remove_repetitions(Mat_1_int & index_array, Mat_1_doub & val_array, Mat_1_int & index_new_array, Mat_1_doub & val_new_array){
+
+
+    index_new_array.clear();
+    val_new_array.clear();
+
+    int m_min=-100;
+    int mi;
+    double_type val;
+    for(int i=0;i<index_array.size();i++){
+
+        mi = index_array[i];
+
+        if(mi!=m_min){
+            index_new_array.push_back(mi);
+            val=val_array[i];
+
+            for(int j=i+1;j<index_array.size();j++){
+
+                if(index_array[j]==mi){
+                    val +=val_array[j];
+
+                    index_array[j]=-100;
+                }
+
+            }
+
+            index_array[i]=-100;
+
+           val_new_array.push_back(val);
+        }
+    }
+
+}
+
+int partition(Mat_1_int &a, int s, int e)
+{
+    int piviot = a[e];
+    int pind = s;
+    int i, t;
+
+    for (i = s; i < e; i++) {
+        if (a[i] <= piviot) {
+            t = a[i];
+            a[i] = a[pind];
+            a[pind] = t;
+            pind++;
+        }
+    }
+
+    t = a[e];
+    a[e] = a[pind];
+    a[pind] = t;
+
+    return pind;
+}
+
+void quicksort(Mat_1_int &a, int s, int e)
+{
+    if (s < e) {
+        int pind = partition(a, s, e);
+        quicksort(a, s, pind - 1);
+        quicksort(a, pind + 1, e);
+    }
+}
+
+void Remove_repetitions(Mat_1_ullint & index_array, Mat_1_doub & val_array, Mat_1_ullint & index_new_array, Mat_1_doub & val_new_array){
+
+
+    index_new_array.clear();
+    val_new_array.clear();
+
+    Mat_1_int check;
+    check.resize(index_array.size());
+    for(int i=0;i<check.size();i++){
+        check[i]=0;
+    }
+
+
+    int mi;
+    double_type val;
+    for(int i=0;i<index_array.size();i++){
+
+        mi = index_array[i];
+
+        if(check[i]==0){
+            index_new_array.push_back(mi);
+            val=val_array[i];
+
+            for(int j=i+1;j<index_array.size();j++){
+
+                if(index_array[j]==mi){
+                    val +=val_array[j];
+
+                    check[j]=1;
+                }
+
+            }
+
+            check[i]=1;
+
+           val_new_array.push_back(val);
+        }
+    }
+
 }
 
 int Find_int_in_intarray_smartly(int num, Mat_1_int &array, Mat_1_int &partition_indices, Mat_1_int &vals_at_partitions){
@@ -1053,8 +1196,8 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_1_doub & vecG){
     for(int i=0;i<X.value.size();i++){
         int r=X.rows[i];
         int c=X.columns[i];
-       Ham_(r,c) = X.value[i];
-       Ham_(c,r) = X.value[i];
+        Ham_(r,c) = X.value[i];
+        Ham_(c,r) = X.value[i];
     }
 
     char jobz='V';
@@ -1115,8 +1258,8 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_2_doub & vecs){
     for(int i=0;i<X.value.size();i++){
         int r=X.rows[i];
         int c=X.columns[i];
-       Ham_(r,c) = X.value[i];
-       Ham_(c,r) = X.value[i];
+        Ham_(r,c) = X.value[i];
+        Ham_(c,r) = X.value[i];
     }
 
     char jobz='V';
@@ -1158,9 +1301,9 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_2_doub & vecs){
     vecs.resize(X.nrows);
     for(int j=0;j<vecs.size();j++){
         vecs[j].resize(vecs.size());
-    for(int i=0;i<X.nrows;i++){
-        vecs[j][i] =Ham_(i,j);//mat[i*X.nrows];
-    }
+        for(int i=0;i<X.nrows;i++){
+            vecs[j][i] =Ham_(i,j);//mat[i*X.nrows];
+        }
     }
 
     Ham_.clear();
@@ -1182,8 +1325,8 @@ void Diagonalize(Matrix_COO &X, double & EG, Mat_1_doub & vecG){
     for(int i=0;i<X.value.size();i++){
         int r=X.rows[i];
         int c=X.columns[i];
-       Ham_(r,c) = X.value[i];
-       Ham_(c,r) = X.value[i];
+        Ham_(r,c) = X.value[i];
+        Ham_(c,r) = X.value[i];
     }
 
     char jobz='V';

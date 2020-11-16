@@ -1,26 +1,26 @@
 Model = 3_orb_Hubbard_chain_GC
 Restricted_Basis = false
-Restriction_on_local_occupations = 3 3 4 5
+Restriction_on_local_occupations = 0 0
 ------------------------------------------
 PBC = false
 Length = 4
-N_Total = 16
-CFS = 0.0 0.0 0.0
-LongRangeHopping_file = 4_site_PBC_chain.dat
- 
-Hopping_mat[0][orb] = 1.0 0.0 0.0
-Hopping_mat[1][orb] = 0.0 1.0 0.0
-Hopping_mat[2][orb] = 0.0 0.0 1.0
-U = 40.0
-JHund = 10.0
-Uprime = 20.0
+N_Total = 8
+CFS = 4.748 4.748 4.639
+LongRangeHopping_file = 4site_3orb_hopping_OBC.dat
+
+Hopping_mat[0][orb] = -500000 0.0 0.1
+Hopping_mat[1][orb] = 0.0 -0.5 0.1
+Hopping_mat[2][orb] = 0.1 0.1 -0.15
+U = 4.0
+JHund = 0.8
+Uprime = 2.4
 H_mag = 0
-lambda_SOC = 0.45
+lambda_SOC = 0.0
 ----------------------------------------
 Random_seed_generator = 321
 --------------------------------------
-Lanc_Error = 10e-10
-max_steps = 250
+Lanc_Error = 10e-8
+max_steps = 1000
 file_eval_spectrum = Tri_evals_OBC_GC.txt
 save_all_Krylov_space_vecs = false
 get_overlap_bw_eigstates_and_K_vecs = false
@@ -40,12 +40,12 @@ seed_file = seed_GSold.txt
 
 ----------------------------------
 Perform_Dynamics = false
-check_omega = 0.5
-Opr_for_Dynamics = Mz
-Momentum_resolved = true
-k = 0
-file_dynamics_out = MzMz_k0_PBC
-Dynamics_dos_operators = 1 1.0 0.0 2 1 0
+check_omega = 4.2
+Opr_for_Dynamics = Delta_SOC
+Momentum_resolved = false
+k = 0.0
+file_dynamics_out = Orb0_spinup_dos
+Dynamics_dos_operators = 1 1.0 0.0 0 1 0
 
 ---------------------------------------------------
 #xz
@@ -81,9 +81,9 @@ Dynamics_dos_operators = 1 1.0 0.0 2 1 0
 ---------------------------------
 
 ---------------For both RIXS and std. dynamics---------
-eta = 0.05
-omega_max = 3.0
-omega_min = 0.0
+eta = 0.1
+omega_max = 15.0
+omega_min = -15.0
 d_omega = 0.002
 --------------------------------------
 
@@ -95,4 +95,3 @@ Light_polarization_in = 1 0 0
 Light_polarization_in = 0 1 0
 Incident_energy = 0.1
 ----------------------------------------
-
