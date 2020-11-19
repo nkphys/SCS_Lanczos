@@ -40,9 +40,19 @@ void MODEL_1_orb_Hubb_2D_KSector::Add_diagonal_terms(BASIS_1_orb_Hubb_2D_KSector
         j=i;
 
         value=0;
-        //intra-orbital coulomb repulsion:
+        //on-site coulomb repulsion  ni_up ni_dn:
         value+=U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
 
+
+        //longrange coulomb interaction ni.nj
+        for(int site_i=0;site_i<basis.Length;site_i++){
+            for(int site_j=0;site_j<basis.Length;site_j++){
+                value += ( bit_value(basis.D_up_basis[i], site_i) +
+                           bit_value(basis.D_dn_basis[j], site_i) )*
+                        ( bit_value(basis.D_up_basis[i], site_j) -
+                          bit_value(basis.D_dn_basis[j], site_j) );
+            }
+        }
 
         //magnetic Field
         for(int site=0;site<basis.Length;site++){
@@ -116,7 +126,6 @@ void MODEL_1_orb_Hubb_2D_KSector::Add_connections(BASIS_1_orb_Hubb_2D_KSector &b
     int row_counter;
     int check_min, check_max;
     int site, site_p;
-    int Dis_x, Dis_y, Dis_sqr;
     int Lxm1, Lym1;
     Lxm1=basis.Lx-1;
     Lym1=basis.Ly-1;
@@ -145,20 +154,9 @@ void MODEL_1_orb_Hubb_2D_KSector::Add_connections(BASIS_1_orb_Hubb_2D_KSector &b
                     for(int iy_p=0;iy_p<basis.Ly ;iy_p++){
                         site_p=ix_p + (iy_p*basis.Lx);
 
-
-                        Dis_x = abs(ix_p - ix);
-                        Dis_y = abs(iy_p - iy);
-                        if(Dis_x==basis.Lx-1){
-                            Dis_x = 1;
-                        }
-                        if(Dis_y==basis.Ly-1 && (basis.Ly!=1)){
-                            Dis_y = 1;
-                        }
-
-                        Dis_sqr = Dis_x*Dis_x + Dis_y*Dis_y;
-
-                        if(Dis_sqr==1)// && Dis_y==0)
-                        { // nearest neighbour
+                        if(Hopping_mat_NN[site_p][site]!=zero)// && Dis_y==0)
+                        { // LongRange
+                            Hopping_NN=Hopping_mat_NN[site_p][site];
 
                             //---------------Hopping for up electrons-------------------//
                             //there have to be one up electron in site
@@ -1271,6 +1269,8 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
 
     string filepath = filename;
 
+    bool read_onsite_energies=false;
+    string Geometry = "Geometry = ";
     string pbc_,PBC_ ="PBC = ";
     string lx_, Lx_ = "Lx = ";
     string ly_, Ly_ = "Ly = ";
@@ -1286,7 +1286,9 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
     string write_basis_bool_, Write_Basis_BOOL_ = "Write_Basis_bool = ";
     string basis_write_file_, Basis_Write_File_ = "Write_File_Basis = ";
 
-
+    string file_onsite_energies_, File_Onsite_Energies_ = "File_Onsite_Energies = ";
+    string file_hopping_connections_, File_Hopping_Connections_ = "File_Hopping_Connections = ";
+    string file_nonlocal_int_connections_, File_NonLocal_Int_Connections_ = "File_NonLocal_Int_Connections = ";
 
 
     int offset;
@@ -1299,6 +1301,10 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
         while(!inputfile.eof())
         {
             getline(inputfile,line);
+
+
+            if ((offset = line.find(Geometry, 0)) != string::npos) {
+                geometry_ = line.substr (offset+Geometry.length());				}
 
             if ((offset = line.find(Read_Basis_BOOL_, 0)) != string::npos) {
                 read_basis_bool_ = line.substr (offset+Read_Basis_BOOL_.length());				}
@@ -1344,6 +1350,15 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
             if ((offset = line.find(Hopp_, 0)) != string::npos) {
                 hopp_ = line.substr (offset+Hopp_.length());				}
 
+            if ((offset = line.find(File_Onsite_Energies_, 0)) != string::npos) {
+                file_onsite_energies_ = line.substr (offset+File_Onsite_Energies_.length());				}
+
+            if ((offset = line.find(File_Hopping_Connections_, 0)) != string::npos) {
+                file_hopping_connections_ = line.substr (offset+File_Hopping_Connections_.length());				}
+
+            if ((offset = line.find(File_NonLocal_Int_Connections_, 0)) != string::npos) {
+                file_nonlocal_int_connections_ = line.substr (offset+File_NonLocal_Int_Connections_.length());				}
+
 
         }
         inputfile.close();
@@ -1388,7 +1403,7 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
 
 
     U=atof(ucoul.c_str());
-    Hopping_NN=atof(hopp_.c_str());
+    Hopping_NN=one*atof(hopp_.c_str());
 
 
     double h;
@@ -1397,6 +1412,140 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
     for(int i=0;i<basis.Length;i++){
         H_field[i]=h;
     }
+
+
+    stringstream _file_onsite_energies_(file_onsite_energies_);
+    _file_onsite_energies_ >> read_onsite_energies;
+    Onsite_Energy.resize(basis.Length);
+    string filename_Onsite_Energy;
+    string line_temp;
+
+    // string temp_x_, temp_y_, temp_site_, Ener_val_ ;
+    int temp_x, temp_y, temp_site;
+    double Ener_val;
+    if(read_onsite_energies){
+        _file_onsite_energies_ >> filename_Onsite_Energy;
+
+        ifstream inputfile_Onsite_Energy(filename_Onsite_Energy.c_str());
+        getline(inputfile_Onsite_Energy,line_temp);
+
+        for(int iy=0;iy<basis.Ly;iy++){
+            for(int ix=0;ix<basis.Lx;ix++){
+                inputfile_Onsite_Energy >> temp_x >> temp_y >> temp_site >> Ener_val;
+                assert(temp_x==ix);
+                assert(temp_y==iy);
+                assert(temp_site==iy*basis.Lx + ix);
+                Onsite_Energy[temp_site]=Ener_val;
+            }
+        }
+
+    }
+    else{
+        for(int i=0;i<basis.Length;i++){
+            Onsite_Energy[i]=0.0;
+        }
+    }
+
+
+
+
+    if(geometry_=="LongRange"){
+
+        cout<<"HOPPINGS AND INTERACTIONS MATRICES MUST HAVE TRANSLATIONAL SYMMETRY OF a(x) + a(y), where a is lattice constant"<<endl;
+
+        //Hoppings Mat(i,j)ci^{dagger}cj
+        Hopping_mat_NN.resize(basis.Length);
+        for(int site_=0;site_<basis.Length;site_++){
+            Hopping_mat_NN[site_].resize(basis.Length);
+        }
+
+        ifstream inputfile_hopping_connections(file_hopping_connections_.c_str());
+        for(int site_i=0;site_i<basis.Length;site_i++){
+            for(int site_j=0;site_j<basis.Length;site_j++){
+                inputfile_hopping_connections>>Hopping_mat_NN[site_i][site_j];
+            }
+        }
+
+
+
+
+        //Interactions  Mat(i,j)ninj
+        NonLocalInteractions_mat.resize(basis.Length);
+        for(int site_=0;site_<basis.Length;site_++){
+            NonLocalInteractions_mat[site_].resize(basis.Length);
+        }
+
+        ifstream inputfile_nonlocal_int_connections(file_nonlocal_int_connections_.c_str());
+        for(int site_i=0;site_i<basis.Length;site_i++){
+            for(int site_j=0;site_j<basis.Length;site_j++){
+                inputfile_nonlocal_int_connections>>NonLocalInteractions_mat[site_i][site_j];
+
+                if(site_i==site_j){
+                    assert(NonLocalInteractions_mat[site_i][site_j]==0.0);
+                }
+            }
+        }
+
+    }
+    else{
+        cout<<"Inbuild Hubbard model connections and interaction is used"<<endl;
+
+
+        NonLocalInteractions_mat.resize(basis.Length);
+        for(int site_=0;site_<basis.Length;site_++){
+            NonLocalInteractions_mat[site_].resize(basis.Length);
+        }
+
+        for(int site_i=0;site_i<basis.Length;site_i++){
+            for(int site_j=0;site_j<basis.Length;site_j++){
+                NonLocalInteractions_mat[site_i][site_j]=0.0;
+            }
+        }
+
+
+
+        //Hoppings Mat(i,j)ci^{dagger}cj
+        Hopping_mat_NN.resize(basis.Length);
+        for(int site_=0;site_<basis.Length;site_++){
+            Hopping_mat_NN[site_].resize(basis.Length);
+        }
+
+
+        int site, site_p, Dis_x, Dis_y, Dis_sqr;
+        for(int ix=0;ix<basis.Lx ;ix++){
+            for(int iy=0;iy<basis.Ly ;iy++){
+                site=ix + (iy*basis.Lx);
+
+                for(int ix_p=0;ix_p<basis.Lx ;ix_p++){
+                    for(int iy_p=0;iy_p<basis.Ly ;iy_p++){
+                        site_p=ix_p + (iy_p*basis.Lx);
+
+
+                        Dis_x = abs(ix_p - ix);
+                        Dis_y = abs(iy_p - iy);
+                        if(Dis_x==basis.Lx-1){
+                            Dis_x = 1;
+                        }
+                        if(Dis_y==basis.Ly-1 && (basis.Ly!=1)){
+                            Dis_y = 1;
+                        }
+
+                        Dis_sqr = Dis_x*Dis_x + Dis_y*Dis_y;
+
+                        if(Dis_sqr==1){
+                            Hopping_mat_NN[site][site_p]=Hopping_NN;
+
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+    }
+
+
 
 
 }

@@ -2,7 +2,7 @@ Model = 3_orb_Hubbard_chain_GC
 Restricted_Basis = false
 Restriction_on_local_occupations = 3 3 4 5
 ------------------------------------------
-PBC = false
+PBC = true
 Length = 4
 N_Total = 16
 CFS = 0.0 0.0 0.0
@@ -19,7 +19,7 @@ lambda_SOC = 0.45
 ----------------------------------------
 Random_seed_generator = 321
 --------------------------------------
-Lanc_Error = 10e-10
+Lanc_Error = -10e-10
 max_steps = 250
 file_eval_spectrum = Tri_evals_OBC_GC.txt
 save_all_Krylov_space_vecs = false
@@ -39,9 +39,9 @@ seed_file = seed_GSold.txt
 
 
 ----------------------------------
-Perform_Dynamics = false
+Perform_Dynamics = true
 check_omega = 0.5
-Opr_for_Dynamics = Mz
+Opr_for_Dynamics = Mz_kPBC
 Momentum_resolved = true
 k = 0
 file_dynamics_out = MzMz_k0_PBC

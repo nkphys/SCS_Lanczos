@@ -13,8 +13,13 @@ class MODEL_1_orb_Hubb_2D_KSector{
 
 public:
     double U;
-    double Hopping_NN;//Nearest neighbour hopping matrix
+    double_type Hopping_NN;//Nearest neighbour hopping
     Mat_1_real H_field;
+
+    string geometry_;
+    Mat_2_doub Hopping_mat_NN;//LongRange hopping matrix(_NN is misnomer)
+    Mat_2_real NonLocalInteractions_mat;//LongRange interactions
+    Mat_1_real Onsite_Energy;
 
     Matrix_COO Hamil;
     bool Calculate_observables_onepoint;

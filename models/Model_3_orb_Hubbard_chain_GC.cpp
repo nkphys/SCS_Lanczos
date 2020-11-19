@@ -1255,7 +1255,7 @@ template <typename Basis_type>
 void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
 
 
-    USE_LONG_RANGE_HOPPINGS = false;
+    USE_LONG_RANGE_HOPPINGS = true;
     string filepath = filename;
 
     double temp_val;
@@ -4667,7 +4667,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_Opr_for_Dynamics(LANCZOS 
 
 
 
-        if(Dyn_opr_string == "Mz"){
+        if(Dyn_opr_string == "Mz_kPBC"){
 
 
             for(int site=0;site<basis.Length;site++){
@@ -4728,7 +4728,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_Opr_for_Dynamics(LANCZOS 
 
 
         //------
-        if(Dyn_opr_string == "Mz_kPBC"){
+        if(Dyn_opr_string == "Mz_kOBC"){
 
 
             for(int site=0;site<basis.Length;site++){

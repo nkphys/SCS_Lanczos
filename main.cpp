@@ -133,7 +133,7 @@ int main(int argc, char** argv){
             _MODEL.Read_parameters_for_dynamics(inp_filename);
 
 
-            /*
+
             cout<<"-------SzSz(qx,qy)-----------"<<endl;
             for(int nx=0;nx<_BASIS.Lx;nx++){
                 for(int ny=0;ny<_BASIS.Ly;ny++){
@@ -163,7 +163,7 @@ int main(int argc, char** argv){
                 vector< double_type >().swap(Vec_Temp);
             }
 
-            */
+
 
 
 

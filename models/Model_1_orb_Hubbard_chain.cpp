@@ -214,7 +214,6 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     string geometry_, Geometry_ = "Geometry = ";
 
     string file_onsite_energies_, File_Onsite_Energies_ = "File_Onsite_Energies = ";
-
     string file_hopping_connections_, File_Hopping_Connections_ = "File_Hopping_Connections = ";
     string file_nonlocal_int_connections_, File_NonLocal_Int_Connections_ = "File_NonLocal_Int_Connections = ";
 
