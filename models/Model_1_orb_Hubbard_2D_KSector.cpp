@@ -47,9 +47,9 @@ void MODEL_1_orb_Hubb_2D_KSector::Add_diagonal_terms(BASIS_1_orb_Hubb_2D_KSector
         //longrange coulomb interaction ni.nj
         for(int site_i=0;site_i<basis.Length;site_i++){
             for(int site_j=0;site_j<basis.Length;site_j++){
-                value += ( bit_value(basis.D_up_basis[i], site_i) +
+                value += NonLocalInteractions_mat[site_i][site_j]*( bit_value(basis.D_up_basis[i], site_i) +
                            bit_value(basis.D_dn_basis[j], site_i) )*
-                        ( bit_value(basis.D_up_basis[i], site_j) -
+                        ( bit_value(basis.D_up_basis[i], site_j) +
                           bit_value(basis.D_dn_basis[j], site_j) );
             }
         }
@@ -154,7 +154,7 @@ void MODEL_1_orb_Hubb_2D_KSector::Add_connections(BASIS_1_orb_Hubb_2D_KSector &b
                     for(int iy_p=0;iy_p<basis.Ly ;iy_p++){
                         site_p=ix_p + (iy_p*basis.Lx);
 
-                        if(Hopping_mat_NN[site_p][site]!=zero)// && Dis_y==0)
+                        if(abs(Hopping_mat_NN[site_p][site])!=0.0)// && Dis_y==0)
                         { // LongRange
                             Hopping_NN=Hopping_mat_NN[site_p][site];
 

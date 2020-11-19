@@ -2,20 +2,20 @@ Model = 1_orb_Hubbard_2D_KSector
 ------------------------------------------
 Geometry = LongRange
 PBC = true
-Lx = 6
-Ly = 1
+Lx = 2
+Ly = 2
 Momentum_nx = 0
 Momentum_ny = 0
-Ndown = 3
-Nup = 3
+Ndown = 2
+Nup = 2
 Hopping_NN = 1.0
 
-U = 10.0
+U = 28.1575
 H_mag = 0
 
 File_Onsite_Energies = somefile
-File_Hopping_Connections = somefile
-File_NonLocal_Int_Connections = somefile
+File_Hopping_Connections = Hoppings_2x2.txt
+File_NonLocal_Int_Connections = Interactions_2x2.txt
 ----------------------------------------
 
 Read_Basis_bool = false
