@@ -5,6 +5,10 @@ This class includes the Model for which Lanczos is being done
 #ifndef HIDDEN
 #include "Model_Spins_Target_Sz.h"
 #include <stdlib.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 using namespace std;
 #define PI 3.14159265
 
@@ -54,6 +58,237 @@ void MODEL_Spins_Target_Sz::Add_non_diagonal_terms(BASIS_Spins_Target_Sz &basis)
 
 }
 
+
+void MODEL_Spins_Target_Sz::Add_connections_new(BASIS_Spins_Target_Sz &basis){
+
+
+
+    Hamil.value.clear();
+    Hamil.nrows = basis.basis_size;
+    Hamil.ncols = Hamil.nrows;
+
+    Mat_1_doub J1_vals, J2_vals, J3_vals;
+    Mat_1_tetra_int J2_sites,J3_sites;
+    Mat_1_intpair J1_sites;
+    pair_int temp_pair_int;
+    tetra_int temp_tetra_int;
+
+    //TERM J1: J1[k][l] x Svec[k].Svec[l] |m>
+    for(int site_k=0;site_k<basis.Length;site_k++){
+        for(int site_l=0;site_l<basis.Length;site_l++){
+            if(J1_mat[site_k][site_l]!=0.0){
+                J1_vals.push_back(one*J1_mat[site_k][site_l]);
+                temp_pair_int.first=site_k;
+                temp_pair_int.second=site_l;
+                J1_sites.push_back(temp_pair_int);
+            }
+        }
+    }
+
+    //TERM J2 and J3
+    for(int site_i=0;site_i<basis.Length;site_i++){
+        for(int site_j=0;site_j<basis.Length;site_j++){
+            for(int site_k=0;site_k<basis.Length;site_k++){
+                for(int site_l=0;site_l<basis.Length;site_l++){
+
+                    if(J2_mat[site_i][site_j][site_k][site_l]!=0.0){
+                        J2_vals.push_back(one*J2_mat[site_i][site_j][site_k][site_l]);
+                        temp_tetra_int.first=site_i;
+                        temp_tetra_int.second=site_j;
+                        temp_tetra_int.third=site_k;
+                        temp_tetra_int.fourth=site_l;
+                        J2_sites.push_back(temp_tetra_int);
+                    }
+
+                    if(J3_mat[site_i][site_j][site_k][site_l]!=0.0){
+                        J3_vals.push_back(one*J2_mat[site_i][site_j][site_k][site_l]);
+                        temp_tetra_int.first=site_i;
+                        temp_tetra_int.second=site_j;
+                        temp_tetra_int.third=site_k;
+                        temp_tetra_int.fourth=site_l;
+                        J3_sites.push_back(temp_tetra_int);
+                    }
+
+                }
+            }
+        }
+    }
+
+
+
+
+
+    Hamiltonian_1_COO Hamil_private;
+    int N_threads=1;
+#ifdef _OPENMP
+    N_threads=no_of_proc;
+#endif
+
+    Hamil_private.resize(N_threads);
+
+
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+#endif
+        int thread_id;
+        ulli dec_m;
+        Mat_1_ullint m_connected_final;
+        Mat_1_doub coeffs_final;
+        Mat_1_ullint m_connected_temp2;
+        Mat_1_doub coeffs_temp2;
+        Mat_1_ullint m_connected_temp3;
+        Mat_1_doub coeffs_temp3;
+        ulli mi,mj;
+        ulli dec_max;
+        int m_new;
+        int n_index;
+        Mat_1_int state_vec;
+        Mat_1_ullint m_connected;
+        Mat_1_doub coeffs;
+        Mat_1_ullint m_connected_temp;
+        Mat_1_doub coeffs_temp;
+        //abort();
+
+#ifdef _OPENMP
+#pragma omp for
+#endif
+        for (int m=0;m<basis.D_basis.size();m++){
+
+            thread_id=0;
+#ifdef _OPENMP
+            thread_id = omp_get_thread_num();
+#endif
+
+            dec_m = basis.D_basis[m];
+            m_connected.clear();
+            coeffs.clear();
+
+
+            //TERM J1: J1[k][l] x Svec[k].Svec[l] |m>
+            for(int site_k=0;site_k<basis.Length;site_k++){
+                for(int site_l=0;site_l<basis.Length;site_l++){
+
+                    if(J1_mat[site_k][site_l]!=0.0){
+                        Act_SiSj(site_k, site_l, dec_m, m_connected_temp, coeffs_temp, basis);
+                        value_multiply_vector(one*J1_mat[site_k][site_l], coeffs_temp);
+                        m_connected.insert(m_connected.end(), m_connected_temp.begin(), m_connected_temp.end());
+                        coeffs.insert(coeffs.end(), coeffs_temp.begin(), coeffs_temp.end());
+                    }
+                }
+            }
+
+
+
+            //TERM J2: J2 [i][j][k][l] X (Svec[i].Svec[j]) X (Svec[k].Svec[l]) |m>
+
+            for(int site_i=0;site_i<basis.Length;site_i++){
+                for(int site_j=0;site_j<basis.Length;site_j++){
+                    for(int site_k=0;site_k<basis.Length;site_k++){
+                        for(int site_l=0;site_l<basis.Length;site_l++){
+                            if(J2_mat[site_i][site_j][site_k][site_l]!=0.0){
+
+                                Act_SiSj(site_k, site_l, dec_m, m_connected_temp, coeffs_temp, basis);
+                                value_multiply_vector(one*J2_mat[site_i][site_j][site_k][site_l], coeffs_temp);
+                                for(int i_=0;i_<m_connected_temp.size();i_++){
+                                    mi = m_connected_temp[i_];
+                                    Act_SiSj(site_i, site_j, mi, m_connected_temp2, coeffs_temp2, basis);
+
+                                    value_multiply_vector(coeffs_temp[i_], coeffs_temp2);
+                                    m_connected.insert(m_connected.end(), m_connected_temp2.begin(), m_connected_temp2.end());
+                                    coeffs.insert(coeffs.end(), coeffs_temp2.begin(), coeffs_temp2.end());
+
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+
+
+
+            //TERM J3: J3 [i][j][k][l] X (Svec[i].Svec[j]) X (Svec[k].Svec[l]) X (Svec[k].Svec[l])|m>
+            for(int site_i=0;site_i<basis.Length;site_i++){
+                for(int site_j=0;site_j<basis.Length;site_j++){
+                    for(int site_k=0;site_k<basis.Length;site_k++){
+                        for(int site_l=0;site_l<basis.Length;site_l++){
+                            if(J3_mat[site_i][site_j][site_k][site_l]!=0.0){
+
+                                Act_SiSj(site_k, site_l, dec_m, m_connected_temp, coeffs_temp, basis);
+                                value_multiply_vector(one*J3_mat[site_i][site_j][site_k][site_l], coeffs_temp);
+                                for(int i_=0;i_<m_connected_temp.size();i_++){
+                                    mi = m_connected_temp[i_];
+                                    Act_SiSj(site_k, site_l, mi, m_connected_temp2, coeffs_temp2, basis);
+                                    value_multiply_vector(coeffs_temp[i_], coeffs_temp2);
+
+                                    for(int j_=0;j_<m_connected_temp2.size();j_++){
+                                        mj = m_connected_temp2[j_];
+                                        Act_SiSj(site_i, site_j, mj, m_connected_temp3, coeffs_temp3, basis);
+                                        value_multiply_vector(coeffs_temp2[j_], coeffs_temp3);
+
+                                        m_connected.insert(m_connected.end(), m_connected_temp3.begin(), m_connected_temp3.end());
+                                        coeffs.insert(coeffs.end(), coeffs_temp3.begin(), coeffs_temp3.end());
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+
+            //remove_repetitions
+            Remove_repetitions(m_connected, coeffs, m_connected_final, coeffs_final);
+
+
+            for(int j=0;j<m_connected_final.size();j++){
+
+                //40sec for L=6
+                //m_new = Find_int_in_intarray(m_connected_final[j], basis.D_basis);
+
+
+                //25sec for L=6
+                fromDeci_to_Vecint(state_vec, basis.BASE,m_connected_final[j] , basis.Length);
+                quicksort(state_vec, 0, state_vec.size() -1);
+                fromVecint_to_Deci(state_vec, basis.BASE, dec_max, basis.Length);
+                n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
+                m_new = Find_int_in_part_of_intarray(m_connected_final[j], basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
+
+
+                if(m_new<=m){
+                    Hamil_private[thread_id].value.push_back(coeffs_final[j]*one);
+                    Hamil_private[thread_id].rows.push_back(m_new);
+                    Hamil_private[thread_id].columns.push_back(m);
+                }
+            }
+
+            if(m%500==0){
+                cout<<m<<" basis done in Hamil construction by thread "<< thread_id <<endl;
+            }
+
+
+        } // m i.e. basis index, columns of H
+
+
+#ifdef _OPENMP
+    }
+#endif
+
+
+   // cout<<"HERE"<<endl;
+    for(int thread=0;thread<N_threads;thread++){
+        Hamil.value.insert(Hamil.value.end(),Hamil_private[thread].value.begin(), Hamil_private[thread].value.end() );
+        Hamil.rows.insert(Hamil.rows.end(),Hamil_private[thread].rows.begin(), Hamil_private[thread].rows.end() );
+        Hamil.columns.insert(Hamil.columns.end(),Hamil_private[thread].columns.begin(), Hamil_private[thread].columns.end() );
+    }
+
+    //assert(false);
+
+}
+
 void MODEL_Spins_Target_Sz::Add_connections(BASIS_Spins_Target_Sz &basis){
 
     Hamil.value.clear();
@@ -72,34 +307,36 @@ void MODEL_Spins_Target_Sz::Add_connections(BASIS_Spins_Target_Sz &basis){
     Mat_1_ullint m_connected_temp3;
     Mat_1_doub coeffs_temp3;
     ulli mi,mj;
-    ulli dec_m, dec_max;
+    ulli dec_max, dec_m;
     int m_new;
     int n_index;
     Mat_1_int state_vec;
 
 
     for (int m=0;m<basis.D_basis.size();m++){
+
         dec_m = basis.D_basis[m];
         m_connected.clear();
         coeffs.clear();
 
-        //TERM J1: J1[i][j] x Svec[i].Svec[j] |m>
-        for(int site_i=0;site_i<basis.Length;site_i++){
-            for(int site_j=0;site_j<basis.Length;site_j++){
 
-                if(J1_mat[site_i][site_j]!=0.0){
-                    Act_SiSj(site_i, site_j, dec_m, m_connected_temp, coeffs_temp, basis);
+        //TERM J1: J1[k][l] x Svec[k].Svec[l] |m>
+        for(int site_k=0;site_k<basis.Length;site_k++){
+            for(int site_l=0;site_l<basis.Length;site_l++){
 
-                    value_multiply_vector(one*J1_mat[site_i][site_j], coeffs_temp);
+                if(J1_mat[site_k][site_l]!=0.0){
+                    Act_SiSj(site_k, site_l, dec_m, m_connected_temp, coeffs_temp, basis);
+                    value_multiply_vector(one*J1_mat[site_k][site_l], coeffs_temp);
                     m_connected.insert(m_connected.end(), m_connected_temp.begin(), m_connected_temp.end());
                     coeffs.insert(coeffs.end(), coeffs_temp.begin(), coeffs_temp.end());
                 }
-
             }
         }
 
 
+
         //TERM J2: J2 [i][j][k][l] X (Svec[i].Svec[j]) X (Svec[k].Svec[l]) |m>
+
         for(int site_i=0;site_i<basis.Length;site_i++){
             for(int site_j=0;site_j<basis.Length;site_j++){
                 for(int site_k=0;site_k<basis.Length;site_k++){
@@ -123,6 +360,7 @@ void MODEL_Spins_Target_Sz::Add_connections(BASIS_Spins_Target_Sz &basis){
                 }
             }
         }
+
 
 
         //TERM J3: J3 [i][j][k][l] X (Svec[i].Svec[j]) X (Svec[k].Svec[l]) X (Svec[k].Svec[l])|m>
@@ -163,12 +401,17 @@ void MODEL_Spins_Target_Sz::Add_connections(BASIS_Spins_Target_Sz &basis){
 
         for(int j=0;j<m_connected_final.size();j++){
 
-            // m_new = Find_int_in_intarray(m_connected_final[j], basis.D_basis);
+            //40sec for L=6
+            //m_new = Find_int_in_intarray(m_connected_final[j], basis.D_basis);
+
+
+            //25sec for L=6
             fromDeci_to_Vecint(state_vec, basis.BASE,m_connected_final[j] , basis.Length);
             quicksort(state_vec, 0, state_vec.size() -1);
             fromVecint_to_Deci(state_vec, basis.BASE, dec_max, basis.Length);
             n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
             m_new = Find_int_in_part_of_intarray(m_connected_final[j], basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
+
 
             if(m_new<=m){
                 Hamil.value.push_back(coeffs_final[j]*one);
@@ -181,7 +424,10 @@ void MODEL_Spins_Target_Sz::Add_connections(BASIS_Spins_Target_Sz &basis){
             cout<<m<<" basis done in Hamil construction"<<endl;
         }
 
+
     } // m i.e. basis index, columns of H
+
+    //assert(false);
 
 }
 

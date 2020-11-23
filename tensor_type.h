@@ -38,6 +38,7 @@ typedef vector<Mat_6_doub> Mat_7_doub;
 
 
 typedef vector<unsigned long long int> Mat_1_ullint;
+typedef vector<Mat_1_ullint> Mat_2_ullint;
 
 
 typedef vector<int> Mat_1_int;

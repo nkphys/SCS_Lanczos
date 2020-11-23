@@ -1,4 +1,4 @@
-Length=4
+Length=6
 t=1.0
 U=40.0
 J=$(echo "${U}*0.25" | bc -l)
@@ -31,9 +31,9 @@ echo "Term_SL=${Term_SL}"
 echo "Term_LL=${Term_LL}"
 
 
-cp J1file_L${Length}.txt J1file_L${Length}_use.txt
-cp J2file_L${Length}.txt J2file_L${Length}_use.txt
-cp J3file_L${Length}.txt J3file_L${Length}_use.txt
+cp J1file_L${Length}.dat J1file_L${Length}_use.txt
+cp J2file_L${Length}.dat J2file_L${Length}_use.txt
+cp J3file_L${Length}.dat J3file_L${Length}_use.txt
 
 sed -i "s/Term_SS/${Term_SS}/g" J1file_L${Length}_use.txt
 sed -i "s/Term_LL/${Term_LL}/g" J1file_L${Length}_use.txt

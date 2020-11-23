@@ -451,7 +451,8 @@ int main(int argc, char** argv){
         _MODEL.Read_parameters(_BASIS, inp_filename);
         _BASIS.Construct_basis();
 
-        _MODEL.Add_connections(_BASIS);
+        _MODEL.no_of_proc = no_of_processors;
+        _MODEL.Add_connections_new(_BASIS);
         //Print_Matrix_COO(_MODEL.Hamil);
 
         LANCZOS _LANCZOS;
@@ -463,11 +464,9 @@ int main(int argc, char** argv){
             _LANCZOS.Write_full_spectrum();
             Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS.txt");
 
+            if(Cheaper_SpinSpincorr){
 
 
-            if(Cheaper_SpinSpincorr==true){
-
-                Matrix_COO OPR_;
                 for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
                     cout<<"Spin-Spin correlations for state = "<<state_<<endl;
 
@@ -486,22 +485,32 @@ int main(int argc, char** argv){
                         sum_=0.0;
                         cout<<opr_type_[type]<<": "<<endl;
 
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
                         for(int site1=0;site1<_BASIS.Length;site1++){
                             for(int site2=site1;site2<_BASIS.Length;site2++){
+
+                                Matrix_COO OPR_;
                                 OPR_.columns.clear();
                                 OPR_.rows.clear();
                                 OPR_.value.clear();
                                 _MODEL.Initialize_two_point_operator_sites_specific(opr_type_[type] , OPR_, site1, site2, _BASIS);
 
                                 Corr_[site1][site2]=_LANCZOS.Measure_observable(OPR_, state_);
-                                if(site1 != site2){
-                                    Corr_[site2][site1]=Corr_[site1][site2];
-                                }
+//                                if(site1 != site2){
+//                                    Corr_[site2][site1]=Corr_[site1][site2];
+//                                }
                                 vector< int >().swap( OPR_.columns );
                                 vector< int >().swap( OPR_.rows );
                                 vector< double_type >().swap( OPR_.value );
                             }
                         }
+                        for(int site1=0;site1<_BASIS.Length;site1++){
+                            for(int site2=site1+1;site2<_BASIS.Length;site2++){
+                                Corr_[site2][site1]=Corr_[site1][site2];
+                            }}
+
                         cout<<scientific<<setprecision(4);
                         for(int site1=0;site1<_BASIS.Length;site1++){
                             for(int site2=0;site2<_BASIS.Length;site2++){

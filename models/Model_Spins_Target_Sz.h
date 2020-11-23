@@ -19,6 +19,7 @@ public:
     Mat_1_real D_anisotropy;
     bool PBC;
     Matrix_COO Hamil;
+    int no_of_proc;
 
     Mat_1_string one_point_obs;
     Hamiltonian_2_COO One_point_oprts;
@@ -52,6 +53,7 @@ void Read_parameters(BASIS_Spins_Target_Sz &basis, string filename);
 void Add_diagonal_terms(BASIS_Spins_Target_Sz &basis);
 void Add_non_diagonal_terms(BASIS_Spins_Target_Sz &basis);
 void Add_connections(BASIS_Spins_Target_Sz &basis);
+void Add_connections_new(BASIS_Spins_Target_Sz &basis);
 void Read_parameters_for_dynamics(string filename);
 void Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &basis, int site);
 void Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &basis);
