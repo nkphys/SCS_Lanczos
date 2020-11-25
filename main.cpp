@@ -255,7 +255,21 @@ int main(int argc, char** argv){
                 vector< int >().swap( OPR_.rows );
                 vector< double_type >().swap( OPR_.value );
 
-                cout<<"Chirality Z-component i.e. 4*IM[<GS|Sz(i)S+(j)S-(l)|GS>] [read only Imag part] = "<<4.0*(Value_ChiralityZ)<<endl;
+                cout<<"Chirality UP_TRAINGLE Z-component i.e. 4*IM[<GS|Sz(i)S+(j)S-(l)|GS>] [read only Imag part] = "<<4.0*(Value_ChiralityZ)<<endl;
+
+
+
+                sitejx=0;sitejy=1;
+                sitelx=1;sitely=1;
+                _MODEL.Initialize_three_point_operator_sites_specific("SzSpSm" , OPR_, sitejx, sitejy, sitelx, sitely, _BASIS);
+
+                Value_ChiralityZ=_LANCZOS.Measure_observable(OPR_, state_);
+
+                vector< int >().swap( OPR_.columns );
+                vector< int >().swap( OPR_.rows );
+                vector< double_type >().swap( OPR_.value );
+
+                cout<<"Chirality DOWN_TRAINGLE Z-component i.e. 4*IM[<GS|Sz(i)S+(j)S-(l)|GS>] [read only Imag part] = "<<4.0*(Value_ChiralityZ)<<endl;
 
 
             }
