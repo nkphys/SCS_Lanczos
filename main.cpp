@@ -84,7 +84,7 @@ int main(int argc, char** argv){
     if(model_name=="1_orb_Hubbard_2D_KSector"){
 
 
-        bool Hamil_construct=false; //false also stops GS Lanczos Run and reads the GS vec
+        bool Hamil_construct=true; //false also stops GS Lanczos Run and reads the GS vec
         MODEL_1_orb_Hubb_2D_KSector _MODEL;
         BASIS_1_orb_Hubb_2D_KSector _BASIS;
 
@@ -190,6 +190,7 @@ int main(int argc, char** argv){
                 double_type sum_;
                 Mat_1_string opr_type_;
                 opr_type_.push_back("SzSz");
+                opr_type_.push_back("SpSm");
 
                 Mat_2_doub Corr_;
                 Corr_.resize(_BASIS.Lx);
@@ -197,7 +198,8 @@ int main(int argc, char** argv){
                     Corr_[site1].resize(_BASIS.Ly);
                 }
 
-                for(int type=0;type<opr_type_.size();type++){
+                for(int type=0;type<opr_type_.size();type++)
+                {
                     sum_=0.0;
                     cout<<opr_type_[type]<<": "<<endl;
 
@@ -221,7 +223,7 @@ int main(int argc, char** argv){
                         }
                     }
 
-                    cout<<"site_x    site_y    <Sz[0,0]Sz[0+site_x,0+site_y]>"<<endl;
+                    cout<<"site_x    site_y    <O[0,0]O[0+site_x,0+site_y]>"<<endl;
                     cout<<scientific<<setprecision(20);
                     for(int sitex=0;sitex<_BASIS.Lx;sitex++){
                         for(int sitey=0;sitey<_BASIS.Ly;sitey++){
@@ -233,6 +235,27 @@ int main(int argc, char** argv){
                     }
                     cout<<"sum = "<<sum_<<endl;
                 }
+
+
+               //Chirality Si.(Sj x Sk)
+               //z-component = 4* Im(<GS|Sz(i)S+(j)S-(l)|GS>)
+                 Matrix_COO OPR_;
+                 double_type Value_ChiralityZ;
+                OPR_.columns.clear();
+                OPR_.rows.clear();
+                OPR_.value.clear();
+                int sitejx, sitejy, sitelx, sitely;
+                sitejx=0;sitejy=1;
+                sitelx=1;sitely=0;
+                _MODEL.Initialize_three_point_operator_sites_specific("SzSpSm" , OPR_, sitejx, sitejy, sitelx, sitely, _BASIS);
+
+                Value_ChiralityZ=_LANCZOS.Measure_observable(OPR_, state_);
+
+                vector< int >().swap( OPR_.columns );
+                vector< int >().swap( OPR_.rows );
+                vector< double_type >().swap( OPR_.value );
+
+                cout<<"Chirality Z-component i.e. 4*IM[<GS|Sz(i)S+(j)S-(l)|GS>] [read only Imag part] = "<<4.0*(Value_ChiralityZ)<<endl;
 
 
             }

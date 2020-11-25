@@ -1269,12 +1269,13 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_two_point_operator_sites_specific(s
     OPR_.nrows = basis.D_up_basis.size();
     OPR_.ncols = OPR_.nrows;
 
-    double value;
-    int m,j;
-    int site, site_p;
-    int ix_p,iy_p;
 
     if(opr_type=="SzSz"){
+        double value;
+        int m,j;
+        int site, site_p;
+        int ix_p,iy_p;
+
         OPR_.value.clear();
         OPR_.rows.clear();
         OPR_.columns.clear();
@@ -1282,7 +1283,6 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_two_point_operator_sites_specific(s
 
             m=i;
             j=i;
-
             value=0;
 
             for(int ix=0;ix<basis.Lx ;ix++){
@@ -1313,8 +1313,513 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_two_point_operator_sites_specific(s
     }
 
 
+
+
+    if(opr_type=="SpSm"){
+
+        double value;
+        int m,j;
+        int D_up,D_dn;
+        int i_new;
+        int m_new;
+        double sign_FM;
+        int sign_pow_dn_orb0, sign_pow_dn_orb1, sign_pow_up_orb0, sign_pow_up_orb1;
+        int sign_pow_up, sign_pow_dn;
+        int sign_pow_up_Xtrans, sign_pow_dn_Xtrans;
+        int l,lp;
+        int range_min, range_max;
+        bool row_found_;
+        double_type phase_;
+        int Inv_Trnsltns_x_, Inv_Trnsltns_y_ ;
+        complex<double> iota_(0.0,1.0);
+        int D_up_temp ,D_dn_temp;
+        int D_up_temp_Xtrans ,D_dn_temp_Xtrans;
+        bool repeating_rows;
+        int row_counter;
+        int check_min, check_max;
+        int site, site_p;
+        int Lxm1, Lym1;
+        int ix_p,iy_p;
+        Lxm1=basis.Lx-1;
+        Lym1=basis.Ly-1;
+
+        OPR_.value.clear();
+        OPR_.rows.clear();
+        OPR_.columns.clear();
+        for (int i=0;i<basis.D_up_basis.size();i++){
+
+            m=i;
+            j=i;
+
+            value=0;
+            row_counter=0;
+
+
+            for(int ix=0;ix<basis.Lx ;ix++){
+                for(int iy=0;iy<basis.Ly ;iy++){
+                    site=ix + (iy*basis.Lx);
+
+                    ix_p = (ix + site_x)%basis.Lx;
+                    iy_p = (iy + site_y)%basis.Ly;
+                    site_p=ix_p + (iy_p*basis.Lx);
+
+
+
+                    //---------------Sp[site]Sm[site_p]-------------------//
+
+
+                    //---------------Hopping for up electrons-------------------//
+                    //there have to be only one electron in site with down spin
+                    //there have to be only one electron in site_p with up spin
+                    bool SpSm_allowed;
+
+                    if(site!=site_p){
+                    SpSm_allowed = (bit_value(basis.D_dn_basis[i],site)==1) && (bit_value(basis.D_up_basis[i],site)==0)
+                            && (bit_value(basis.D_up_basis[i],site_p)==1) && (bit_value(basis.D_dn_basis[i],site_p)==0);
+                   }
+                    else{
+                    SpSm_allowed = (bit_value(basis.D_up_basis[i],site)==1) && (bit_value(basis.D_dn_basis[i],site)==0);
+                    }
+
+                    if(SpSm_allowed)
+                    {
+
+                        sign_pow_up=0;
+                        sign_pow_dn=0;
+
+                        D_up = (int) (basis.D_up_basis[i] - pow(2, site_p)
+                                      + pow(2,site) );
+                        D_dn = (int) (basis.D_dn_basis[i] + pow(2, site_p)
+                                      - pow(2,site) ) ;
+
+                        D_up_temp=D_up;
+                        D_dn_temp=D_dn;
+                        row_found_=false;
+
+                        for(int inv_trnsltns_x=0;inv_trnsltns_x<basis.Lx;inv_trnsltns_x++){
+                            if(inv_trnsltns_x>0 && basis.Lx>1){
+
+                                for(int iy_=0;iy_<basis.Ly;iy_++){
+
+                                    //Inv Translation on spin_dn
+                                    sign_pow_dn_orb0 = one_bits_in_bw(iy_*basis.Lx, (iy_+1)*basis.Lx - 1, D_dn_temp) +
+                                            1*bit_value(D_dn_temp,iy_*basis.Lx);
+                                    if(bit_value(D_dn_temp, (iy_+1)*basis.Lx - 1 )==1){
+                                        sign_pow_dn += 1*sign_pow_dn_orb0;
+                                    }
+
+                                    D_dn_temp = Act_Translation_2D_alongX_assuming_PBC(D_dn_temp,basis.Lx, basis.Ly, iy_);
+
+                                    //Inv Translation on spin_up
+                                    sign_pow_up_orb0 = one_bits_in_bw(iy_*basis.Lx, (iy_+1)*basis.Lx - 1, D_up_temp) +
+                                            1*bit_value(D_up_temp,iy_*basis.Lx);
+                                    if(bit_value(D_up_temp, (iy_+1)*basis.Lx - 1)==1){
+                                        sign_pow_up += 1*sign_pow_up_orb0;
+                                    }
+
+                                    D_up_temp = Act_Translation_2D_alongX_assuming_PBC(D_up_temp,basis.Lx, basis.Ly, iy_);
+
+                                }
+                            }
+                            D_dn_temp_Xtrans = D_dn_temp;
+                            D_up_temp_Xtrans = D_up_temp;
+                            sign_pow_up_Xtrans = sign_pow_up;
+                            sign_pow_dn_Xtrans = sign_pow_dn;
+                            for(int inv_trnsltns_y=0;inv_trnsltns_y<basis.Ly;inv_trnsltns_y++){
+
+
+                                if(inv_trnsltns_y>0 && basis.Ly>1){
+
+                                    for(int ix_=0;ix_<basis.Lx;ix_++){
+
+                                        //Inv Translation on spin_dn
+                                        for(int iy_=0;iy_<basis.Ly-1;iy_++){
+                                            sign_pow_dn_orb0 = one_bits_in_bw(ix_ + iy_*basis.Lx, ix_ + (iy_+1)*basis.Lx, D_dn_temp);
+                                            sign_pow_dn_orb0 = sign_pow_dn_orb0*bit_value(D_dn_temp, ix_ + iy_*basis.Lx);
+
+                                            sign_pow_dn += sign_pow_dn_orb0;
+                                        }
+                                        sign_pow_dn_orb0 = one_bits_in_bw(ix_, ix_ + (basis.Ly-1)*basis.Lx, D_dn_temp) +
+                                                bit_value(D_dn_temp, ix_) ;
+                                        sign_pow_dn_orb0 = sign_pow_dn_orb0*bit_value(D_dn_temp, ix_ + (basis.Ly-1)*basis.Lx);
+                                        sign_pow_dn += sign_pow_dn_orb0;
+
+                                        D_dn_temp = Act_Translation_2D_alongY_assuming_PBC(D_dn_temp,basis.Lx, basis.Ly, ix_);
+
+
+
+                                        //Inv Translation on spin_up
+                                        for(int iy_=0;iy_<basis.Ly-1;iy_++){
+                                            sign_pow_up_orb0 = one_bits_in_bw(ix_ + iy_*basis.Lx, ix_ + (iy_+1)*basis.Lx, D_up_temp);
+                                            sign_pow_up_orb0 = sign_pow_up_orb0*bit_value(D_up_temp, ix_ + iy_*basis.Lx);
+
+                                            sign_pow_up += sign_pow_up_orb0;
+                                        }
+                                        sign_pow_up_orb0 = one_bits_in_bw(ix_, ix_ + (basis.Ly-1)*basis.Lx, D_up_temp) +
+                                                bit_value(D_up_temp, ix_) ;
+                                        sign_pow_up_orb0 = sign_pow_up_orb0*bit_value(D_up_temp, ix_ + (basis.Ly-1)*basis.Lx);
+                                        sign_pow_up += sign_pow_up_orb0;
+
+                                        D_up_temp = Act_Translation_2D_alongY_assuming_PBC(D_up_temp,basis.Lx, basis.Ly, ix_);
+
+                                    }
+                                }
+
+
+                                if(D_up_temp>=basis.Dup_Range.size())
+                                {
+                                    row_found_=false;
+                                }
+                                else
+                                {
+                                    assert(D_up_temp<basis.Dup_Range.size());
+                                    range_min=basis.Dup_Range[D_up_temp].first;
+                                    range_max=basis.Dup_Range[D_up_temp].second;
+                                    if(range_min==-1)
+                                    {
+                                        row_found_=false;
+                                        assert(range_max==-1);
+                                    }
+                                    else
+                                    {
+                                        i_new = Find_int_in_part_of_intarray(D_dn_temp, basis.D_dn_basis, range_min, range_max);
+                                        if(i_new==-1){
+                                            row_found_=false;
+                                        }
+                                        else{
+                                            row_found_=true;
+                                            Inv_Trnsltns_x_=inv_trnsltns_x;
+                                            Inv_Trnsltns_y_=inv_trnsltns_y;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if(row_found_){break;}
+
+                            D_up_temp=D_up_temp_Xtrans ;
+                            D_dn_temp=D_dn_temp_Xtrans ;
+                            sign_pow_up = sign_pow_up_Xtrans;
+                            sign_pow_dn = sign_pow_dn_Xtrans;
+                        }
+
+
+                        if(row_found_==true){
+                            m_new = i_new;
+
+#ifdef USE_COMPLEX
+                            phase_=exp(-1.0*iota_*( ((2.0*PI*Inv_Trnsltns_x_*basis.Momentum_nx)/(basis.Lx)) + ((2.0*PI*Inv_Trnsltns_y_*basis.Momentum_ny)/(basis.Ly))   )
+                                       )
+                                    *sqrt((1.0*basis.D_Norm[m_new])/(1.0*basis.D_Norm[m]));
+#endif
+#ifndef USE_COMPLEX
+                            if( !(basis.Momentum_nx==0 && basis.Momentum_ny==0) ){
+                                cout<<"ONLY Kx=0,Ky=0 is allowed in real space calculations"<<endl;
+                            }
+                            assert(basis.Momentum_nx==0 && basis.Momentum_ny==0);
+                            phase_=one*sqrt((1.0*basis.D_Norm[m_new])/(1.0*basis.D_Norm[m]));
+#endif
+
+                            sign_pow_up += one_bits_in_bw(site,site_p,basis.D_up_basis[i]);
+                            sign_pow_dn += one_bits_in_bw(site,site_p,basis.D_dn_basis[i]); //may be +1 is needed here
+
+                            sign_FM = pow(-1.0, sign_pow_up+sign_pow_dn);
+
+
+                            repeating_rows=false;
+                            check_min=OPR_.rows.size()-1;
+                            check_max=(OPR_.rows.size()-1)-row_counter;
+                            // cout<<check_min<<endl;
+                            // cout<<check_max<<endl;
+                            for(int check_=check_min;check_>check_max;check_--){
+                                if(OPR_.rows[check_]==m_new && OPR_.columns[check_]==m){
+                                    OPR_.value[check_] +=1.0*sign_FM*one*phase_*(1.0/(basis.Lx*basis.Ly));
+                                    repeating_rows=true;
+                                    break;
+                                }
+                            }
+
+                            if(!repeating_rows){
+                                OPR_.value.push_back(1.0*sign_FM*one*phase_*(1.0/(basis.Lx*basis.Ly)));
+                                OPR_.rows.push_back(m_new);
+                                OPR_.columns.push_back(m);
+                                row_counter++;
+                            }
+
+                        }
+
+                    }
+
+                } //iy
+            } // ix
+
+
+
+        } // "i" i.e up_decimals
+
+    }
+
+
 }
 
+void MODEL_1_orb_Hubb_2D_KSector::Initialize_three_point_operator_sites_specific(string opr_type  , Matrix_COO &OPR_, int sitejx, int sitejy, int sitelx, int sitely, BASIS_1_orb_Hubb_2D_KSector &basis){
+
+    OPR_.nrows = basis.D_up_basis.size();
+    OPR_.ncols = OPR_.nrows;
+
+
+    if(opr_type=="SzSpSm"){
+
+        assert ( ((sitejx*sitejx) + (sitejy*sitejy)) !=0 );
+        assert ( ((sitelx*sitelx) + (sitely*sitely)) !=0 );
+
+        assert (  !((sitejx==sitelx) && (sitejy==sitely))    );
+        double value;
+        int m,j;
+        int D_up,D_dn;
+        int i_new;
+        int m_new;
+        double sign_FM;
+        int sign_pow_dn_orb0, sign_pow_dn_orb1, sign_pow_up_orb0, sign_pow_up_orb1;
+        int sign_pow_up, sign_pow_dn;
+        int sign_pow_up_Xtrans, sign_pow_dn_Xtrans;
+        int l,lp;
+        int range_min, range_max;
+        bool row_found_;
+        double_type phase_;
+        double Sz_value;
+        int Inv_Trnsltns_x_, Inv_Trnsltns_y_ ;
+        complex<double> iota_(0.0,1.0);
+        int D_up_temp ,D_dn_temp;
+        int D_up_temp_Xtrans ,D_dn_temp_Xtrans;
+        bool repeating_rows;
+        int row_counter;
+        int check_min, check_max;
+        int site, site_j, site_l;
+        int Lxm1, Lym1;
+        int ix_j,iy_j;
+        int ix_l,iy_l;
+        Lxm1=basis.Lx-1;
+        Lym1=basis.Ly-1;
+
+        OPR_.value.clear();
+        OPR_.rows.clear();
+        OPR_.columns.clear();
+        for (int i=0;i<basis.D_up_basis.size();i++){
+
+            m=i;
+            j=i;
+
+            value=0;
+            row_counter=0;
+
+
+            for(int ix=0;ix<basis.Lx ;ix++){
+                for(int iy=0;iy<basis.Ly ;iy++){
+                    site=ix + (iy*basis.Lx);
+                    Sz_value = 0.5*(bit_value(basis.D_up_basis[i], site) - bit_value(basis.D_dn_basis[j], site) );
+
+                    ix_j = (ix + sitejx)%basis.Lx;
+                    iy_j = (iy + sitejy)%basis.Ly;
+                    site_j=ix_j + (iy_j*basis.Lx);
+
+                    ix_l = (ix + sitelx)%basis.Lx;
+                    iy_l = (iy + sitely)%basis.Ly;
+                    site_l=ix_l + (iy_l*basis.Lx);
+
+
+
+                    //---------------Sz[site]Sp[site_j]Sm[site_l]-------------------//
+
+
+                    //---------------Hopping for up electrons-------------------//
+                    //there have to be only one electron in site_l with up spin
+                    //there have to be only one electron in site_j with down spin
+                    bool SpSm_allowed;
+
+                    SpSm_allowed = (bit_value(basis.D_dn_basis[i],site_j)==1) && (bit_value(basis.D_up_basis[i],site_j)==0)
+                            && (bit_value(basis.D_up_basis[i],site_l)==1) && (bit_value(basis.D_dn_basis[i],site_l)==0);
+
+                    if(SpSm_allowed)
+                    {
+
+                        sign_pow_up=0;
+                        sign_pow_dn=0;
+
+                        D_up = (int) (basis.D_up_basis[i] - pow(2, site_l)
+                                      + pow(2,site_j) );
+                        D_dn = (int) (basis.D_dn_basis[i] + pow(2, site_l)
+                                      - pow(2,site_j) ) ;
+
+                        D_up_temp=D_up;
+                        D_dn_temp=D_dn;
+                        row_found_=false;
+
+                        for(int inv_trnsltns_x=0;inv_trnsltns_x<basis.Lx;inv_trnsltns_x++){
+                            if(inv_trnsltns_x>0 && basis.Lx>1){
+
+                                for(int iy_=0;iy_<basis.Ly;iy_++){
+
+                                    //Inv Translation on spin_dn
+                                    sign_pow_dn_orb0 = one_bits_in_bw(iy_*basis.Lx, (iy_+1)*basis.Lx - 1, D_dn_temp) +
+                                            1*bit_value(D_dn_temp,iy_*basis.Lx);
+                                    if(bit_value(D_dn_temp, (iy_+1)*basis.Lx - 1 )==1){
+                                        sign_pow_dn += 1*sign_pow_dn_orb0;
+                                    }
+
+                                    D_dn_temp = Act_Translation_2D_alongX_assuming_PBC(D_dn_temp,basis.Lx, basis.Ly, iy_);
+
+                                    //Inv Translation on spin_up
+                                    sign_pow_up_orb0 = one_bits_in_bw(iy_*basis.Lx, (iy_+1)*basis.Lx - 1, D_up_temp) +
+                                            1*bit_value(D_up_temp,iy_*basis.Lx);
+                                    if(bit_value(D_up_temp, (iy_+1)*basis.Lx - 1)==1){
+                                        sign_pow_up += 1*sign_pow_up_orb0;
+                                    }
+
+                                    D_up_temp = Act_Translation_2D_alongX_assuming_PBC(D_up_temp,basis.Lx, basis.Ly, iy_);
+
+                                }
+                            }
+                            D_dn_temp_Xtrans = D_dn_temp;
+                            D_up_temp_Xtrans = D_up_temp;
+                            sign_pow_up_Xtrans = sign_pow_up;
+                            sign_pow_dn_Xtrans = sign_pow_dn;
+                            for(int inv_trnsltns_y=0;inv_trnsltns_y<basis.Ly;inv_trnsltns_y++){
+
+
+                                if(inv_trnsltns_y>0 && basis.Ly>1){
+
+                                    for(int ix_=0;ix_<basis.Lx;ix_++){
+
+                                        //Inv Translation on spin_dn
+                                        for(int iy_=0;iy_<basis.Ly-1;iy_++){
+                                            sign_pow_dn_orb0 = one_bits_in_bw(ix_ + iy_*basis.Lx, ix_ + (iy_+1)*basis.Lx, D_dn_temp);
+                                            sign_pow_dn_orb0 = sign_pow_dn_orb0*bit_value(D_dn_temp, ix_ + iy_*basis.Lx);
+
+                                            sign_pow_dn += sign_pow_dn_orb0;
+                                        }
+                                        sign_pow_dn_orb0 = one_bits_in_bw(ix_, ix_ + (basis.Ly-1)*basis.Lx, D_dn_temp) +
+                                                bit_value(D_dn_temp, ix_) ;
+                                        sign_pow_dn_orb0 = sign_pow_dn_orb0*bit_value(D_dn_temp, ix_ + (basis.Ly-1)*basis.Lx);
+                                        sign_pow_dn += sign_pow_dn_orb0;
+
+                                        D_dn_temp = Act_Translation_2D_alongY_assuming_PBC(D_dn_temp,basis.Lx, basis.Ly, ix_);
+
+
+
+                                        //Inv Translation on spin_up
+                                        for(int iy_=0;iy_<basis.Ly-1;iy_++){
+                                            sign_pow_up_orb0 = one_bits_in_bw(ix_ + iy_*basis.Lx, ix_ + (iy_+1)*basis.Lx, D_up_temp);
+                                            sign_pow_up_orb0 = sign_pow_up_orb0*bit_value(D_up_temp, ix_ + iy_*basis.Lx);
+
+                                            sign_pow_up += sign_pow_up_orb0;
+                                        }
+                                        sign_pow_up_orb0 = one_bits_in_bw(ix_, ix_ + (basis.Ly-1)*basis.Lx, D_up_temp) +
+                                                bit_value(D_up_temp, ix_) ;
+                                        sign_pow_up_orb0 = sign_pow_up_orb0*bit_value(D_up_temp, ix_ + (basis.Ly-1)*basis.Lx);
+                                        sign_pow_up += sign_pow_up_orb0;
+
+                                        D_up_temp = Act_Translation_2D_alongY_assuming_PBC(D_up_temp,basis.Lx, basis.Ly, ix_);
+
+                                    }
+                                }
+
+
+                                if(D_up_temp>=basis.Dup_Range.size())
+                                {
+                                    row_found_=false;
+                                }
+                                else
+                                {
+                                    assert(D_up_temp<basis.Dup_Range.size());
+                                    range_min=basis.Dup_Range[D_up_temp].first;
+                                    range_max=basis.Dup_Range[D_up_temp].second;
+                                    if(range_min==-1)
+                                    {
+                                        row_found_=false;
+                                        assert(range_max==-1);
+                                    }
+                                    else
+                                    {
+                                        i_new = Find_int_in_part_of_intarray(D_dn_temp, basis.D_dn_basis, range_min, range_max);
+                                        if(i_new==-1){
+                                            row_found_=false;
+                                        }
+                                        else{
+                                            row_found_=true;
+                                            Inv_Trnsltns_x_=inv_trnsltns_x;
+                                            Inv_Trnsltns_y_=inv_trnsltns_y;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if(row_found_){break;}
+
+                            D_up_temp=D_up_temp_Xtrans ;
+                            D_dn_temp=D_dn_temp_Xtrans ;
+                            sign_pow_up = sign_pow_up_Xtrans;
+                            sign_pow_dn = sign_pow_dn_Xtrans;
+                        }
+
+
+                        if(row_found_==true){
+                            m_new = i_new;
+
+#ifdef USE_COMPLEX
+                            phase_=exp(-1.0*iota_*( ((2.0*PI*Inv_Trnsltns_x_*basis.Momentum_nx)/(basis.Lx)) + ((2.0*PI*Inv_Trnsltns_y_*basis.Momentum_ny)/(basis.Ly))   )
+                                       )
+                                    *sqrt((1.0*basis.D_Norm[m_new])/(1.0*basis.D_Norm[m]));
+#endif
+#ifndef USE_COMPLEX
+                            if( !(basis.Momentum_nx==0 && basis.Momentum_ny==0) ){
+                                cout<<"ONLY Kx=0,Ky=0 is allowed in real space calculations"<<endl;
+                            }
+                            assert(basis.Momentum_nx==0 && basis.Momentum_ny==0);
+                            phase_=one*sqrt((1.0*basis.D_Norm[m_new])/(1.0*basis.D_Norm[m]));
+#endif
+
+                            sign_pow_up += one_bits_in_bw(site_j,site_l,basis.D_up_basis[i]);
+                            sign_pow_dn += one_bits_in_bw(site_j,site_l,basis.D_dn_basis[i]); //may be +1 is needed here
+
+                            sign_FM = pow(-1.0, sign_pow_up+sign_pow_dn);
+
+
+                            repeating_rows=false;
+                            check_min=OPR_.rows.size()-1;
+                            check_max=(OPR_.rows.size()-1)-row_counter;
+                            // cout<<check_min<<endl;
+                            // cout<<check_max<<endl;
+                            for(int check_=check_min;check_>check_max;check_--){
+                                if(OPR_.rows[check_]==m_new && OPR_.columns[check_]==m){
+                                    OPR_.value[check_] +=1.0*sign_FM*Sz_value*one*phase_*(1.0/(basis.Lx*basis.Ly));
+                                    repeating_rows=true;
+                                    break;
+                                }
+                            }
+
+                            if(!repeating_rows){
+                                OPR_.value.push_back(1.0*sign_FM*one*Sz_value*phase_*(1.0/(basis.Lx*basis.Ly)));
+                                OPR_.rows.push_back(m_new);
+                                OPR_.columns.push_back(m);
+                                row_counter++;
+                            }
+
+                        }
+
+                    }
+
+                } //iy
+            } // ix
+
+
+
+        } // "i" i.e up_decimals
+
+    }
+
+
+}
 
 void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &basis, string filename){
 

@@ -10,7 +10,7 @@ Ndown = 2
 Nup = 2
 Hopping_NN = 1.0
 
-U = 100.0
+U = 10
 H_mag = 0
 
 File_Onsite_Energies = somefile
