@@ -10,7 +10,7 @@ Nup = 2
  
 Hopping = 1.0
 Hopping_NN = 0.0
-U = 10.0
+U = 100.0
 H_mag = 0
 File_Onsite_Energies = false onsite_ener.txt
 File_Hopping_Connections = Hoppings_2x2_old.txt

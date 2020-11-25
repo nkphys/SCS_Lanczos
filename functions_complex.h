@@ -36,6 +36,7 @@ int Find_int_in_part_of_intarray(int num, Mat_1_int &array, int min_i, int max_i
 int Find_int_in_part_of_intarray(ulli num, Mat_1_ullint &array, int min_i, int max_i);
 void Print_Matrix_COO(Matrix_COO &A);
 void Print_vector_in_file(Mat_1_doub vec, string filename);
+void Print_file_in_vector(Mat_1_doub &vec, string filename , int rows);
 void Diagonalize(Matrix_COO &X, double & EG, Mat_1_doub & vecG);
 void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_1_doub & vecG);
 void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_2_doub & vecs);

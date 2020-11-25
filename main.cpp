@@ -82,59 +82,78 @@ int main(int argc, char** argv){
 
 
     if(model_name=="1_orb_Hubbard_2D_KSector"){
+
+
+        bool Hamil_construct=false; //false also stops GS Lanczos Run and reads the GS vec
         MODEL_1_orb_Hubb_2D_KSector _MODEL;
         BASIS_1_orb_Hubb_2D_KSector _BASIS;
 
         _MODEL.Read_parameters(_BASIS, inp_filename);
         _BASIS.Construct_basis();
 
-        _MODEL.Add_diagonal_terms(_BASIS);
 
-
-        _MODEL.Add_connections(_BASIS);
-
-
-
-        //Print_Matrix_COO(_MODEL.Hamil);
+        if(Hamil_construct){
+            _MODEL.Add_diagonal_terms(_BASIS);
+            _MODEL.Add_connections(_BASIS);
+            //Print_Matrix_COO(_MODEL.Hamil);
+        }
 
 
 
         if(! (Static_Finite_Temp || Dynamics_Finite_Temp) ){
-            if(_MODEL.Hamil.nrows<700){
-                DO_FULL_DIAGONALIZATION=true;
-            }
-            else{
-                DO_FULL_DIAGONALIZATION=false;
-            }
-            if(DO_FULL_DIAGONALIZATION==true){
-                double EG;
-                Mat_1_real Evals_temp;
-                Mat_1_doub vecG;
-                Diagonalize(_MODEL.Hamil, Evals_temp, vecG);
-                cout<<"GS energy from ED(without Lanczos) = "<<Evals_temp[0]<<endl;
-                cout<<"All eigenvalues using ED------------------------------"<<endl;
-                cout<<"-------------------------------------------------------"<<endl;
-                for(int i=0;i<Evals_temp.size();i++){
-                    cout<<i<<"  "<<Evals_temp[i]<<endl;
-                }
-                cout<<"-------------------------------------------------------"<<endl;
-                cout<<"-------------------------------------------------------"<<endl;
-            }
 
 
-            //assert(false);
             LANCZOS _LANCZOS;
             _LANCZOS.Dynamics_performed=false;
             _LANCZOS.Read_Lanczos_parameters(inp_filename);
 
-            _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
 
+            if(Hamil_construct){
+
+                if(_MODEL.Hamil.nrows<700){
+                    DO_FULL_DIAGONALIZATION=true;
+                }
+                else{
+                    DO_FULL_DIAGONALIZATION=false;
+                }
+                if(DO_FULL_DIAGONALIZATION==true){
+                    double EG;
+                    Mat_1_real Evals_temp;
+                    Mat_1_doub vecG;
+                    Diagonalize(_MODEL.Hamil, Evals_temp, vecG);
+                    cout<<"GS energy from ED(without Lanczos) = "<<Evals_temp[0]<<endl;
+                    cout<<"All eigenvalues using ED------------------------------"<<endl;
+                    cout<<"-------------------------------------------------------"<<endl;
+                    for(int i=0;i<Evals_temp.size();i++){
+                        cout<<i<<"  "<<Evals_temp[i]<<endl;
+                    }
+                    cout<<"-------------------------------------------------------"<<endl;
+                    cout<<"-------------------------------------------------------"<<endl;
+                }
+
+
+                //assert(false);
+
+
+
+                _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
+                Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS.txt");
+            }
+            else{ //READ GS from file
+                Print_file_in_vector(_LANCZOS.Eig_vec, "seed_GS.txt", _BASIS.D_up_basis.size());
+                Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS_new.txt");
+
+                _LANCZOS.Eig_vecs.resize(1);
+                _LANCZOS.Eig_vecs[0]=_LANCZOS.Eig_vec;
+            }
 
             _MODEL.Read_parameters_for_dynamics(inp_filename);
 
 
-
+            cout<<scientific<<setprecision(20);
             cout<<"-------SzSz(qx,qy)-----------"<<endl;
+
+
             for(int nx=0;nx<_BASIS.Lx;nx++){
                 for(int ny=0;ny<_BASIS.Ly;ny++){
                     _MODEL.Dyn_Momentum_x = nx;
@@ -165,22 +184,58 @@ int main(int argc, char** argv){
 
 
 
+            for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
+                cout<<"Spin-Spin correlations for state = "<<state_<<endl;
+
+                double_type sum_;
+                Mat_1_string opr_type_;
+                opr_type_.push_back("SzSz");
+
+                Mat_2_doub Corr_;
+                Corr_.resize(_BASIS.Lx);
+                for(int site1=0;site1<_BASIS.Lx;site1++){
+                    Corr_[site1].resize(_BASIS.Ly);
+                }
+
+                for(int type=0;type<opr_type_.size();type++){
+                    sum_=0.0;
+                    cout<<opr_type_[type]<<": "<<endl;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
+                    for(int sitex=0;sitex<_BASIS.Lx;sitex++){
+                        for(int sitey=0;sitey<_BASIS.Ly;sitey++){
+
+                            Matrix_COO OPR_;
+                            OPR_.columns.clear();
+                            OPR_.rows.clear();
+                            OPR_.value.clear();
+                            _MODEL.Initialize_two_point_operator_sites_specific(opr_type_[type] , OPR_, sitex, sitey, _BASIS);
+
+                            Corr_[sitex][sitey]=_LANCZOS.Measure_observable(OPR_, state_);
+
+                            vector< int >().swap( OPR_.columns );
+                            vector< int >().swap( OPR_.rows );
+                            vector< double_type >().swap( OPR_.value );
+                        }
+                    }
+
+                    cout<<"site_x    site_y    <Sz[0,0]Sz[0+site_x,0+site_y]>"<<endl;
+                    cout<<scientific<<setprecision(20);
+                    for(int sitex=0;sitex<_BASIS.Lx;sitex++){
+                        for(int sitey=0;sitey<_BASIS.Ly;sitey++){
+
+                            cout<< sitex<<"  "<<sitey<<"  "<<Corr_[sitex][sitey]<<endl;
+                            sum_ +=Corr_[sitex][sitey];
+                        }
+                        cout<<endl;
+                    }
+                    cout<<"sum = "<<sum_<<endl;
+                }
 
 
-            /*
-            Matrix_COO OPR_LOCAL;
-            for(int site=0;site<_BASIS.Length;site++){
-            double_type Opr_val;
-            Mat_1_doub Vec_Temp;
-            _MODEL.Getting_Local_Sz_Opr(_BASIS, OPR_LOCAL, site);
-            Matrix_COO_vector_multiplication("FULL", OPR_LOCAL, _LANCZOS.Eig_vec, Vec_Temp);
-            Opr_val = dot_product(Vec_Temp, _LANCZOS.Eig_vec);
-            cout << "Sz["<<site<<"]  = "<<Opr_val<<endl;
             }
-            vector< double_type >().swap(OPR_LOCAL.value);
-            vector< int >().swap(OPR_LOCAL.columns);
-            vector< int >().swap(OPR_LOCAL.rows);
-            */
 
 
             _LANCZOS.Write_full_spectrum();
@@ -498,9 +553,9 @@ int main(int argc, char** argv){
                                 _MODEL.Initialize_two_point_operator_sites_specific(opr_type_[type] , OPR_, site1, site2, _BASIS);
 
                                 Corr_[site1][site2]=_LANCZOS.Measure_observable(OPR_, state_);
-//                                if(site1 != site2){
-//                                    Corr_[site2][site1]=Corr_[site1][site2];
-//                                }
+                                //                                if(site1 != site2){
+                                //                                    Corr_[site2][site1]=Corr_[site1][site2];
+                                //                                }
                                 vector< int >().swap( OPR_.columns );
                                 vector< int >().swap( OPR_.rows );
                                 vector< double_type >().swap( OPR_.value );
@@ -533,9 +588,9 @@ int main(int argc, char** argv){
 
 
 
-//            _MODEL.Initialize_one_point_to_calculate_from_file(_BASIS);
-//            _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0);
-//            _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0, model_name);
+            //            _MODEL.Initialize_one_point_to_calculate_from_file(_BASIS);
+            //            _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0);
+            //            _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0, model_name);
         }
 
 

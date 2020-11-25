@@ -329,6 +329,25 @@ void Print_vector_in_file(Mat_1_doub vec, string filename){
 
 }
 
+void Print_file_in_vector(Mat_1_doub &vec, string filename, int rows){
+
+    cout<<"Vector is being read from : '"<<filename<<"'"<<endl;
+    vec.clear();
+    ifstream infile(filename.c_str());
+    //string line;
+    double_type temp_double;
+
+
+    for(int j=0;j<rows;j++){
+        infile>>temp_double;
+        vec.push_back(temp_double);
+        //cout<<j<<"  "<<Kvector_n[j]<<endl;
+    }
+
+    assert(vec.size()>0);
+
+}
+
 
 
 bool present_before(Mat_1_int nup_2, Mat_1_int ndn_2, Mat_2_int nup_2_group, Mat_2_int ndn_2_group, int &pos){
@@ -687,11 +706,13 @@ complex<double> dot_product(Mat_1_doub &vec1, Mat_1_doub &vec2){
     // if(!Parallelize_dot_product){goto skiploop_143;}
     //#pragma omp parallel for default(shared) reduction(+:temp1)
     //skiploop_143:
-#ifndef _OPENMP
+//#ifndef _OPENMP
     for(int i=0;i<vec1.size();i++){
         temp1 = temp1 + (vec1[i])*(conj(vec2[i])); //<vec2|vec1>
     }
-#endif
+//#endif
+
+    /*
 #ifdef _OPENMP
 #pragma omp parallel for default(shared) reduction(+:temp1_real,temp1_imag)
     for(int i=0;i<vec1.size();i++){
@@ -700,6 +721,8 @@ complex<double> dot_product(Mat_1_doub &vec1, Mat_1_doub &vec2){
     }
     temp1 =complex<double> (temp1_real, temp1_imag);
 #endif
+
+ */
 
     temp = temp1;
 

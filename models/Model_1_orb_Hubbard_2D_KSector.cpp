@@ -48,7 +48,7 @@ void MODEL_1_orb_Hubb_2D_KSector::Add_diagonal_terms(BASIS_1_orb_Hubb_2D_KSector
         for(int site_i=0;site_i<basis.Length;site_i++){
             for(int site_j=0;site_j<basis.Length;site_j++){
                 value += NonLocalInteractions_mat[site_i][site_j]*( bit_value(basis.D_up_basis[i], site_i) +
-                           bit_value(basis.D_dn_basis[j], site_i) )*
+                                                                    bit_value(basis.D_dn_basis[j], site_i) )*
                         ( bit_value(basis.D_up_basis[i], site_j) +
                           bit_value(basis.D_dn_basis[j], site_j) );
             }
@@ -869,8 +869,8 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Opr_for_Structure_factor(BASIS_1_or
     vector< int >().swap( OPR_SF.columns );
     vector< int >().swap( OPR_SF.rows );
     vector< double_type >().swap(OPR_SF.value );
-    OPR_SF.ncols = Hamil.ncols;
-    OPR_SF.nrows = Hamil.nrows;
+    OPR_SF.ncols = basis.D_up_basis.size();
+    OPR_SF.nrows = basis.D_up_basis.size();
 
 
 
@@ -995,8 +995,8 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Oprs_for_meausurement(BASIS_1_orb_H
     vector< int >().swap( OPR_SF.columns );
     vector< int >().swap( OPR_SF.rows );
     vector< double_type >().swap(OPR_SF.value );
-    OPR_SF.ncols = Hamil.ncols;
-    OPR_SF.nrows = Hamil.nrows;
+    OPR_SF.ncols = basis.D_up_basis.size();
+    OPR_SF.nrows = basis.D_up_basis.size();
 
 
 
@@ -1259,6 +1259,58 @@ void MODEL_1_orb_Hubb_2D_KSector::Initialize_Oprs_for_meausurement(BASIS_1_orb_H
 
 
     //****************************************************//
+
+
+}
+
+void MODEL_1_orb_Hubb_2D_KSector::Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR_ , int site_x, int site_y, BASIS_1_orb_Hubb_2D_KSector &basis){
+
+
+    OPR_.nrows = basis.D_up_basis.size();
+    OPR_.ncols = OPR_.nrows;
+
+    double value;
+    int m,j;
+    int site, site_p;
+    int ix_p,iy_p;
+
+    if(opr_type=="SzSz"){
+        OPR_.value.clear();
+        OPR_.rows.clear();
+        OPR_.columns.clear();
+        for (int i=0;i<basis.D_up_basis.size();i++){
+
+            m=i;
+            j=i;
+
+            value=0;
+
+            for(int ix=0;ix<basis.Lx ;ix++){
+                for(int iy=0;iy<basis.Ly ;iy++){
+                    site=ix + (iy*basis.Lx);
+
+                    ix_p = (ix + site_x)%basis.Lx;
+                    iy_p = (iy + site_y)%basis.Ly;
+                    site_p=ix_p + (iy_p*basis.Lx);
+
+                    //---------------Sz[site]Sz[site_p]-------------------//
+
+                    value +=0.25*( bit_value(basis.D_up_basis[i], site) - bit_value(basis.D_dn_basis[m], site) )*
+                            ( bit_value(basis.D_up_basis[i], site_p) - bit_value(basis.D_dn_basis[m], site_p) );
+
+
+
+
+                } //iy
+            } // ix
+
+            OPR_.value.push_back(one*value*(1.0/(basis.Ly*basis.Lx)));
+            OPR_.rows.push_back(m);
+            OPR_.columns.push_back(m);
+
+        } // "i" i.e up_decimals
+
+    }
 
 
 }

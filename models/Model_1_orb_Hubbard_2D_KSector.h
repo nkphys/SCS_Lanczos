@@ -58,6 +58,8 @@ public:
     void Initialize_Opr_for_Structure_factor(BASIS_1_orb_Hubb_2D_KSector &basis);
     void Initialize_Oprs_for_meausurement(BASIS_1_orb_Hubb_2D_KSector &basis);
     void Calculate_two_point_observables(Mat_1_doub &Vec_);
+    void Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR_ , int site_x, int site_y, BASIS_1_orb_Hubb_2D_KSector &basis);
+
 
 
 

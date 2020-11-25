@@ -10,7 +10,7 @@ Ndown = 2
 Nup = 2
 Hopping_NN = 1.0
 
-U = 28.1575
+U = 100.0
 H_mag = 0
 
 File_Onsite_Energies = somefile
@@ -18,11 +18,11 @@ File_Hopping_Connections = Hoppings_2x2.txt
 File_NonLocal_Int_Connections = Interactions_2x2.txt
 ----------------------------------------
 
-Read_Basis_bool = false
-Read_File_Basis = Kx6Ky0_L12
+Read_Basis_bool = true
+Read_File_Basis = Kx0Ky0_L4
 
 Write_Basis_bool = false
-Write_File_Basis = Kx6Ky0_L12
+Write_File_Basis = Kx0Ky0_L4
 
 Random_seed_generator = 13
 Read_the_seed = false
@@ -30,7 +30,7 @@ seed_file = seed_GS_old.txt
 
 
 --------------------------------------
-Lanc_Error = -10e-12
+Lanc_Error = 10e-12
 max_steps = 80
 file_eval_spectrum = out0.txt
 save_all_Krylov_space_vecs = true
