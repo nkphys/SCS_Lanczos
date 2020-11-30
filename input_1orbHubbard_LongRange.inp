@@ -2,25 +2,25 @@ Geometry = LongRange
 Model = 1_orb_Hubbard_chain
 ------------------------------------------
 PBC = true
-Length_X = 2000
-Length_Y = 1000
-Total_Sites = 4
-Ndown = 2
-Nup = 2
+Length_X = 4
+Length_Y = 4
+Total_Sites = 16
+Ndown = 4
+Nup = 4
  
 Hopping = 1.0
 Hopping_NN = 0.0
-U = 100.0
+U = 1065.9
 H_mag = 0
-File_Onsite_Energies = false onsite_ener.txt
-File_Hopping_Connections = Hoppings_2x2_old.txt
-File_NonLocal_Int_Connections = Interactions_2x2.txt
+File_Onsite_Energies = false pinning_ener.txt
+File_Hopping_Connections = Hoppings_4x4_SD_UT_theta4.txt
+File_NonLocal_Int_Connections = Interactions_4x4_SD_EPS1_Theta4.txt
 ----------------------------------------
 -------------------------------------
-Lanc_Error = 10e-10
-max_steps = 200
+Lanc_Error = 10e-13
+max_steps = 1000
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = tru
+save_all_Krylov_space_vecs = true
 get_overlap_bw_eigstates_and_K_vecs = false
 lanczos_reorthogonalization = false
 Get_Full_Spectrum = true

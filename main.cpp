@@ -237,10 +237,10 @@ int main(int argc, char** argv){
                 }
 
 
-               //Chirality Si.(Sj x Sk)
-               //z-component = 4* Im(<GS|Sz(i)S+(j)S-(l)|GS>)
-                 Matrix_COO OPR_;
-                 double_type Value_ChiralityZ;
+                //Chirality Si.(Sj x Sk)
+                //z-component = 4* Im(<GS|Sz(i)S+(j)S-(l)|GS>)
+                Matrix_COO OPR_;
+                double_type Value_ChiralityZ;
                 OPR_.columns.clear();
                 OPR_.rows.clear();
                 OPR_.value.clear();
@@ -258,11 +258,9 @@ int main(int argc, char** argv){
                 cout<<"Chirality UP_TRAINGLE Z-component i.e. 4*IM[<GS|Sz(i)S+(j)S-(l)|GS>] [read only Imag part] = "<<4.0*(Value_ChiralityZ)<<endl;
 
 
-
                 sitejx=0;sitejy=1;
                 sitelx=1;sitely=1;
                 _MODEL.Initialize_three_point_operator_sites_specific("SzSpSm" , OPR_, sitejx, sitejy, sitelx, sitely, _BASIS);
-
                 Value_ChiralityZ=_LANCZOS.Measure_observable(OPR_, state_);
 
                 vector< int >().swap( OPR_.columns );
@@ -271,6 +269,39 @@ int main(int argc, char** argv){
 
                 cout<<"Chirality DOWN_TRAINGLE Z-component i.e. 4*IM[<GS|Sz(i)S+(j)S-(l)|GS>] [read only Imag part] = "<<4.0*(Value_ChiralityZ)<<endl;
 
+
+
+                //Chiral correlations
+
+                opr_type_.clear();
+                opr_type_.push_back("Delta1_Z_Delta1_Z");
+                opr_type_.push_back("Delta1_Z_Delta2_Z");
+
+                OPR_.columns.clear();
+                OPR_.rows.clear();
+                OPR_.value.clear();
+                double_type Value_corrs;
+
+                for(int opr_no=0;opr_no<opr_type_.size();opr_no++){
+                    cout<<"----------"<<opr_type_[opr_no]<<"----------"<<endl;
+                    for(int sitex=0;sitex<_BASIS.Lx;sitex++){
+                        for(int sitey=0;sitey<_BASIS.Ly;sitey++){
+
+                            _MODEL.Initialize_chiral_corr_operator_sites_specific(opr_type_[opr_no], OPR_,sitex, sitey, _BASIS);
+
+                            Value_corrs=_LANCZOS.Measure_observable(OPR_, state_);
+
+                            cout <<sitex<<"  "<<sitey<<"   "<<Value_corrs<<endl;
+
+                            vector< int >().swap( OPR_.columns );
+                            vector< int >().swap( OPR_.rows );
+                            vector< double_type >().swap( OPR_.value );
+
+                        }
+                    }
+                    cout<<"---------------------------------"<<endl;
+
+                }
 
             }
 

@@ -315,6 +315,7 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     if(read_onsite_energies == "true"){
         _file_onsite_energies_ >> filename_Onsite_Energy;
 
+        cout<<"reading Onsite energies from '"<<filename_Onsite_Energy<<"'"<<endl;
         ifstream inputfile_Onsite_Energy(filename_Onsite_Energy.c_str());
         getline(inputfile_Onsite_Energy,line_temp);
 
