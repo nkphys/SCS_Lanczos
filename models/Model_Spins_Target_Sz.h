@@ -33,6 +33,8 @@ public:
 
     Matrix_COO Dyn_opr;
     string Dyn_opr_string;
+    Mat_1_int Dyn_opr_int;
+    Mat_1_doub Dyn_opr_coeffs;
     double Dyn_Momentum;
     bool Dyn_Momentum_Resolved;
 
@@ -55,7 +57,6 @@ void Add_non_diagonal_terms(BASIS_Spins_Target_Sz &basis);
 void Add_connections(BASIS_Spins_Target_Sz &basis);
 void Add_connections_new(BASIS_Spins_Target_Sz &basis);
 void Read_parameters_for_dynamics(string filename);
-void Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &basis, int site);
 void Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &basis);
 void Initialize_one_point_to_calculate_from_file(BASIS_Spins_Target_Sz &basis);
 void Act_SiSj(int &site_i, int &site_j, ulli &m, Mat_1_ullint &m_out_array, Mat_1_doub &Coeff_out_Array, BASIS_Spins_Target_Sz &basis);

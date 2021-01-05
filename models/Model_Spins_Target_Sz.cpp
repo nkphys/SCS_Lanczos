@@ -278,7 +278,7 @@ void MODEL_Spins_Target_Sz::Add_connections_new(BASIS_Spins_Target_Sz &basis){
 #endif
 
 
-   // cout<<"HERE"<<endl;
+    // cout<<"HERE"<<endl;
     for(int thread=0;thread<N_threads;thread++){
         Hamil.value.insert(Hamil.value.end(),Hamil_private[thread].value.begin(), Hamil_private[thread].value.end() );
         Hamil.rows.insert(Hamil.rows.end(),Hamil_private[thread].rows.begin(), Hamil_private[thread].rows.end() );
@@ -477,7 +477,6 @@ void MODEL_Spins_Target_Sz::Act_SiSj(int &site_i, int &site_j, ulli &m, Mat_1_ul
                                     ((val_site_j - (0.5*basis.TwoTimesSpin))*
                                      (val_site_j_new - (0.5*basis.TwoTimesSpin))  ) );
 
-            // m_new = Find_int_in_intarray(dec_new, basis.D_basis);
             m_out_array.push_back(dec_new);
             Coeff_out_Array.push_back(value);
 
@@ -519,7 +518,6 @@ void MODEL_Spins_Target_Sz::Act_SiSj(int &site_i, int &site_j, ulli &m, Mat_1_ul
                                     ((val_site_j - (0.5*basis.TwoTimesSpin))*
                                      (val_site_j_new - (0.5*basis.TwoTimesSpin))  ) );
 
-            //m_new = Find_int_in_intarray(dec_new, basis.D_basis);
             m_out_array.push_back(dec_new);
             Coeff_out_Array.push_back(value);
 
@@ -619,7 +617,17 @@ void MODEL_Spins_Target_Sz::Initialize_two_point_operator_sites_specific(string 
 void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string filename){
 
 
+//    bool read_basis, write_basis;
+//    string read_basis_file, write_basis_file;
+
     string filepath = filename;
+
+    string read_basis_, Read_Basis_= "Read_Basis = ";
+    string write_basis_, Write_Basis_= "Write_Basis = ";
+    string Read_Basis_File_= "Read_Basis_File = ";
+    string Write_Basis_File_= "Write_Basis_File = ";
+
+
     string pbc_,PBC_ ="PBC = ";
     string length, Length = "Length = ";
     string twotimesspin, TwoTimesSpin = "TwoTimesSpin = ";
@@ -669,6 +677,19 @@ void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string
             if ((offset = line.find(PBC_, 0)) != string::npos) {
                 pbc_ = line.substr (offset+PBC_.length());				}
 
+            if ((offset = line.find(Read_Basis_, 0)) != string::npos) {
+                read_basis_ = line.substr (offset+Read_Basis_.length());				}
+
+            if ((offset = line.find(Write_Basis_, 0)) != string::npos) {
+                write_basis_ = line.substr (offset+Write_Basis_.length());				}
+
+            if ((offset = line.find(Read_Basis_File_, 0)) != string::npos) {
+                basis.read_basis_file = line.substr (offset+Read_Basis_File_.length());				}
+
+            if ((offset = line.find(Write_Basis_File_, 0)) != string::npos) {
+                basis.write_basis_file = line.substr (offset+Write_Basis_File_.length());				}
+
+
             if ((offset = line.find(Length, 0)) != string::npos) {
                 length = line.substr (offset + Length.length());		}
 
@@ -697,6 +718,21 @@ void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string
     else{
         PBC=false;
     }
+
+    if(read_basis_ == "true"){
+        basis.read_basis =true;
+    }
+    else{
+        basis.read_basis =false;
+    }
+
+    if(write_basis_ == "true"){
+        basis.write_basis =true;
+    }
+    else{
+        basis.write_basis =false;
+    }
+
 
     basis.Length=atoi(length.c_str());
     basis.Target_Total_Sz = 0.5*(atof(twotimestotalsztarget.c_str()));
@@ -854,9 +890,9 @@ void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string
 
 void MODEL_Spins_Target_Sz::Read_parameters_for_dynamics(string filename){
 
-    string dyn_momentum_, Dyn_Momentum_ = "k = ";
-    string dyn_momentum_resolved_, Dyn_Momentum_Resolved_ = "Momentum_resolved = ";
-    string Dyn_opr_string_  = "Opr_for_Dynamics = ";
+
+    string DYN_STRING, Dyn_opr_string_  = "Opr_for_Dynamics = ";
+    int No_of_oprts;
 
 
     int offset;
@@ -870,14 +906,8 @@ void MODEL_Spins_Target_Sz::Read_parameters_for_dynamics(string filename){
         {
             getline(inputfile,line);
 
-            if ((offset = line.find(Dyn_Momentum_Resolved_, 0)) != string::npos) {
-                dyn_momentum_resolved_ = line.substr (offset + Dyn_Momentum_Resolved_.length());		}
-
-            if ((offset = line.find(Dyn_Momentum_, 0)) != string::npos) {
-                dyn_momentum_ = line.substr (offset + Dyn_Momentum_.length());		}
-
             if ((offset = line.find(Dyn_opr_string_, 0)) != string::npos) {
-                Dyn_opr_string = line.substr (offset + Dyn_opr_string_.length());		}
+                DYN_STRING = line.substr (offset + Dyn_opr_string_.length());		}
 
         }
         inputfile.close();
@@ -886,215 +916,65 @@ void MODEL_Spins_Target_Sz::Read_parameters_for_dynamics(string filename){
     {cout<<"Unable to open input file while in the Model class."<<endl;}
 
 
-    Dyn_Momentum=atof(dyn_momentum_.c_str());
+    stringstream DYN_SSTREAM(DYN_STRING);
 
-    if(dyn_momentum_resolved_=="true"){
-        Dyn_Momentum_Resolved=true;
+    DYN_SSTREAM >> No_of_oprts;
+    DYN_SSTREAM >> Dyn_opr_string;
+    Dyn_opr_int.resize(No_of_oprts);
+    Dyn_opr_coeffs.resize(No_of_oprts);
+
+    for(int opr_no=0;opr_no<No_of_oprts;opr_no++){
+        DYN_SSTREAM >>  Dyn_opr_coeffs[opr_no];
+        DYN_SSTREAM >> Dyn_opr_int[opr_no];
     }
-    else{
-        Dyn_Momentum_Resolved=false;
-    }
+
 
 }
 
 
-
-void MODEL_Spins_Target_Sz::Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &basis, int site_){
-
-    vector< int >().swap( Dyn_opr.columns );
-    vector< int >().swap( Dyn_opr.rows );
-    vector< double_type >().swap( Dyn_opr.value );
-    Dyn_opr.ncols = Hamil.ncols;
-    Dyn_opr.nrows = Hamil.nrows;
-
-    double_type value;
-    int Val_site, Val_site_new;
-    double Factor;
-    int i_new;
-
-
-    if(Dyn_opr_string=="Sz"){
-        for (int i=basis.D_min;i<basis.D_max + 1;i++){
-            value=zero;
-            //Sz[site]
-            value=one*
-                    ( ( (1.0*value_at_pos(i, site_, basis.BASE)) - (0.5*basis.TwoTimesSpin)) );
-
-
-            if(value!=zero){
-                Dyn_opr.value.push_back(value*one);
-                Dyn_opr.rows.push_back(i);
-                Dyn_opr.columns.push_back(i);
-            }
-        }
-    }
-    else if(Dyn_opr_string=="Sm"){
-
-        for (int i=basis.D_min;i<basis.D_max+1;i++){
-
-            value=zero;
-            Val_site = value_at_pos(i, site_, basis.BASE);
-
-            //Sm[site]:
-            //site cannot be in -Spin
-
-            if(Val_site != 0)
-            {
-                Val_site_new = Val_site - 1;
-                i_new = Updated_decimal_with_value_at_pos(i, site_, basis.BASE, Val_site_new);
-
-                Factor = sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
-                               ((Val_site - (0.5*basis.TwoTimesSpin))*
-                                (Val_site_new - (0.5*basis.TwoTimesSpin))  ) );
-
-                assert(i_new<i);
-
-                Dyn_opr.value.push_back(Factor*one);
-                Dyn_opr.rows.push_back(i_new);
-                Dyn_opr.columns.push_back(i);
-
-            } // if Sm possible
-        } // "i" i.e up_decimals
-
-    }
-    else{
-        cout<<"Dyn Opr: only Sz or Sm are allowed"<<endl;
-    }
-
-}
 
 void MODEL_Spins_Target_Sz::Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &basis){
 
+    Dyn_opr.value.clear();
+    Dyn_opr.rows.clear();
+    Dyn_opr.columns.clear();
+    Dyn_opr.nrows = basis.D_basis.size();
+    Dyn_opr.ncols = basis.D_basis.size();
 
 
-    assert(Dyn_Momentum_Resolved);
-
-    vector< int >().swap( Dyn_opr.columns );
-    vector< int >().swap( Dyn_opr.rows );
-    vector< double_type >().swap( Dyn_opr.value );
-    Dyn_opr.ncols = Hamil.ncols;
-    Dyn_opr.nrows = Hamil.nrows;
-
-
-    Hamiltonian_1_COO Oprs_local;
-    Oprs_local.resize(basis.Length);
-    for(int site=0;site<basis.Length;site++){
-        Oprs_local[site].nrows = basis.basis_size ;
-        Oprs_local[site].ncols = Oprs_local[site].nrows;
-    }
-
-
-
-
-
-
-    double_type value;
-    int Val_site, Val_site_new;
-    double Factor;
-    int i_new;
-
+    double_type value_;
+    int dec_;
 
     if(Dyn_opr_string=="Sz"){
+    for (int m=0;m<basis.D_basis.size();m++){
+        dec_ = basis.D_basis[m];
+        value_ =0.0;
+        for(int opr_no=0;opr_no<Dyn_opr_int.size();opr_no++){
+            value_ += Dyn_opr_coeffs[opr_no]*(
+                        ((1.0*value_at_pos(dec_, Dyn_opr_int[opr_no], basis.BASE)) - (0.5*basis.TwoTimesSpin))
+                        );
 
-        for(int site_=0;site_<basis.Length;site_++){
-            for (int i=basis.D_min;i<basis.D_max + 1;i++){
-                value=zero;
-                //Sz[site]
-                value=one*
-                        ( ( (1.0*value_at_pos(i, site_, basis.BASE)) - (0.5*basis.TwoTimesSpin)) );
-
-                if(value!=zero){
-                    Oprs_local[site_].value.push_back(value*one);
-                    Oprs_local[site_].rows.push_back(i);
-                    Oprs_local[site_].columns.push_back(i);
-                }
-            }
         }
-    }
-    else if(Dyn_opr_string=="Sm"){
-
-        for(int site_=0;site_<basis.Length;site_++){
-            for (int i=basis.D_min;i<basis.D_max+1;i++){
-
-                value=zero;
-                Val_site = value_at_pos(i, site_, basis.BASE);
-
-                //Sm[site]:
-                //site cannot be in -Spin
-
-                if(Val_site != 0)
-                {
-                    Val_site_new = Val_site - 1;
-                    i_new = Updated_decimal_with_value_at_pos(i, site_, basis.BASE, Val_site_new);
-
-                    Factor = sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
-                                   ((Val_site - (0.5*basis.TwoTimesSpin))*
-                                    (Val_site_new - (0.5*basis.TwoTimesSpin))  ) );
-
-                    assert(i_new<i);
-
-                    Oprs_local[site_].value.push_back(Factor*one);
-                    Oprs_local[site_].rows.push_back(i_new);
-                    Oprs_local[site_].columns.push_back(i);
-
-                } // if Sm possible
-            } // "i" i.e up_decimals
-        }
+        Dyn_opr.value.push_back(value_);
+        Dyn_opr.rows.push_back(m);
+        Dyn_opr.columns.push_back(m);
 
     }
-    else{
-        cout<<"Dyn Opr: only Sz or Sm are allowed"<<endl;
     }
 
 
-    //In Momentum space--------For PBC use cosine, for OBC use sin----------
+    //#ifdef USE_COMPLEX
+    //            value2=exp(iota_comp*(1.0*(site+1))*Dyn_Momentum*PI)*sqrt(1.0/(basis.Length));
+    //#endif
+    //#ifndef USE_COMPLEX
+    //            cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
+    //#endif
 
-
-
-    Matrix_COO temp;
-    temp=Oprs_local[0];
-    double_type value1, value2;
-    for(int site=0;site<basis.Length-1;site++){
-        if(PBC==false){
-            value2=one*sin((site+2)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
-        }
-        else{
-#ifdef USE_COMPLEX
-            value2=exp(iota_comp*(1.0*(site+1))*Dyn_Momentum*PI)*sqrt(1.0/(basis.Length));
-#endif
-#ifndef USE_COMPLEX
-            cout<<"For PBC=true and Dynamics=true, compile with USE_COMPLEX"<<endl;
-#endif
-        }
-        if(site==0){
-            if(PBC==false){
-                value1=one*sin((site+1)*Dyn_Momentum*PI)*sqrt(2.0/(basis.Length +1));
-            }
-            else{
-#ifdef USE_COMPLEX
-                value1=exp(iota_comp*(1.0*site)*Dyn_Momentum*PI)*sqrt(1.0/(basis.Length));
-#endif
-            }
-            Sum(temp, Oprs_local[site+1], temp, value1, value2);}
-        else{
-            Sum(temp, Oprs_local[site+1], temp, 1.0, value2);
-        }
-
-    }
-
-    Dyn_opr=temp;
-
-    //----------------------------------------------------------------------
-
-    vector< int >().swap( temp.columns );
-    vector< int >().swap( temp.rows );
-    vector< double_type >().swap( temp.value );
-
-    for(int site_=0;site_<basis.Length;site_++){
-        vector< int >().swap( Oprs_local[site_].columns );
-        vector< int >().swap( Oprs_local[site_].rows );
-        vector< double_type >().swap( Oprs_local[site_].value );
-    }
+    //    for(int site_=0;site_<basis.Length;site_++){
+    //        vector< int >().swap( Oprs_local[site_].columns );
+    //        vector< int >().swap( Oprs_local[site_].rows );
+    //        vector< double_type >().swap( Oprs_local[site_].value );
+    //    }
 
 
 

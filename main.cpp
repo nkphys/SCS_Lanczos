@@ -566,7 +566,7 @@ int main(int argc, char** argv){
 
     if(model_name=="SpinOnlyTargetSz"){
 
-        bool Cheaper_SpinSpincorr=true;
+        bool Cheaper_SpinSpincorr=false;
         cout<<"Model :" <<model_name<<endl;
         MODEL_Spins_Target_Sz _MODEL;
         BASIS_Spins_Target_Sz _BASIS;
@@ -652,13 +652,23 @@ int main(int argc, char** argv){
 
 
 
+            if(Do_Dynamics){
+
+                _MODEL.Read_parameters_for_dynamics(inp_filename);
+                _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+
+                LANCZOS _LANCZOS_Dynamics;
+                _LANCZOS_Dynamics.Dynamics_performed=true;
+                _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
+                _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
+                _LANCZOS_Dynamics.GS_energy=_LANCZOS.GS_energy;
+                _LANCZOS_Dynamics.Get_Dynamics_seed(_MODEL.Dyn_opr);
+
+                _LANCZOS_Dynamics.Perform_LANCZOS(_MODEL.Hamil);
+
+            }
 
 
-
-
-            //            _MODEL.Initialize_one_point_to_calculate_from_file(_BASIS);
-            //            _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0);
-            //            _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0, model_name);
         }
 
 
@@ -666,7 +676,7 @@ int main(int argc, char** argv){
 
         Mat_1_real Eigen_ED;
         Mat_2_doub vecs;
-        DO_FULL_DIAGONALIZATION==true;
+        DO_FULL_DIAGONALIZATION==false;
         if(_MODEL.Hamil.nrows>800){
             DO_FULL_DIAGONALIZATION=false;
         }

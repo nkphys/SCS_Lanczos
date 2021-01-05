@@ -27,6 +27,10 @@ public:
     unsigned long long int D_min, D_max;
 
 
+    bool read_basis, write_basis;
+    string read_basis_file, write_basis_file;
+
+
 void Construct_basis();
 void clear();
 };
