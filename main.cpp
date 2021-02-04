@@ -1,9 +1,11 @@
+
 #include <iostream>  //for cin and cout
 #include <math.h>  // for pow
 #include <stdlib.h>  //for div(q,n).rem(quot),abs(int n)
 #include <time.h>
 #include <fstream>
 #include <sstream>
+#include <string>
 #include "iconprint.h"
 #include "models/Model_3_orb_Hubbard_chain.h"
 #include "models/Model_2_orb_Hubbard_chain.h"
@@ -566,7 +568,7 @@ int main(int argc, char** argv){
 
     if(model_name=="SpinOnlyTargetSz"){
 
-        bool Cheaper_SpinSpincorr=false;
+        bool Cheaper_SpinSpincorr=true;
         cout<<"Model :" <<model_name<<endl;
         MODEL_Spins_Target_Sz _MODEL;
         BASIS_Spins_Target_Sz _BASIS;
@@ -667,8 +669,6 @@ int main(int argc, char** argv){
                 _LANCZOS_Dynamics.Perform_LANCZOS(_MODEL.Hamil);
 
             }
-
-
         }
 
 
@@ -2113,6 +2113,13 @@ int main(int argc, char** argv){
         cout<<scientific<<setprecision(6);
 
 
+//        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXX MAT HAMIL XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+//        cout<<scientific<<setprecision(2);
+//        Print_Matrix_COO(_MODEL.Hamil);
+//        cout<<scientific<<setprecision(15);
+//        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+
+
         LANCZOS _LANCZOS;
         _LANCZOS.Dynamics_performed=false;
         _LANCZOS.Read_Lanczos_parameters(inp_filename);
@@ -2122,6 +2129,12 @@ int main(int argc, char** argv){
 
         _MODEL.Initialize_one_point_to_calculate();
         _MODEL.Initialize_two_point_to_calculate();
+
+        //        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXX MAT JEFF_Z XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+        //        cout<<scientific<<setprecision(2);
+        //        Print_Matrix_COO(_MODEL.One_point_oprts[20][0]);
+        //        cout<<scientific<<setprecision(15);
+        //        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
 
 
 #ifdef USE_COMPLEX
@@ -2184,7 +2197,7 @@ int main(int argc, char** argv){
             state_ss << state_;
             state_string = state_ss.str();
 
-            string file_name_state = "State"+ state_string + "_.txt";
+            string file_name_state = "State"+ to_string(state_) + ".txt";
 
             Print_vector_in_file(_LANCZOS.Eig_vecs[state_], file_name_state);
         }
@@ -2195,13 +2208,50 @@ int main(int argc, char** argv){
 
 
 
-
         Mat_1_real Eigen_ED;
         Mat_2_doub vecs;
         if(_MODEL.Hamil.nrows>800){
             DO_FULL_DIAGONALIZATION=false;
         }
         if(DO_FULL_DIAGONALIZATION==true){
+
+
+            for(int opr_no=0;opr_no<_MODEL.One_point_oprts.size();opr_no++){
+                for(int _site=0;_site<_MODEL.One_point_oprts[opr_no].size();_site++){
+                    vector< int >().swap(_MODEL.One_point_oprts[opr_no][_site].columns );
+                    vector< int >().swap(_MODEL.One_point_oprts[opr_no][_site].rows );
+                    vector< double_type >().swap(_MODEL.One_point_oprts[opr_no][_site].value );
+                }
+            }
+            _MODEL.Initialize_one_point_to_calculate();
+            //            cout<<"XXXXXXXXXXXXXXXXXXXXXXXXX MAT JEFF_Z XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+            //            cout<<scientific<<setprecision(2);
+            //            Print_Matrix_COO(_MODEL.One_point_oprts[20][0]);
+            //            cout<<scientific<<setprecision(15);
+            //            cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+
+
+            _MODEL.Hamil.columns.clear();
+            _MODEL.Hamil.rows.clear();
+            _MODEL.Hamil.value.clear();
+
+            cout<<"Diagonal part started"<<endl;
+            _MODEL.Add_diagonal_terms();
+            cout<<"Diagonal part done"<<endl;
+            cout<<"Non Diagonal part started"<<endl;
+            _MODEL.Add_non_diagonal_terms();
+            cout<<"Non Diagonal part done"<<endl;
+            _MODEL.Add_Spin_Orbit_Coupling();
+            cout<<"Connections started"<<endl;
+            _MODEL.Add_connections();
+            cout<<"Connections done"<<endl;
+
+//            cout<<"XXXXXXXXXXXXXXXXXXXXXXXXX MAT HAMIL XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+//            cout<<scientific<<setprecision(2);
+//            Print_Matrix_COO(_MODEL.Hamil);
+//            cout<<scientific<<setprecision(15);
+//            cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+
 
             string fl_ED_out = "EXACT_RESULTS.txt";
             ofstream file_ED_out(fl_ED_out.c_str());
@@ -2218,15 +2268,26 @@ int main(int argc, char** argv){
             Mat_2_doub Dummy_Eig_vecs;
             Dummy_Eig_vecs = _LANCZOS.Eig_vecs;
 
+            for(int s_=0;s_<_LANCZOS.Eig_vecs.size();s_++){
+                _LANCZOS.Eig_vecs[s_].clear();
+            }
             _LANCZOS.Eig_vecs.clear();
             _LANCZOS.Eig_vecs.resize(_MODEL.Hamil.nrows);
             for(int s_=0;s_<_MODEL.Hamil.nrows;s_++){
-                _LANCZOS.Eig_vecs[s_] = vecs[s_];
+                _LANCZOS.Eig_vecs[s_].resize(vecs[s_].size());
+                for(int comp=0;comp<_LANCZOS.Eig_vecs[s_].size();comp++){
+                    _LANCZOS.Eig_vecs[s_][comp] = vecs[s_][comp];
+                }
             }
 
+            string fileED_name_state = "ED_State"+ to_string(0) + "_.txt";
+            Print_vector_in_file(_LANCZOS.Eig_vecs[0], fileED_name_state);
+
             cout<<endl;
+
+
             for(int i=0;i<_MODEL.Hamil.nrows;i++){
-                cout<<"===================FOR STATE NO "<<i<<"============================="<<endl;
+                cout<<"===================FOR STATE NO (EXACT) "<<i<<"============================="<<endl;
                 _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, i);
                 // cout<<"Energy = "<<_LANCZOS.Evals_Tri_all[_LANCZOS.Evals_Tri_all.size()-1][i]<<endl;
                 //_LANCZOS.Measure_two_point_observables(_MODEL.two_point_obs, _MODEL.Two_point_oprts, _BASIS.Length, i, _MODEL.PBC);

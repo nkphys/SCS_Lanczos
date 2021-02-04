@@ -1255,7 +1255,7 @@ template <typename Basis_type>
 void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
 
 
-    USE_LONG_RANGE_HOPPINGS = true;
+    USE_LONG_RANGE_HOPPINGS = false;
     string filepath = filename;
 
     double temp_val;

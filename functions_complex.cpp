@@ -1136,7 +1136,7 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_2_doub & vecs){
         int r=X.rows[i];
         int c=X.columns[i];
         Ham_(r,c) = X.value[i];
-        Ham_(c,r) = X.value[i];
+        Ham_(c,r) = conj(X.value[i]);
     }
 
     char jobz='V';
