@@ -6,8 +6,10 @@ PBC = false
 Length = 4
 N_Total = 16
 CFS = 0.0 0.0 0.0
-LongRangeHopping_file = 4_site_PBC_chain.dat
- 
+
+USE_LONG_RANGE_HOPPINGS = false
+LongRangeHopping_file = 2_site.dat
+
 Hopping_mat[0][orb] = 1.0 0.0 0.0
 Hopping_mat[1][orb] = 0.0 1.0 0.0
 Hopping_mat[2][orb] = 0.0 0.0 1.0
@@ -19,15 +21,15 @@ lambda_SOC = 0.45
 ----------------------------------------
 Random_seed_generator = 321
 --------------------------------------
-Lanc_Error = -10e-14
+Lanc_Error = 10e-10
 max_steps = 1000
 file_eval_spectrum = Tri_evals_OBC_GC.txt
 save_all_Krylov_space_vecs = false
-get_overlap_bw_eigstates_and_K_vecs = false
-lanczos_reorthogonalization = true
+get_overlap_bw_eigstates_and_K_vecs = true
+lanczos_reorthogonalization = false
 Get_Full_Spectrum = true
-need_few_eig_vecs = false
-Get_overlap_with_basis = false
+need_few_eig_vecs = true
+Get_overlap_with_basis = true
 States_to_look = 1 0
 overlap_out_file = out0.txt
 calculate_local_obs_for_states_to_look = true

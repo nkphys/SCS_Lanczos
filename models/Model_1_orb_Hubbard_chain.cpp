@@ -136,6 +136,9 @@ void MODEL_1_orb_Hubb_chain::Add_connections(BASIS_1_orb_Hubb_chain &basis){
 
                             sign_FM = pow(-1.0, sign_pow_up);
 
+                            if(m_new>=m){
+                                cout<<" Hopping: "<<site_p<<"  "<< site<<"  "<<Hopping_mat_NN[site_p][site]<<endl;
+                            }
                             assert(m_new<m);
                             Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one);
                             Hamil.rows.push_back((m_new));

@@ -473,6 +473,7 @@ int main(int argc, char** argv){
         _MODEL.Add_non_diagonal_terms(_BASIS);
         _MODEL.Add_connections(_BASIS);
 
+        Print_Matrix_COO(_MODEL.Hamil);
 
         LANCZOS _LANCZOS;
         _LANCZOS.Dynamics_performed=false;
@@ -652,6 +653,146 @@ int main(int argc, char** argv){
                 }
             }
 
+            Mat_1_real Eigen_ED;
+            Mat_2_doub vecs;
+            DO_FULL_DIAGONALIZATION==true;
+            if(_MODEL.Hamil.nrows>1200){
+                DO_FULL_DIAGONALIZATION=false;
+            }
+            if(DO_FULL_DIAGONALIZATION){
+
+                string fl_ED_out = "EXACT_RESULTS.txt";
+                ofstream file_ED_out(fl_ED_out.c_str());
+                cout<<"-----------------------------------------------------------------------"<<endl;
+                cout<<"AFTER THIS EXACT DIAGONALIZATION RESULTS ARE WRITTEN IN EXACT_RESULTS.txt-------------------"<<endl;
+
+                file_ED_out<<"//*****************Exact Diagonalization Energies**************//"<<endl;
+                file_ED_out<<"//------------------------------------------------------------//"<<endl;
+                Diagonalize(_MODEL.Hamil, Eigen_ED, vecs);
+                for(int i=0;i<Eigen_ED.size();i++){
+                    file_ED_out<<i<<"   "<<scientific<<setprecision(6)<<Eigen_ED[i]<<endl;
+                }
+
+
+                //*****
+                if(true){
+
+
+                    Mat_2_doub Dummy_Eig_vecs;
+                    Dummy_Eig_vecs = _LANCZOS.Eig_vecs;
+
+                    for(int s_=0;s_<_LANCZOS.Eig_vecs.size();s_++){
+                        _LANCZOS.Eig_vecs[s_].clear();
+                    }
+                    _LANCZOS.Eig_vecs.clear();
+                    _LANCZOS.Eig_vecs.resize(_MODEL.Hamil.nrows);
+                    for(int s_=0;s_<_MODEL.Hamil.nrows;s_++){
+                        _LANCZOS.Eig_vecs[s_].resize(vecs[s_].size());
+                        for(int comp=0;comp<_LANCZOS.Eig_vecs[s_].size();comp++){
+                            _LANCZOS.Eig_vecs[s_][comp] = vecs[s_][comp];
+                        }
+                    }
+
+                    string file_basis = "BASIS.txt";
+                    ofstream file_basis_out(file_basis.c_str());
+
+                    int val_comp;
+                    for(int m=0;m<_BASIS.D_basis.size();m++){
+                        ulli dec_m = _BASIS.D_basis[m];
+                        file_basis_out<<m<<"  ";
+                        for(int site=0;site<_BASIS.Length;site++){
+                            val_comp = ((1.0*value_at_pos(dec_m, site, _BASIS.BASE)) - (_BASIS.TwoTimesSpin/2));
+                            file_basis_out<<val_comp<<"   ";
+                        }
+                        file_basis_out<<endl;
+                    }
+
+
+                    for(int state_=0;state_<min(100,_MODEL.Hamil.nrows);state_++){
+
+
+                        //-------------------------------------------------------------------
+                        string fileED_name_state = "ED_State"+ to_string(state_) + "_.txt";
+                        ofstream file_state_out(fileED_name_state.c_str());
+                        Mat_1_doub Vec_new;
+                        Mat_1_int index_old;
+                        Sort_vector_in_decreasing_order_in_file(_LANCZOS.Eig_vecs[state_], Vec_new, index_old);
+                        for(int m=0;m<_BASIS.D_basis.size();m++){
+                            ulli dec_m = _BASIS.D_basis[index_old[m]];
+                            file_state_out<<index_old[m]<<"   "<<Vec_new[m]<<"   ";
+                            for(int site=0;site<_BASIS.Length;site++){
+                                val_comp = ((1.0*value_at_pos(dec_m, site, _BASIS.BASE)) - (_BASIS.TwoTimesSpin/2));
+                                file_state_out<<val_comp<<"   ";
+                            }
+                            file_state_out<<endl;
+                        }
+
+                        //--------------------------------------------------------------------
+
+
+
+
+                        cout<<"Spin-Spin correlations for EXACT state = "<<state_<<endl;
+
+                        double_type sum_;
+
+                        Mat_1_string opr_type_;
+                        opr_type_.push_back("Svec.Svec");
+
+                        Mat_2_doub Corr_;
+                        Corr_.resize(_BASIS.Length);
+                        for(int site1=0;site1<_BASIS.Length;site1++){
+                            Corr_[site1].resize(_BASIS.Length);
+                        }
+
+                        for(int type=0;type<opr_type_.size();type++){
+                            sum_=0.0;
+                            cout<<opr_type_[type]<<": "<<endl;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
+                            for(int site1=0;site1<_BASIS.Length;site1++){
+                                for(int site2=site1;site2<_BASIS.Length;site2++){
+
+                                    Matrix_COO OPR_;
+                                    OPR_.columns.clear();
+                                    OPR_.rows.clear();
+                                    OPR_.value.clear();
+                                    _MODEL.Initialize_two_point_operator_sites_specific(opr_type_[type] , OPR_, site1, site2, _BASIS);
+
+                                    Corr_[site1][site2]=_LANCZOS.Measure_observable(OPR_, state_);
+                                    //                                if(site1 != site2){
+                                    //                                    Corr_[site2][site1]=Corr_[site1][site2];
+                                    //                                }
+                                    vector< int >().swap( OPR_.columns );
+                                    vector< int >().swap( OPR_.rows );
+                                    vector< double_type >().swap( OPR_.value );
+                                }
+                            }
+                            for(int site1=0;site1<_BASIS.Length;site1++){
+                                for(int site2=site1+1;site2<_BASIS.Length;site2++){
+                                    Corr_[site2][site1]=Corr_[site1][site2];
+                                }}
+
+                            cout<<scientific<<setprecision(4);
+                            for(int site1=0;site1<_BASIS.Length;site1++){
+                                for(int site2=0;site2<_BASIS.Length;site2++){
+
+                                    cout<< Corr_[site1][site2]<<" ";
+                                    sum_ +=Corr_[site1][site2];
+                                }
+                                cout<<endl;
+                            }
+                            cout<<"sum = "<<sum_<<endl;
+                        }
+                    }
+                }
+                //*****
+
+
+            }
+
 
 
             if(Do_Dynamics){
@@ -674,26 +815,7 @@ int main(int argc, char** argv){
 
 
 
-        Mat_1_real Eigen_ED;
-        Mat_2_doub vecs;
-        DO_FULL_DIAGONALIZATION==false;
-        if(_MODEL.Hamil.nrows>800){
-            DO_FULL_DIAGONALIZATION=false;
-        }
-        if(DO_FULL_DIAGONALIZATION){
 
-            string fl_ED_out = "EXACT_RESULTS.txt";
-            ofstream file_ED_out(fl_ED_out.c_str());
-            cout<<"-----------------------------------------------------------------------"<<endl;
-            cout<<"AFTER THIS EXACT DIAGONALIZATION RESULTS ARE WRITTEN IN EXACT_RESULTS.txt-------------------"<<endl;
-
-            file_ED_out<<"//*****************Exact Diagonalization Energies**************//"<<endl;
-            file_ED_out<<"//------------------------------------------------------------//"<<endl;
-            Diagonalize(_MODEL.Hamil, Eigen_ED, vecs);
-            for(int i=0;i<Eigen_ED.size();i++){
-                file_ED_out<<i<<"   "<<scientific<<setprecision(6)<<Eigen_ED[i]<<endl;
-            }
-        }
 
 
 
@@ -2113,11 +2235,11 @@ int main(int argc, char** argv){
         cout<<scientific<<setprecision(6);
 
 
-//        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXX MAT HAMIL XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
-//        cout<<scientific<<setprecision(2);
-//        Print_Matrix_COO(_MODEL.Hamil);
-//        cout<<scientific<<setprecision(15);
-//        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+        //        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXX MAT HAMIL XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+        //        cout<<scientific<<setprecision(2);
+        //        Print_Matrix_COO(_MODEL.Hamil);
+        //        cout<<scientific<<setprecision(15);
+        //        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
 
 
         LANCZOS _LANCZOS;
@@ -2231,26 +2353,26 @@ int main(int argc, char** argv){
             //            cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
 
 
-            _MODEL.Hamil.columns.clear();
-            _MODEL.Hamil.rows.clear();
-            _MODEL.Hamil.value.clear();
+            //            _MODEL.Hamil.columns.clear();
+            //            _MODEL.Hamil.rows.clear();
+            //            _MODEL.Hamil.value.clear();
 
-            cout<<"Diagonal part started"<<endl;
-            _MODEL.Add_diagonal_terms();
-            cout<<"Diagonal part done"<<endl;
-            cout<<"Non Diagonal part started"<<endl;
-            _MODEL.Add_non_diagonal_terms();
-            cout<<"Non Diagonal part done"<<endl;
-            _MODEL.Add_Spin_Orbit_Coupling();
-            cout<<"Connections started"<<endl;
-            _MODEL.Add_connections();
-            cout<<"Connections done"<<endl;
+            //            cout<<"Diagonal part started"<<endl;
+            //            _MODEL.Add_diagonal_terms();
+            //            cout<<"Diagonal part done"<<endl;
+            //            cout<<"Non Diagonal part started"<<endl;
+            //            _MODEL.Add_non_diagonal_terms();
+            //            cout<<"Non Diagonal part done"<<endl;
+            //            _MODEL.Add_Spin_Orbit_Coupling();
+            //            cout<<"Connections started"<<endl;
+            //            _MODEL.Add_connections();
+            //            cout<<"Connections done"<<endl;
 
-//            cout<<"XXXXXXXXXXXXXXXXXXXXXXXXX MAT HAMIL XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
-//            cout<<scientific<<setprecision(2);
-//            Print_Matrix_COO(_MODEL.Hamil);
-//            cout<<scientific<<setprecision(15);
-//            cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+            //            cout<<"XXXXXXXXXXXXXXXXXXXXXXXXX MAT HAMIL XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+            //            cout<<scientific<<setprecision(2);
+            //            Print_Matrix_COO(_MODEL.Hamil);
+            //            cout<<scientific<<setprecision(15);
+            //            cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
 
 
             string fl_ED_out = "EXACT_RESULTS.txt";

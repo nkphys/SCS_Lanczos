@@ -1255,7 +1255,7 @@ template <typename Basis_type>
 void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
 
 
-    USE_LONG_RANGE_HOPPINGS = false;
+    //USE_LONG_RANGE_HOPPINGS = false;
     string filepath = filename;
 
     double temp_val;
@@ -1264,6 +1264,9 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
     string m_, M_ = "Boundary_phase_exponent = ";
     string length, Length = "Length = ";
     string ntotal, Ntotal = "N_Total = ";
+
+    string USE_LONG_RANGE_HOPPINGS_str_,USE_LONG_RANGE_HOPPINGS_STR_ = "USE_LONG_RANGE_HOPPINGS = "  ;
+
 
     string lambda_soc_, Lambda_SOC_ = "lambda_SOC = ";
 
@@ -1295,6 +1298,9 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
 
             if ((offset = line.find(LongRangeHoppingfile_, 0)) != string::npos) {
                 LongRangeHoppingfilepath = line.substr (offset+LongRangeHoppingfile_.length());  }
+
+            if ((offset = line.find(USE_LONG_RANGE_HOPPINGS_STR_, 0)) != string::npos) {
+                USE_LONG_RANGE_HOPPINGS_str_ = line.substr (offset+USE_LONG_RANGE_HOPPINGS_STR_.length());				}
 
             if ((offset = line.find(PBC_, 0)) != string::npos) {
                 pbc_ = line.substr (offset+PBC_.length());				}
@@ -1354,6 +1360,14 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
     {cout<<"Unable to open input file while in the Model class."<<endl;}
 
     //cout<<"read-1"<<endl;
+
+
+    if(USE_LONG_RANGE_HOPPINGS_str_ == "true"){
+        USE_LONG_RANGE_HOPPINGS = true;
+    }
+    else{
+        USE_LONG_RANGE_HOPPINGS = false;
+    }
 
     if(pbc_ == "true"){
         PBC =true;
@@ -1493,6 +1507,8 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
         cout<<"Reading hopping matrix from : "<<LongRangeHoppingfilepath<<endl;
         Read_matrix_from_file(LongRangeHoppingfilepath, Hopping_mat_LongRange , 3*basis.Length, 3*basis.Length);
     }
+
+    Print_Matrix(Hopping_mat_LongRange);
 
 }
 

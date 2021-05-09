@@ -329,6 +329,41 @@ void Print_vector_in_file(Mat_1_doub vec, string filename){
 
 }
 
+
+void Sort_vector_in_decreasing_order_in_file(Mat_1_doub vec, Mat_1_doub &Vec_new, Mat_1_int &Index_old){
+
+    //ofstream outfile(filename.c_str());
+
+    Mat_1_doub Vec_temp;
+    Vec_temp=vec;
+    Vec_new.clear();
+    Index_old.clear();
+    Vec_new.resize(Vec_temp.size());
+    Index_old.resize(Vec_temp.size());
+
+    int count=0;
+    complex<double> max_temp=0.0;
+    int index_max;
+
+    while(count<Vec_temp.size()){
+        max_temp=0.0;
+        for(int j=0;j<Vec_temp.size();j++){
+            if(abs(Vec_temp[j])>=abs(max_temp)){
+                max_temp=Vec_temp[j];
+                index_max = j;
+            }
+
+        }
+        //outfile<<index_max<<"   "<<Vec_temp[index_max]<<endl;
+        Vec_new[count]=Vec_temp[index_max];
+        Index_old[count]=index_max;
+        count++;
+        Vec_temp[index_max]=0.0;
+    }
+
+
+}
+
 void Print_file_in_vector(Mat_1_doub &vec, string filename, int rows){
 
     cout<<"Vector is being read from : '"<<filename<<"'"<<endl;
@@ -535,7 +570,7 @@ void Remove_repetitions(Mat_1_int & index_array, Mat_1_doub & val_array, Mat_1_i
 
             index_array[i]=-100;
 
-           val_new_array.push_back(val);
+            val_new_array.push_back(val);
         }
     }
 
@@ -608,7 +643,7 @@ void Remove_repetitions(Mat_1_ullint & index_array, Mat_1_doub & val_array, Mat_
 
             check[i]=1;
 
-           val_new_array.push_back(val);
+            val_new_array.push_back(val);
         }
     }
 
@@ -670,6 +705,17 @@ void Print_Matrix_COO(Matrix_COO &A){
 
 }
 
+void Print_Matrix(Mat_2_doub &A){
+
+    for(int i=0;i<A.size();i++){
+        for(int j=0;j<A.size();j++){
+            cout<<A[i][j]<<"  ";
+        }
+        cout<<endl;
+    }
+
+
+}
 
 
 void Normalize_vec(Mat_1_doub &vec_in){
@@ -688,7 +734,7 @@ void Normalize_vec(Mat_1_doub &vec_in){
 }
 
 void value_multiply_vector(complex<double> value, Mat_1_doub &vec_in){
-//NEVER PARALLELIZE THIS
+    //NEVER PARALLELIZE THIS
     for(int i=0;i<vec_in.size();i++){
         vec_in[i] = vec_in[i]*value;
     }
@@ -706,11 +752,11 @@ complex<double> dot_product(Mat_1_doub &vec1, Mat_1_doub &vec2){
     // if(!Parallelize_dot_product){goto skiploop_143;}
     //#pragma omp parallel for default(shared) reduction(+:temp1)
     //skiploop_143:
-//#ifndef _OPENMP
+    //#ifndef _OPENMP
     for(int i=0;i<vec1.size();i++){
         temp1 = temp1 + (vec1[i])*(conj(vec2[i])); //<vec2|vec1>
     }
-//#endif
+    //#endif
 
     /*
 #ifdef _OPENMP
@@ -767,7 +813,7 @@ void Matrix_COO_vector_multiplication(string COO_type, Matrix_COO & A,Mat_1_doub
     v.resize(A.nrows);
     assert(A.ncols==u.size());
 
-//#ifndef _OPENMP
+    //#ifndef _OPENMP
     for (int i=0;i<v.size();i++){
         v[i]=zero;}
 
@@ -791,10 +837,10 @@ void Matrix_COO_vector_multiplication(string COO_type, Matrix_COO & A,Mat_1_doub
             v[A.rows[n]] = v[A.rows[n]] + u[A.columns[n]]*A.value[n];
         }
     }
-//#endif
+    //#endif
 
 
-/*
+    /*
 #ifdef _OPENMP
     Mat_2_doub v_temp;
     int thread_id;

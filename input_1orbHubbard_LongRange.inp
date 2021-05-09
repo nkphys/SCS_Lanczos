@@ -2,22 +2,22 @@ Geometry = LongRange
 Model = 1_orb_Hubbard_chain
 ------------------------------------------
 PBC = true
-Length_X = 4
+Length_X = 6
 Length_Y = 4
-Total_Sites = 16
-Ndown = 4
-Nup = 4
+Total_Sites = 24
+Ndown = 3
+Nup = 3
  
 Hopping = 1.0
 Hopping_NN = 0.0
-U = 1065.9
+U = 0
 H_mag = 0
 File_Onsite_Energies = false pinning_ener.txt
-File_Hopping_Connections = Hoppings_4x4_SD_UT_theta4.txt
-File_NonLocal_Int_Connections = Interactions_4x4_SD_EPS1_Theta4.txt
+File_Hopping_Connections = Hopping_SNAKE3_6X4_OBCXPBC.txt
+File_NonLocal_Int_Connections = Interactions_SNAKE3_6X4_OBCXPBC.txt
 ----------------------------------------
 -------------------------------------
-Lanc_Error = 10e-13
+Lanc_Error = 10e-12
 max_steps = 1000
 file_eval_spectrum = out0.txt
 save_all_Krylov_space_vecs = true
@@ -62,5 +62,5 @@ Number_of_LowKrylov_States_used = 100
 Temperature = 0.2
 
 
-Processors = 8
+Processors = 4
 

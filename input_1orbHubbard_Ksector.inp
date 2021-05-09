@@ -2,26 +2,26 @@ Model = 1_orb_Hubbard_2D_KSector
 ------------------------------------------
 Geometry = LongRange
 PBC = true
-Lx = 4
+Lx = 6
 Ly = 4
-Momentum_nx = 0
+Momentum_nx = 2
 Momentum_ny = 2
-Ndown = 4 
-Nup = 4
+Ndown = 1
+Nup = 0
 Hopping_NN = 1.0
 
-U = 1
+U = 0
 H_mag = 0
 
 File_Onsite_Energies = somefile
-File_Hopping_Connections = Hoppings_4x4.txt
-File_NonLocal_Int_Connections = Interactions_4x4.txt
+File_Hopping_Connections = Hopping_SNAKE3_6X4_OBCXPBC.txt
+File_NonLocal_Int_Connections = Interactions_SNAKE3_6X4_OBCXPBC.txt
 ----------------------------------------
 
 Read_Basis_bool = false
 Read_File_Basis = Kx0Ky0_L4
 
-Write_Basis_bool = false
+Write_Basis_bool = true
 Write_File_Basis = Kx0Ky0_L4
 
 Random_seed_generator = 13
