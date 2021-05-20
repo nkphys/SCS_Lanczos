@@ -2946,6 +2946,7 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
 
     }
     else{
+        cout<< "Onsite energies are 0's"<<endl;
         for(int i=0;i<basis.Length;i++){
             Onsite_Energy[i]=0.0;
         }

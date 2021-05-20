@@ -5,16 +5,16 @@ PBC = true
 Lx = 6
 Ly = 4
 Momentum_nx = 2
-Momentum_ny = 2
-Ndown = 1
+Momentum_ny = 1
+Ndown = 1 
 Nup = 0
-Hopping_NN = 1.0
+Hopping_NN = 0.5
 
 U = 0
 H_mag = 0
 
-File_Onsite_Energies = somefile
-File_Hopping_Connections = Hopping_SNAKE3_6X4_OBCXPBC.txt
+File_Onsite_Energies = false somefile
+File_Hopping_Connections = Hopping_SNAKE3_6X4_PBCXPBC_Kspace.txt
 File_NonLocal_Int_Connections = Interactions_SNAKE3_6X4_OBCXPBC.txt
 ----------------------------------------
 
@@ -33,11 +33,11 @@ seed_file = seed_GS_old.txt
 Lanc_Error = 10e-15
 max_steps = 800
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = true
-get_overlap_bw_eigstates_and_K_vecs = true
-lanczos_reorthogonalization = true
-Get_Full_Spectrum = true
-need_few_eig_vecs = true
+save_all_Krylov_space_vecs = false
+get_overlap_bw_eigstates_and_K_vecs = false
+lanczos_reorthogonalization = false
+Get_Full_Spectrum = false
+need_few_eig_vecs = false
 few = 1
 ----------------------------------------
 Get_overlap_with_basis = false
@@ -82,4 +82,4 @@ Light_polarization_in = 0 1 0
 Incident_energy = 0.1
 ----------------------------------------
 
-Processors = 6
+Processors = 1

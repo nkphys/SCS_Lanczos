@@ -101,7 +101,7 @@ void MODEL_Spins_Target_Sz::Add_connections_new(BASIS_Spins_Target_Sz &basis){
                     }
 
                     if(J3_mat[site_i][site_j][site_k][site_l]!=0.0){
-                        J3_vals.push_back(one*J2_mat[site_i][site_j][site_k][site_l]);
+                        J3_vals.push_back(one*J3_mat[site_i][site_j][site_k][site_l]);
                         temp_tetra_int.first=site_i;
                         temp_tetra_int.second=site_j;
                         temp_tetra_int.third=site_k;
@@ -542,6 +542,104 @@ void MODEL_Spins_Target_Sz::Act_SiSj(int &site_i, int &site_j, ulli &m, Mat_1_ul
 }
 
 
+void MODEL_Spins_Target_Sz::Initialize_four_point_operator_sites_specific(string opr_type , Matrix_COO &OPR_ , int site_i, int site_j, int site_k, int site_l, BASIS_Spins_Target_Sz &basis){
+
+
+    OPR_.nrows = basis.basis_size;
+    OPR_.ncols = OPR_.nrows;
+
+    ulli dec_m;
+    Mat_1_ullint m_connected_final;
+    Mat_1_doub coeffs_final;
+    Mat_1_ullint m_connected_temp2;
+    Mat_1_doub coeffs_temp2;
+    Mat_1_ullint m_connected_temp3;
+    Mat_1_doub coeffs_temp3;
+    ulli mi,mj;
+    ulli dec_max;
+    int m_new;
+    int n_index;
+    Mat_1_int state_vec;
+    Mat_1_ullint m_connected;
+    Mat_1_doub coeffs;
+    Mat_1_ullint m_connected_temp;
+    Mat_1_doub coeffs_temp;
+
+
+    for (int m=0;m<basis.D_basis.size();m++){
+
+        dec_m = basis.D_basis[m];
+        m_connected.clear();
+        coeffs.clear();
+
+
+        if(opr_type=="J2_type"){
+            Act_SiSj(site_k, site_l, dec_m, m_connected_temp, coeffs_temp, basis);
+            value_multiply_vector(one*J2_mat[site_i][site_j][site_k][site_l], coeffs_temp);
+            for(int i_=0;i_<m_connected_temp.size();i_++){
+                mi = m_connected_temp[i_];
+                Act_SiSj(site_i, site_j, mi, m_connected_temp2, coeffs_temp2, basis);
+
+                value_multiply_vector(coeffs_temp[i_], coeffs_temp2);
+                m_connected.insert(m_connected.end(), m_connected_temp2.begin(), m_connected_temp2.end());
+                coeffs.insert(coeffs.end(), coeffs_temp2.begin(), coeffs_temp2.end());
+            }
+        }
+
+
+
+        if(opr_type=="J3_type"){
+            Act_SiSj(site_k, site_l, dec_m, m_connected_temp, coeffs_temp, basis);
+            value_multiply_vector(one*J3_mat[site_i][site_j][site_k][site_l], coeffs_temp);
+            for(int i_=0;i_<m_connected_temp.size();i_++){
+                mi = m_connected_temp[i_];
+                Act_SiSj(site_k, site_l, mi, m_connected_temp2, coeffs_temp2, basis);
+                value_multiply_vector(coeffs_temp[i_], coeffs_temp2);
+
+                for(int j_=0;j_<m_connected_temp2.size();j_++){
+                    mj = m_connected_temp2[j_];
+                    Act_SiSj(site_i, site_j, mj, m_connected_temp3, coeffs_temp3, basis);
+                    value_multiply_vector(coeffs_temp2[j_], coeffs_temp3);
+
+                    m_connected.insert(m_connected.end(), m_connected_temp3.begin(), m_connected_temp3.end());
+                    coeffs.insert(coeffs.end(), coeffs_temp3.begin(), coeffs_temp3.end());
+
+                }
+            }
+        }
+
+
+
+        //remove_repetitions
+        Remove_repetitions(m_connected, coeffs, m_connected_final, coeffs_final);
+
+
+        for(int j=0;j<m_connected_final.size();j++){
+
+            fromDeci_to_Vecint(state_vec, basis.BASE,m_connected_final[j] , basis.Length);
+            quicksort(state_vec, 0, state_vec.size() -1);
+            fromVecint_to_Deci(state_vec, basis.BASE, dec_max, basis.Length);
+            n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
+            m_new = Find_int_in_part_of_intarray(m_connected_final[j], basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
+
+
+            if(m_new<=m){
+                OPR_.value.push_back(coeffs_final[j]*one);
+                OPR_.rows.push_back(m_new);
+                OPR_.columns.push_back(m);
+            }
+        }
+    }
+
+
+
+
+
+
+
+}
+
+
 void MODEL_Spins_Target_Sz::Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR_ , int site1, int site2, BASIS_Spins_Target_Sz &basis){
 
 
@@ -617,8 +715,8 @@ void MODEL_Spins_Target_Sz::Initialize_two_point_operator_sites_specific(string 
 void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string filename){
 
 
-//    bool read_basis, write_basis;
-//    string read_basis_file, write_basis_file;
+    //    bool read_basis, write_basis;
+    //    string read_basis_file, write_basis_file;
 
     string filepath = filename;
 
@@ -946,20 +1044,20 @@ void MODEL_Spins_Target_Sz::Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &b
     int dec_;
 
     if(Dyn_opr_string=="Sz"){
-    for (int m=0;m<basis.D_basis.size();m++){
-        dec_ = basis.D_basis[m];
-        value_ =0.0;
-        for(int opr_no=0;opr_no<Dyn_opr_int.size();opr_no++){
-            value_ += Dyn_opr_coeffs[opr_no]*(
-                        ((1.0*value_at_pos(dec_, Dyn_opr_int[opr_no], basis.BASE)) - (0.5*basis.TwoTimesSpin))
-                        );
+        for (int m=0;m<basis.D_basis.size();m++){
+            dec_ = basis.D_basis[m];
+            value_ =0.0;
+            for(int opr_no=0;opr_no<Dyn_opr_int.size();opr_no++){
+                value_ += Dyn_opr_coeffs[opr_no]*(
+                            ((1.0*value_at_pos(dec_, Dyn_opr_int[opr_no], basis.BASE)) - (0.5*basis.TwoTimesSpin))
+                            );
+
+            }
+            Dyn_opr.value.push_back(value_);
+            Dyn_opr.rows.push_back(m);
+            Dyn_opr.columns.push_back(m);
 
         }
-        Dyn_opr.value.push_back(value_);
-        Dyn_opr.rows.push_back(m);
-        Dyn_opr.columns.push_back(m);
-
-    }
     }
 
 

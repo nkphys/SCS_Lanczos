@@ -592,8 +592,10 @@ int main(int argc, char** argv){
 
             if(Cheaper_SpinSpincorr){
 
-
                 for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
+
+
+                    //SS corrsXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                     cout<<"Spin-Spin correlations for state = "<<state_<<endl;
 
                     double_type sum_;
@@ -648,6 +650,86 @@ int main(int argc, char** argv){
                         }
                         cout<<"sum = "<<sum_<<endl;
                     }
+                    //SS corrs xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+
+                    double_type Energy_temp;
+                    Energy_temp=0.0;
+                    //J1 connectionsXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                    cout<<"J1 Type connections----------------------------"<<endl;
+                    double_type value_;
+                    for(int site_k=0;site_k<_BASIS.Length;site_k++){
+                        for(int site_l=0;site_l<_BASIS.Length;site_l++){
+
+                            if(_MODEL.J1_mat[site_k][site_l]!=0.0){
+                                Matrix_COO OPR_;
+                                OPR_.columns.clear();
+                                OPR_.rows.clear();
+                                OPR_.value.clear();
+                                _MODEL.Initialize_two_point_operator_sites_specific("Svec.Svec" , OPR_, site_k, site_l, _BASIS);
+                                value_ = _LANCZOS.Measure_observable(OPR_, state_);
+
+                                cout<<site_k<<"  "<<site_l<<"   "<<value_*_MODEL.J1_mat[site_k][site_l]<<"   "<< _MODEL.J1_mat[site_k][site_l]<<endl;
+                                Energy_temp +=value_*_MODEL.J1_mat[site_k][site_l];
+
+                                vector< int >().swap( OPR_.columns );
+                                vector< int >().swap( OPR_.rows );
+                                vector< double_type >().swap( OPR_.value );
+                            }
+                        }
+                    }
+                    //J1 connections done-------------------------------------------
+
+
+
+
+                    Mat_1_string opr_type_4point;
+                    opr_type_4point.push_back("J2_type");
+                    opr_type_4point.push_back("J3_type");
+                    bool check_;
+                    double_type conn_val;
+                    for(int type=0;type<opr_type_4point.size();type++){
+                        cout<<opr_type_4point[type]<<" connections----------------------------"<<endl;
+                        for(int site_i=0;site_i<_BASIS.Length;site_i++){
+                            for(int site_j=0;site_j<_BASIS.Length;site_j++){
+                                for(int site_k=0;site_k<_BASIS.Length;site_k++){
+                                    for(int site_l=0;site_l<_BASIS.Length;site_l++){
+
+                                        if(opr_type_4point[type]=="J2_type")
+                                        {check_ = (abs(_MODEL.J2_mat[site_i][site_j][site_k][site_l])!=0.0);
+                                        conn_val = _MODEL.J2_mat[site_i][site_j][site_k][site_l];
+                                        }
+                                        if(opr_type_4point[type]=="J3_type")
+                                        {check_ = (abs(_MODEL.J3_mat[site_i][site_j][site_k][site_l])!=0.0);
+                                        conn_val = _MODEL.J3_mat[site_i][site_j][site_k][site_l];
+                                        }
+
+                                        if( check_
+                                                ){
+                                            Matrix_COO OPR_;
+                                            OPR_.columns.clear();
+                                            OPR_.rows.clear();
+                                            OPR_.value.clear();
+                                            _MODEL.Initialize_four_point_operator_sites_specific(opr_type_4point[type] , OPR_, site_i, site_j, site_k, site_l, _BASIS);
+
+                                            value_ = _LANCZOS.Measure_observable(OPR_, state_, "U");
+                                            //value_ = _LANCZOS.Measure_observable(_MODEL.Hamil, state_, "U");
+
+                                            Energy_temp +=value_;
+                                            cout<<site_i<<"  "<<site_j<<"   "<<site_k<<"  "<<site_l<<"   "<<value_<<"   "<<conn_val<<endl;
+
+
+                                            vector< int >().swap( OPR_.columns );
+                                            vector< int >().swap( OPR_.rows );
+                                            vector< double_type >().swap( OPR_.value );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    cout<< "Energy Calculated using above observables = "<<Energy_temp<<endl;
 
 
                 }
@@ -655,7 +737,7 @@ int main(int argc, char** argv){
 
             Mat_1_real Eigen_ED;
             Mat_2_doub vecs;
-            DO_FULL_DIAGONALIZATION==true;
+            DO_FULL_DIAGONALIZATION==false;
             if(_MODEL.Hamil.nrows>1200){
                 DO_FULL_DIAGONALIZATION=false;
             }
@@ -786,6 +868,87 @@ int main(int argc, char** argv){
                             }
                             cout<<"sum = "<<sum_<<endl;
                         }
+
+
+                        //SScorrs done----------------------------------
+
+
+                        double_type Energy_temp;
+                        Energy_temp=0.0;
+                        //J1 connectionsXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                        cout<<"J1 Type connections----------------------------"<<endl;
+                        double_type value_;
+                        for(int site_k=0;site_k<_BASIS.Length;site_k++){
+                            for(int site_l=0;site_l<_BASIS.Length;site_l++){
+
+                                if(_MODEL.J1_mat[site_k][site_l]!=0.0){
+                                    Matrix_COO OPR_;
+                                    OPR_.columns.clear();
+                                    OPR_.rows.clear();
+                                    OPR_.value.clear();
+                                    _MODEL.Initialize_two_point_operator_sites_specific("Svec.Svec" , OPR_, site_k, site_l, _BASIS);
+                                    value_ = _LANCZOS.Measure_observable(OPR_, state_);
+
+                                    cout<<site_k<<"  "<<site_l<<"   "<<value_*_MODEL.J1_mat[site_k][site_l]<<"   "<< _MODEL.J1_mat[site_k][site_l]<<endl;
+                                    Energy_temp +=value_*_MODEL.J1_mat[site_k][site_l];
+
+                                    vector< int >().swap( OPR_.columns );
+                                    vector< int >().swap( OPR_.rows );
+                                    vector< double_type >().swap( OPR_.value );
+                                }
+                            }
+                        }
+                        //J1 connections done-------------------------------------------
+
+
+
+
+                        Mat_1_string opr_type_4point;
+                        opr_type_4point.push_back("J2_type");
+                        opr_type_4point.push_back("J3_type");
+                        bool check_;
+                        double_type conn_val;
+                        for(int type=0;type<opr_type_4point.size();type++){
+                            cout<<opr_type_4point[type]<<" connections----------------------------"<<endl;
+                            for(int site_i=0;site_i<_BASIS.Length;site_i++){
+                                for(int site_j=0;site_j<_BASIS.Length;site_j++){
+                                    for(int site_k=0;site_k<_BASIS.Length;site_k++){
+                                        for(int site_l=0;site_l<_BASIS.Length;site_l++){
+
+                                            if(opr_type_4point[type]=="J2_type")
+                                            {check_ = (_MODEL.J2_mat[site_i][site_j][site_k][site_l]!=0.0);
+                                            conn_val = _MODEL.J2_mat[site_i][site_j][site_k][site_l];
+                                            }
+                                            if(opr_type_4point[type]=="J3_type")
+                                            {check_ = (_MODEL.J3_mat[site_i][site_j][site_k][site_l]!=0.0);
+                                            conn_val = _MODEL.J3_mat[site_i][site_j][site_k][site_l];
+                                            }
+
+                                            if( check_
+                                                    ){
+                                                Matrix_COO OPR_;
+                                                OPR_.columns.clear();
+                                                OPR_.rows.clear();
+                                                OPR_.value.clear();
+                                                _MODEL.Initialize_four_point_operator_sites_specific(opr_type_4point[type] , OPR_, site_i, site_j, site_k, site_l, _BASIS);
+
+                                                value_ = _LANCZOS.Measure_observable(OPR_, state_, "U");
+                                                Energy_temp +=value_;
+                                                cout<<site_i<<"  "<<site_j<<"   "<<site_k<<"  "<<site_l<<"   "<<value_<<"   "<<conn_val<<endl;
+
+                                                vector< int >().swap( OPR_.columns );
+                                                vector< int >().swap( OPR_.rows );
+                                                vector< double_type >().swap( OPR_.value );
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        cout<< "Energy Calculated using above observables = "<<Energy_temp<<endl;
+
+
                     }
                 }
                 //*****

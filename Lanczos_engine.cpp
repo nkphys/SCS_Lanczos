@@ -844,6 +844,19 @@ double_type LANCZOS::Measure_observable(Matrix_COO &OPR_, int state_no){
 
 }
 
+
+double_type LANCZOS::Measure_observable(Matrix_COO &OPR_, int state_no, string mult_type){
+
+    double_type value;
+    Mat_1_doub temp_vec;
+
+    Matrix_COO_vector_multiplication(mult_type, OPR_, Eig_vecs[state_no], temp_vec);
+    value = dot_product(Eig_vecs[state_no],temp_vec);
+
+    return value;
+
+}
+
 void LANCZOS::Measure_four_point_observables(Hamiltonian_3_COO &Two_point_oprts, Mat_1_tetra_int sites_set, int state_no){
 
     cout<<"Four-point Measurement is started after completing Lanczos algorithm for state_no = "<<states_to_look[state_no]<<endl;

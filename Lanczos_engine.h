@@ -92,6 +92,7 @@ void Write_full_spectrum();
 void Measure_macro_observables(Mat_1_string macro_obs, Hamiltonian_1_COO &Macro_oprts, int state_no);
 void Measure_one_point_observables(Mat_1_string one_point_obs, Hamiltonian_2_COO &One_point_oprts, int T_sites, int state_no);
 double_type Measure_observable(Matrix_COO &OPR_, int state_no);
+double_type Measure_observable(Matrix_COO &OPR_, int state_no, string mult_type);
 void Measure_two_point_observables(Mat_1_string two_point_obs, Hamiltonian_3_COO & Two_point_oprts, int T_sites, Mat_1_doub vec_, bool PBC_check);
 void Measure_two_point_observables(Mat_1_string two_point_obs, Hamiltonian_3_COO &Two_point_oprts, int T_sites, int state_no, bool PBC_check);
 void Measure_two_point_observables_smartly(Mat_1_string one_point_obs,Hamiltonian_2_COO &One_point_oprts, int T_sites, int state_no, string _model_);

@@ -61,7 +61,7 @@ void Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &basis);
 void Initialize_one_point_to_calculate_from_file(BASIS_Spins_Target_Sz &basis);
 void Act_SiSj(int &site_i, int &site_j, ulli &m, Mat_1_ullint &m_out_array, Mat_1_doub &Coeff_out_Array, BASIS_Spins_Target_Sz &basis);
 void Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR_ , int site1, int site2, BASIS_Spins_Target_Sz &basis);
-
+void Initialize_four_point_operator_sites_specific(string opr_type , Matrix_COO &OPR_ , int site_i, int site_j, int site_k, int site_l, BASIS_Spins_Target_Sz &basis);
 //void Initialize_one_point_to_calculate(BASIS_1_orb_tJ &basis);
 //void Initialize_two_point_to_calculate(BASIS_1_orb_tJ &basis);
 //void Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR, int site1, int site2, BASIS_1_orb_tJ &basis);
