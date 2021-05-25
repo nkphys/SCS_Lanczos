@@ -1,4 +1,4 @@
-Length=4
+Length=2
 t=1.0
 U=40.0
 J=$(echo "${U}*0.25" | bc -l)

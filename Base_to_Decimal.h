@@ -268,7 +268,6 @@ T Updated_decimal_with_value_at_pos(T n, int pos, int base, int new_value){
     strev(res);
 
 
-
     if(pos>strlen(res)-1){
         char res_new[100];
         for(int index=0;index<strlen(res);index++){

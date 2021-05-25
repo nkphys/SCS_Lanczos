@@ -732,6 +732,28 @@ int main(int argc, char** argv){
                     cout<< "Energy Calculated using above observables = "<<Energy_temp<<endl;
 
 
+
+//here
+
+                    string fileED2_name_state = "Lanczos_State"+ to_string(state_) + "_in_JJzBasis_.txt";
+                    ofstream file2_state_out(fileED2_name_state.c_str());
+                    Mat_1_doub Overlaps;
+                    Mat_1_int sorted_index;
+                    Mat_2_pair_realint JJzBasis_states;
+                    Mat_2_real Coefficients;
+                    Mat_2_int m_basis;
+                    _MODEL.Create_JJz_Trial_States(JJzBasis_states, Coefficients, m_basis, _BASIS);
+                    _MODEL.Overlap_of_JJzBasis_with_State(_LANCZOS.Eig_vecs[state_], Overlaps , sorted_index, JJzBasis_states, Coefficients, m_basis, _BASIS);
+
+
+                    for(int m=0;m<Overlaps.size();m++){
+                        file2_state_out<<Overlaps[m]<<"   ";
+                        for(int i_=0;i_<JJzBasis_states[sorted_index[m]].size();i_++){
+                            file2_state_out<<"|"<<JJzBasis_states[sorted_index[m]][i_].first<<","<<JJzBasis_states[sorted_index[m]][i_].second<<">";
+                        }
+                        file2_state_out<<endl;
+                    }
+
                 }
             }
 
@@ -808,6 +830,28 @@ int main(int argc, char** argv){
                             }
                             file_state_out<<endl;
                         }
+
+
+
+                        string fileED2_name_state = "ED_State"+ to_string(state_) + "_in_JJzBasis_.txt";
+                        ofstream file2_state_out(fileED2_name_state.c_str());
+                        Mat_1_doub Overlaps;
+                        Mat_1_int sorted_index;
+                        Mat_2_pair_realint JJzBasis_states;
+                        Mat_2_real Coefficients;
+                        Mat_2_int m_basis;
+                        _MODEL.Create_JJz_Trial_States(JJzBasis_states, Coefficients, m_basis, _BASIS);
+                        _MODEL.Overlap_of_JJzBasis_with_State(_LANCZOS.Eig_vecs[state_], Overlaps , sorted_index, JJzBasis_states, Coefficients, m_basis, _BASIS);
+
+
+                        for(int m=0;m<Overlaps.size();m++){
+                            file2_state_out<<Overlaps[m]<<"   ";
+                            for(int i_=0;i_<JJzBasis_states[sorted_index[m]].size();i_++){
+                                file2_state_out<<"|"<<JJzBasis_states[sorted_index[m]][i_].first<<","<<JJzBasis_states[sorted_index[m]][i_].second<<">";
+                            }
+                            file2_state_out<<endl;
+                        }
+
 
                         //--------------------------------------------------------------------
 
@@ -977,9 +1021,29 @@ int main(int argc, char** argv){
 
 
 
+        /*
 
+        Mat_1_pair_realInt Trial_;
+        Trial_.resize(2);
+        Trial_[0].first=2;Trial_[0].second=0;
+        Trial_[1].first=2;Trial_[1].second=0;
+        Mat_1_real Coefficients;
+        Mat_1_int m_basis;
+        int val_comp;
+        _MODEL.Direct_product_of_localJ_Ansatz(Trial_, Coefficients, m_basis, _BASIS);
+        string file_trial_state = "TrialState.txt";
+        ofstream file_trial_state_out(file_trial_state.c_str());
+        for(int m=0;m<m_basis.size();m++){
+            ulli dec_m = _BASIS.D_basis[m_basis[m]];
+           file_trial_state_out<<m<<"   "<<m_basis[m]<<"   "<<Coefficients[m]<<"   ";
+            for(int site=0;site<_BASIS.Length;site++){
+                val_comp = ((1.0*value_at_pos(dec_m, site, _BASIS.BASE)) - (_BASIS.TwoTimesSpin/2));
+                file_trial_state_out<<val_comp<<"   ";
+            }
+            file_trial_state_out<<endl;
+        }
 
-
+        */
 
 
 

@@ -21,18 +21,18 @@ One_point_oprt_path_2 = Sm.txt
 FourPointObservablesSites file = fourpoint.txt
 -------------------------------------
 Lanc_Error = -10e-12
-max_steps = 400
+max_steps = 800
 Random_seed_generator = 43
 file_eval_spectrum = out0.txt
 save_all_Krylov_space_vecs = true
 get_overlap_bw_eigstates_and_K_vecs = true
-lanczos_reorthogonalization = false
+lanczos_reorthogonalization = true
 Get_Full_Spectrum = true
 need_few_eig_vecs = true
 few = 1
 ----------------------------------------
 Get_overlap_with_basis = false
-States_to_look = 1 0
+States_to_look = 10 0 1 2 3 4 5 6 7 8 9
 overlap_out_file = out0.txt
 calculate_local_obs_for_states_to_look = true
 calculate_local_obs_for_states_to_look_for_first_n_basis = 100
@@ -50,7 +50,7 @@ Temperature_LTLM_Dynamics = 0.91
 
 
 ----------------------------------
-Perform_Dynamics = true
+Perform_Dynamics = false
 eta = 0.0001
 check_omega = 0.2
 omega_max = 10.0

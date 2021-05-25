@@ -1030,6 +1030,283 @@ void MODEL_Spins_Target_Sz::Read_parameters_for_dynamics(string filename){
 }
 
 
+void MODEL_Spins_Target_Sz::Direct_product_of_localJ_Ansatz(Mat_1_pair_realInt JJzBasis_state, Mat_1_real &Coefficients, Mat_1_int &m_basis, BASIS_Spins_Target_Sz &basis){
+
+    cout<<"THIS ROUTINE IS STRICTLY USED ONLY FOR S-L MODEL"<<endl;
+    Coefficients.clear();
+    m_basis.clear();
+    Mat_2_int SzLzBasis_state;
+
+    ulli dec_, dec_max;
+    int m_, n_index;
+    Mat_2_real Coefficients_local;
+    Mat_2_pair_realint SzLzBasis_state_local;
+    Coefficients_local.resize(JJzBasis_state.size());
+    SzLzBasis_state_local.resize(JJzBasis_state.size());
+
+    assert((basis.Length/2) == JJzBasis_state.size());
+    for(int local_state=0;local_state<JJzBasis_state.size();local_state++){
+
+        if( JJzBasis_state[local_state].first==0 ){  //|J=0,Jz=0>
+            assert(JJzBasis_state[local_state].second==0);
+            Coefficients_local[local_state].resize(3);
+            SzLzBasis_state_local[local_state].resize(3);
+            Coefficients_local[local_state][0]=1.0/sqrt(3.0);
+            Coefficients_local[local_state][1]=-1.0/sqrt(3.0);
+            Coefficients_local[local_state][2]=-1.0/sqrt(3.0);
+            SzLzBasis_state_local[local_state][0].first=0;SzLzBasis_state_local[local_state][0].second=0;
+            SzLzBasis_state_local[local_state][1].first=-1;SzLzBasis_state_local[local_state][1].second=1;
+            SzLzBasis_state_local[local_state][2].first=1;SzLzBasis_state_local[local_state][2].second=-1;
+        }
+        if( JJzBasis_state[local_state].first==1 && JJzBasis_state[local_state].second==0){  //|J=1, Jz=0>
+            Coefficients_local[local_state].resize(2);
+            SzLzBasis_state_local[local_state].resize(2);
+            Coefficients_local[local_state][0]=1.0/sqrt(2.0);
+            Coefficients_local[local_state][1]=-1.0/sqrt(2.0);
+            SzLzBasis_state_local[local_state][0].first=-1;SzLzBasis_state_local[local_state][0].second=1;
+            SzLzBasis_state_local[local_state][1].first=1;SzLzBasis_state_local[local_state][1].second=-1;
+        }
+        if( JJzBasis_state[local_state].first==1 && JJzBasis_state[local_state].second!=0){  //|J=1, Jz=+-1>
+            assert(abs(JJzBasis_state[local_state].second)==1);
+            Coefficients_local[local_state].resize(2);
+            SzLzBasis_state_local[local_state].resize(2);
+            Coefficients_local[local_state][0]=1.0/sqrt(2.0);
+            Coefficients_local[local_state][1]=-1.0/sqrt(2.0);
+            SzLzBasis_state_local[local_state][0].first=0;SzLzBasis_state_local[local_state][0].second=JJzBasis_state[local_state].second;
+            SzLzBasis_state_local[local_state][1].first=JJzBasis_state[local_state].second;SzLzBasis_state_local[local_state][1].second=0;
+        }
+        if( JJzBasis_state[local_state].first==2 && JJzBasis_state[local_state].second==0){  //|J=2,Jz=0>
+            Coefficients_local[local_state].resize(3);
+            SzLzBasis_state_local[local_state].resize(3);
+            Coefficients_local[local_state][0]=sqrt(2.0/3.0);
+            Coefficients_local[local_state][1]=1.0/sqrt(6.0);
+            Coefficients_local[local_state][2]=1.0/sqrt(6.0);
+            SzLzBasis_state_local[local_state][0].first=0;SzLzBasis_state_local[local_state][0].second=0;
+            SzLzBasis_state_local[local_state][1].first=-1;SzLzBasis_state_local[local_state][1].second=1;
+            SzLzBasis_state_local[local_state][2].first=1;SzLzBasis_state_local[local_state][2].second=-1;
+        }
+        if( JJzBasis_state[local_state].first==2 && abs(JJzBasis_state[local_state].second)==1){  //|J=2, Jz=+-1>
+            Coefficients_local[local_state].resize(2);
+            SzLzBasis_state_local[local_state].resize(2);
+            Coefficients_local[local_state][0]=1.0/sqrt(2.0);
+            Coefficients_local[local_state][1]=1.0/sqrt(2.0);
+            SzLzBasis_state_local[local_state][0].first=0;SzLzBasis_state_local[local_state][0].second=JJzBasis_state[local_state].second;
+            SzLzBasis_state_local[local_state][1].first=JJzBasis_state[local_state].second;SzLzBasis_state_local[local_state][1].second=0;
+        }
+        if( JJzBasis_state[local_state].first==2 && abs(JJzBasis_state[local_state].second)==2){  //|J=2, Jz=+-2>
+            Coefficients_local[local_state].resize(1);
+            SzLzBasis_state_local[local_state].resize(1);
+            Coefficients_local[local_state][0]=1.0;
+            SzLzBasis_state_local[local_state][0].first=JJzBasis_state[local_state].second/abs(JJzBasis_state[local_state].second);
+            SzLzBasis_state_local[local_state][0].second=JJzBasis_state[local_state].second/abs(JJzBasis_state[local_state].second);
+        }
+
+    }
+
+
+
+    if(SzLzBasis_state_local.size()==2){
+        for(int b0_=0;b0_<Coefficients_local[0].size();b0_++){
+
+            for(int b1_=0;b1_<Coefficients_local[1].size();b1_++){
+
+                Mat_1_int temp_szlz_state;
+                double val_temp;
+                val_temp = Coefficients_local[0][b0_]*Coefficients_local[1][b1_];
+                Coefficients.push_back(val_temp);
+
+                temp_szlz_state.push_back(SzLzBasis_state_local[0][b0_].first); //sz
+                temp_szlz_state.push_back(SzLzBasis_state_local[0][b0_].second); //lz
+                temp_szlz_state.push_back(SzLzBasis_state_local[1][b1_].first);
+                temp_szlz_state.push_back(SzLzBasis_state_local[1][b1_].second);
+
+                for(int i_=0;i_<temp_szlz_state.size();i_++){
+                    temp_szlz_state[i_] = temp_szlz_state[i_] + basis.SPIN;
+                }
+
+                fromVecint_to_Deci(temp_szlz_state, basis.BASE, dec_, basis.Length);
+                quicksort(temp_szlz_state, 0, temp_szlz_state.size() -1);
+                fromVecint_to_Deci(temp_szlz_state, basis.BASE, dec_max, basis.Length);
+                n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
+                m_ = Find_int_in_part_of_intarray(dec_, basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
+
+                m_basis.push_back(m_);
+
+            }
+        }
+    }
+
+
+    if(SzLzBasis_state_local.size()==4){
+        for(int b0_=0;b0_<Coefficients_local[0].size();b0_++){
+
+            for(int b1_=0;b1_<Coefficients_local[1].size();b1_++){
+
+                for(int b2_=0;b2_<Coefficients_local[2].size();b2_++){
+
+                    for(int b3_=0;b3_<Coefficients_local[3].size();b3_++){
+                        Mat_1_int temp_szlz_state;
+                        double val_temp;
+                        val_temp = Coefficients_local[0][b0_]*Coefficients_local[1][b1_]*Coefficients_local[2][b2_]*Coefficients_local[3][b3_];
+                        Coefficients.push_back(val_temp);
+
+                        temp_szlz_state.push_back(SzLzBasis_state_local[0][b0_].first); //sz
+                        temp_szlz_state.push_back(SzLzBasis_state_local[0][b0_].second); //lz
+                        temp_szlz_state.push_back(SzLzBasis_state_local[1][b1_].first);
+                        temp_szlz_state.push_back(SzLzBasis_state_local[1][b1_].second);
+                        temp_szlz_state.push_back(SzLzBasis_state_local[2][b2_].first);
+                        temp_szlz_state.push_back(SzLzBasis_state_local[2][b2_].second);
+                        temp_szlz_state.push_back(SzLzBasis_state_local[3][b3_].first);
+                        temp_szlz_state.push_back(SzLzBasis_state_local[3][b3_].second);
+
+                        for(int i_=0;i_<temp_szlz_state.size();i_++){
+                            temp_szlz_state[i_] = temp_szlz_state[i_] + basis.SPIN;
+                        }
+
+                        fromVecint_to_Deci(temp_szlz_state, basis.BASE, dec_, basis.Length);
+                        quicksort(temp_szlz_state, 0, temp_szlz_state.size() -1);
+                        fromVecint_to_Deci(temp_szlz_state, basis.BASE, dec_max, basis.Length);
+                        n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
+                        m_ = Find_int_in_part_of_intarray(dec_, basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
+
+                        m_basis.push_back(m_);
+
+
+                    }
+                }
+            }
+        }
+    }
+
+
+
+
+}
+
+void MODEL_Spins_Target_Sz::Create_JJz_Trial_States(Mat_2_pair_realint &JJzBasis_states, Mat_2_real &Coefficients, Mat_2_int &m_basis, BASIS_Spins_Target_Sz &basis){
+
+    cout<<"THIS ROUTINE IS STRICTLY USED ONLY FOR S-L MODEL"<<endl;
+
+    JJzBasis_states.clear();
+    Coefficients.clear();
+    m_basis.clear();
+
+    int SL_sites;
+    SL_sites=basis.Length/2;
+
+    Mat_1_pair_realInt JJz_basis_temp;
+    pair_real_int temp_pair_int;
+
+    temp_pair_int.first=2;
+    for(int temp_i=-2;temp_i<=2;temp_i++){
+        temp_pair_int.second=temp_i;
+        JJz_basis_temp.push_back(temp_pair_int);
+    }
+
+    temp_pair_int.first=1;
+    for(int temp_i=-1;temp_i<=1;temp_i++){
+        temp_pair_int.second=temp_i;
+        JJz_basis_temp.push_back(temp_pair_int);
+    }
+
+    temp_pair_int.first=0;
+    temp_pair_int.second=0;
+    JJz_basis_temp.push_back(temp_pair_int);
+
+
+
+
+
+
+
+    if(SL_sites==2){
+
+        for(int J0_=0;J0_<JJz_basis_temp.size();J0_++){ //site0
+            for(int J1_=0;J1_<JJz_basis_temp.size();J1_++){ //site1
+
+                Mat_1_pair_realInt JJz_basis_state_var;
+                Mat_1_real Coefficients_var;
+                Mat_1_int m_basis_var;
+                int total_Jz;
+
+                JJz_basis_state_var.push_back(JJz_basis_temp[J0_]); //site0;
+                JJz_basis_state_var.push_back(JJz_basis_temp[J1_]); //site1;
+
+                total_Jz =JJz_basis_temp[J0_].second + JJz_basis_temp[J1_].second;
+                total_Jz = int(total_Jz + (basis.SPIN*basis.Length));
+
+                if(total_Jz == basis.Target_Total_Value){
+                    Direct_product_of_localJ_Ansatz(JJz_basis_state_var, Coefficients_var, m_basis_var, basis);
+                    JJzBasis_states.push_back(JJz_basis_state_var);
+                    Coefficients.push_back(Coefficients_var);
+                    m_basis.push_back(m_basis_var);
+                }
+
+            }
+        }
+    }
+
+
+    if(SL_sites==4){
+
+        for(int J0_=0;J0_<JJz_basis_temp.size();J0_++){ //site0
+            for(int J1_=0;J1_<JJz_basis_temp.size();J1_++){ //site1
+
+                for(int J2_=0;J2_<JJz_basis_temp.size();J2_++){ //site2
+                    for(int J3_=0;J3_<JJz_basis_temp.size();J3_++){ //site3
+
+                        Mat_1_pair_realInt JJz_basis_state_var;
+                        Mat_1_real Coefficients_var;
+                        Mat_1_int m_basis_var;
+                        int total_Jz;
+
+                        JJz_basis_state_var.push_back(JJz_basis_temp[J0_]); //site0;
+                        JJz_basis_state_var.push_back(JJz_basis_temp[J1_]); //site1;
+                        JJz_basis_state_var.push_back(JJz_basis_temp[J2_]); //site2;
+                        JJz_basis_state_var.push_back(JJz_basis_temp[J3_]); //site3;
+
+                        total_Jz =JJz_basis_temp[J0_].second + JJz_basis_temp[J1_].second + JJz_basis_temp[J2_].second + JJz_basis_temp[J3_].second;
+                        total_Jz = int(total_Jz + (basis.SPIN*basis.Length));
+
+                        if(total_Jz == basis.Target_Total_Value){
+                            Direct_product_of_localJ_Ansatz(JJz_basis_state_var, Coefficients_var, m_basis_var, basis);
+
+                            JJzBasis_states.push_back(JJz_basis_state_var);
+                            Coefficients.push_back(Coefficients_var);
+                            m_basis.push_back(m_basis_var);
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+
+void MODEL_Spins_Target_Sz::Overlap_of_JJzBasis_with_State(Mat_1_doub &Vec_ , Mat_1_doub &Overlaps_ , Mat_1_int &sorted_indices,  Mat_2_pair_realint &JJzBasis_states, Mat_2_real &Coefficients, Mat_2_int &m_basis, BASIS_Spins_Target_Sz &basis){
+
+
+    Mat_1_doub Overlaps_old;
+
+    Overlaps_old.resize(JJzBasis_states.size());
+    Overlaps_.resize(JJzBasis_states.size());
+
+    for(int ansatz_basis=0;ansatz_basis<JJzBasis_states.size();ansatz_basis++){
+
+        double_type temp_doub =0.0;
+        for(int i_=0;i_<m_basis[ansatz_basis].size();i_++){
+            temp_doub += conj(Coefficients[ansatz_basis][i_])*Vec_[m_basis[ansatz_basis][i_]];
+        }
+
+        Overlaps_old[ansatz_basis]=temp_doub;
+    }
+
+    Sort_vector_in_decreasing_order_in_file(Overlaps_old, Overlaps_ , sorted_indices);
+
+
+}
 
 void MODEL_Spins_Target_Sz::Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &basis){
 

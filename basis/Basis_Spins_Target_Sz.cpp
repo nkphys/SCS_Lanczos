@@ -157,6 +157,19 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
                 }
             }
 
+            for(int i=0;i<D_basis.size();i++){
+                cout<<"----------------------------"<<endl;
+                cout<<i<<"  "<<D_basis[i]<<endl;
+                char basis_char[100];
+                fromDeci(basis_char, BASE, D_basis[i]);
+                for(int l_=0;l_<Length;l_++){
+                    cout<<"'"<<basis_char[l_]<<"'"<<" ";
+                }
+                cout<<endl;
+            }
+
+
+
             //Writing basis
             if(write_basis){
                 cout<<"BASIS are written in "<<write_basis_file<<endl;
