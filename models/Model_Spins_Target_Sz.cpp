@@ -1179,6 +1179,57 @@ void MODEL_Spins_Target_Sz::Direct_product_of_localJ_Ansatz(Mat_1_pair_realInt J
     }
 
 
+    if(SzLzBasis_state_local.size()==6){
+        for(int b0_=0;b0_<Coefficients_local[0].size();b0_++){
+
+            for(int b1_=0;b1_<Coefficients_local[1].size();b1_++){
+
+                for(int b2_=0;b2_<Coefficients_local[2].size();b2_++){
+
+                    for(int b3_=0;b3_<Coefficients_local[3].size();b3_++){
+
+                        for(int b4_=0;b4_<Coefficients_local[4].size();b4_++){
+
+                            for(int b5_=0;b5_<Coefficients_local[5].size();b5_++){
+                                Mat_1_int temp_szlz_state;
+                                double val_temp;
+                                val_temp = Coefficients_local[0][b0_]*Coefficients_local[1][b1_]*Coefficients_local[2][b2_]*Coefficients_local[3][b3_]*Coefficients_local[4][b4_]*Coefficients_local[5][b5_];
+                                Coefficients.push_back(val_temp);
+
+                                temp_szlz_state.push_back(SzLzBasis_state_local[0][b0_].first); //sz
+                                temp_szlz_state.push_back(SzLzBasis_state_local[0][b0_].second); //lz
+                                temp_szlz_state.push_back(SzLzBasis_state_local[1][b1_].first);
+                                temp_szlz_state.push_back(SzLzBasis_state_local[1][b1_].second);
+                                temp_szlz_state.push_back(SzLzBasis_state_local[2][b2_].first);
+                                temp_szlz_state.push_back(SzLzBasis_state_local[2][b2_].second);
+                                temp_szlz_state.push_back(SzLzBasis_state_local[3][b3_].first);
+                                temp_szlz_state.push_back(SzLzBasis_state_local[3][b3_].second);
+                                temp_szlz_state.push_back(SzLzBasis_state_local[4][b4_].first);
+                                temp_szlz_state.push_back(SzLzBasis_state_local[4][b4_].second);
+                                temp_szlz_state.push_back(SzLzBasis_state_local[5][b5_].first);
+                                temp_szlz_state.push_back(SzLzBasis_state_local[5][b5_].second);
+
+                                for(int i_=0;i_<temp_szlz_state.size();i_++){
+                                    temp_szlz_state[i_] = temp_szlz_state[i_] + basis.SPIN;
+                                }
+
+                                fromVecint_to_Deci(temp_szlz_state, basis.BASE, dec_, basis.Length);
+                                quicksort(temp_szlz_state, 0, temp_szlz_state.size() -1);
+                                fromVecint_to_Deci(temp_szlz_state, basis.BASE, dec_max, basis.Length);
+                                n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
+                                m_ = Find_int_in_part_of_intarray(dec_, basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
+
+                                m_basis.push_back(m_);
+
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
 
 }
@@ -1276,6 +1327,48 @@ void MODEL_Spins_Target_Sz::Create_JJz_Trial_States(Mat_2_pair_realint &JJzBasis
                             m_basis.push_back(m_basis_var);
                         }
 
+                    }
+                }
+            }
+        }
+    }
+
+    if(SL_sites==6){
+
+        for(int J0_=0;J0_<JJz_basis_temp.size();J0_++){ //site0
+            for(int J1_=0;J1_<JJz_basis_temp.size();J1_++){ //site1
+
+                for(int J2_=0;J2_<JJz_basis_temp.size();J2_++){ //site2
+                    for(int J3_=0;J3_<JJz_basis_temp.size();J3_++){ //site3
+
+                        for(int J4_=0;J4_<JJz_basis_temp.size();J4_++){ //site4
+                            for(int J5_=0;J5_<JJz_basis_temp.size();J5_++){ //site5
+
+                                Mat_1_pair_realInt JJz_basis_state_var;
+                                Mat_1_real Coefficients_var;
+                                Mat_1_int m_basis_var;
+                                int total_Jz;
+
+                                JJz_basis_state_var.push_back(JJz_basis_temp[J0_]); //site0;
+                                JJz_basis_state_var.push_back(JJz_basis_temp[J1_]); //site1;
+                                JJz_basis_state_var.push_back(JJz_basis_temp[J2_]); //site2;
+                                JJz_basis_state_var.push_back(JJz_basis_temp[J3_]); //site3;
+                                JJz_basis_state_var.push_back(JJz_basis_temp[J4_]); //site4;
+                                JJz_basis_state_var.push_back(JJz_basis_temp[J5_]); //site5;
+
+                                total_Jz =JJz_basis_temp[J0_].second + JJz_basis_temp[J1_].second + JJz_basis_temp[J2_].second + JJz_basis_temp[J3_].second + JJz_basis_temp[J4_].second + JJz_basis_temp[J5_].second;
+                                total_Jz = int(total_Jz + (basis.SPIN*basis.Length));
+
+                                if(total_Jz == basis.Target_Total_Value){
+                                    Direct_product_of_localJ_Ansatz(JJz_basis_state_var, Coefficients_var, m_basis_var, basis);
+
+                                    JJzBasis_states.push_back(JJz_basis_state_var);
+                                    Coefficients.push_back(Coefficients_var);
+                                    m_basis.push_back(m_basis_var);
+                                }
+
+                            }
+                        }
                     }
                 }
             }
