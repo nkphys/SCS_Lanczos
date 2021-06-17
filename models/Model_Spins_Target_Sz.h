@@ -58,6 +58,7 @@ void Add_connections(BASIS_Spins_Target_Sz &basis);
 void Add_connections_new(BASIS_Spins_Target_Sz &basis);
 void Read_parameters_for_dynamics(string filename);
 void Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &basis);
+void Initialize_State_for_Dynamics(BASIS_Spins_Target_Sz &basis_new, BASIS_Spins_Target_Sz &basis, Mat_1_doub &Vec_, Mat_1_doub &Vec_Dyn);
 void Initialize_one_point_to_calculate_from_file(BASIS_Spins_Target_Sz &basis);
 void Act_SiSj(int &site_i, int &site_j, ulli &m, Mat_1_ullint &m_out_array, Mat_1_doub &Coeff_out_Array, BASIS_Spins_Target_Sz &basis);
 void Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR_ , int site1, int site2, BASIS_Spins_Target_Sz &basis);

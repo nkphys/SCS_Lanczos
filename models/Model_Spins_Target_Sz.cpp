@@ -1449,6 +1449,85 @@ void MODEL_Spins_Target_Sz::Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &b
 }
 
 
+void MODEL_Spins_Target_Sz::Initialize_State_for_Dynamics(BASIS_Spins_Target_Sz &basis_new, BASIS_Spins_Target_Sz &basis, Mat_1_doub &Vec_, Mat_1_doub &Vec_Dyn){
+
+
+
+    double_type value_;
+    int dec_, dec_new, dec_max, m_new;
+    Vec_Dyn.resize(basis_new.D_basis.size());
+    int site_;
+    bool allowed;
+    double val_site_, val_site_new;
+    int n_index;
+    Mat_1_int state_vec;
+
+    if(Dyn_opr_string=="Splus"){
+        for (int m=0;m<basis.D_basis.size();m++){
+            dec_ = basis.D_basis[m];
+
+
+            for(int opr_no=0;opr_no<Dyn_opr_int.size();opr_no++){
+            site_=Dyn_opr_int[opr_no];
+            val_site_ = value_at_pos(dec_, site_, basis.BASE);
+            allowed=(val_site_ != (basis.BASE - 1));
+
+            if(allowed){
+                    val_site_new = val_site_ + 1;
+                    dec_new = Updated_decimal_with_value_at_pos(dec_, site_, basis.BASE, val_site_new);
+                    value_ = Vec_[m]*Dyn_opr_coeffs[opr_no]*sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                                                          ((val_site_ - (0.5*basis.TwoTimesSpin))*
+                                                           (val_site_new - (0.5*basis.TwoTimesSpin))  ) );
+
+
+                    fromDeci_to_Vecint(state_vec, basis.BASE, dec_new , basis.Length);
+                    quicksort(state_vec, 0, state_vec.size() -1);
+                    fromVecint_to_Deci(state_vec, basis.BASE, dec_max, basis.Length);
+                    n_index = Find_int_in_intarray(dec_max, basis_new.Partitions_Dec);
+                    m_new = Find_int_in_part_of_intarray(dec_new, basis_new.D_basis, basis_new.Partitions_pos[n_index].first, basis_new.Partitions_pos[n_index].second);
+
+                    assert(m_new<= basis_new.D_basis.size());
+                    Vec_Dyn[m_new] +=value_;
+                }
+
+            }
+        }
+    }
+
+    if(Dyn_opr_string=="Sminus"){
+        for (int m=0;m<basis.D_basis.size();m++){
+            dec_ = basis.D_basis[m];
+
+
+            for(int opr_no=0;opr_no<Dyn_opr_int.size();opr_no++){
+            site_=Dyn_opr_int[opr_no];
+            val_site_ = value_at_pos(dec_, site_, basis.BASE);
+            allowed=(val_site_ != 0);
+
+            if(allowed){
+                    val_site_new = val_site_ - 1;
+                    dec_new = Updated_decimal_with_value_at_pos(dec_, site_, basis.BASE, val_site_new);
+                    value_ = Vec_[m]*Dyn_opr_coeffs[opr_no]*sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                                                          ((val_site_ - (0.5*basis.TwoTimesSpin))*
+                                                           (val_site_new - (0.5*basis.TwoTimesSpin))  ) );
+
+
+                    fromDeci_to_Vecint(state_vec, basis.BASE, dec_new , basis.Length);
+                    quicksort(state_vec, 0, state_vec.size() -1);
+                    fromVecint_to_Deci(state_vec, basis.BASE, dec_max, basis.Length);
+                    n_index = Find_int_in_intarray(dec_max, basis_new.Partitions_Dec);
+                    m_new = Find_int_in_part_of_intarray(dec_new, basis_new.D_basis, basis_new.Partitions_pos[n_index].first, basis_new.Partitions_pos[n_index].second);
+
+                    assert(m_new<= basis_new.D_basis.size());
+                    Vec_Dyn[m_new] +=value_;
+                }
+
+            }
+        }
+    }
+
+}
+
 void MODEL_Spins_Target_Sz::Initialize_one_point_to_calculate_from_file(BASIS_Spins_Target_Sz &basis){
 
     One_point_oprts_onsite.resize(No_of_onepoint_obs);

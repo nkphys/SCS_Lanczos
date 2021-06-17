@@ -697,11 +697,11 @@ int main(int argc, char** argv){
 
                                         if(opr_type_4point[type]=="J2_type")
                                         {check_ = (abs(_MODEL.J2_mat[site_i][site_j][site_k][site_l])!=0.0);
-                                        conn_val = _MODEL.J2_mat[site_i][site_j][site_k][site_l];
+                                            conn_val = _MODEL.J2_mat[site_i][site_j][site_k][site_l];
                                         }
                                         if(opr_type_4point[type]=="J3_type")
                                         {check_ = (abs(_MODEL.J3_mat[site_i][site_j][site_k][site_l])!=0.0);
-                                        conn_val = _MODEL.J3_mat[site_i][site_j][site_k][site_l];
+                                            conn_val = _MODEL.J3_mat[site_i][site_j][site_k][site_l];
                                         }
 
                                         if( check_
@@ -733,7 +733,7 @@ int main(int argc, char** argv){
 
 
 
-//here
+                    //here
 
                     string fileED2_name_state = "Lanczos_State"+ to_string(state_) + "_in_JJzBasis_.txt";
                     ofstream file2_state_out(fileED2_name_state.c_str());
@@ -759,7 +759,7 @@ int main(int argc, char** argv){
 
             Mat_1_real Eigen_ED;
             Mat_2_doub vecs;
-            DO_FULL_DIAGONALIZATION==false;
+            DO_FULL_DIAGONALIZATION=false;
             if(_MODEL.Hamil.nrows>1200){
                 DO_FULL_DIAGONALIZATION=false;
             }
@@ -961,11 +961,11 @@ int main(int argc, char** argv){
 
                                             if(opr_type_4point[type]=="J2_type")
                                             {check_ = (_MODEL.J2_mat[site_i][site_j][site_k][site_l]!=0.0);
-                                            conn_val = _MODEL.J2_mat[site_i][site_j][site_k][site_l];
+                                                conn_val = _MODEL.J2_mat[site_i][site_j][site_k][site_l];
                                             }
                                             if(opr_type_4point[type]=="J3_type")
                                             {check_ = (_MODEL.J3_mat[site_i][site_j][site_k][site_l]!=0.0);
-                                            conn_val = _MODEL.J3_mat[site_i][site_j][site_k][site_l];
+                                                conn_val = _MODEL.J3_mat[site_i][site_j][site_k][site_l];
                                             }
 
                                             if( check_
@@ -1005,16 +1005,52 @@ int main(int argc, char** argv){
             if(Do_Dynamics){
 
                 _MODEL.Read_parameters_for_dynamics(inp_filename);
-                _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
 
-                LANCZOS _LANCZOS_Dynamics;
-                _LANCZOS_Dynamics.Dynamics_performed=true;
-                _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
-                _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
-                _LANCZOS_Dynamics.GS_energy=_LANCZOS.GS_energy;
-                _LANCZOS_Dynamics.Get_Dynamics_seed(_MODEL.Dyn_opr);
 
-                _LANCZOS_Dynamics.Perform_LANCZOS(_MODEL.Hamil);
+                if(_MODEL.Dyn_opr_string=="Sz"){
+                    _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+
+                    LANCZOS _LANCZOS_Dynamics;
+                    _LANCZOS_Dynamics.Dynamics_performed=true;
+                    _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
+                    _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
+                    _LANCZOS_Dynamics.GS_energy=_LANCZOS.GS_energy;
+                    _LANCZOS_Dynamics.Get_Dynamics_seed(_MODEL.Dyn_opr);
+                    _LANCZOS_Dynamics.Perform_LANCZOS(_MODEL.Hamil);
+                }
+
+                if(_MODEL.Dyn_opr_string=="Splus" || _MODEL.Dyn_opr_string=="Sminus"){
+
+                    double Sz_offset;
+                    if(_MODEL.Dyn_opr_string=="Splus"){
+                       Sz_offset=1.0;
+                    }
+                    if(_MODEL.Dyn_opr_string=="Sminus"){
+                       Sz_offset=-1.0;
+                    }
+                    Mat_1_doub Vec_Dyn;
+                    MODEL_Spins_Target_Sz _MODEL_Szp1;
+                    BASIS_Spins_Target_Sz _BASIS_Szp1;
+
+                    _MODEL_Szp1.Read_parameters(_BASIS_Szp1, inp_filename);
+
+                    _BASIS_Szp1.Target_Total_Sz = _BASIS_Szp1.Target_Total_Sz +Sz_offset;
+
+                    _BASIS_Szp1.Construct_basis();
+
+                    _MODEL_Szp1.no_of_proc = no_of_processors;
+                    _MODEL_Szp1.Add_connections_new(_BASIS_Szp1);
+
+                    _MODEL.Initialize_State_for_Dynamics(_BASIS_Szp1, _BASIS, _LANCZOS.Eig_vec, Vec_Dyn);
+
+                     LANCZOS _LANCZOS_Dynamics;
+                    _LANCZOS_Dynamics.Dynamics_performed=true;
+                    _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
+                    _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
+                    _LANCZOS_Dynamics.GS_energy=_LANCZOS.GS_energy;
+                    _LANCZOS_Dynamics.Get_Dynamics_seed(Vec_Dyn);
+                    _LANCZOS_Dynamics.Perform_LANCZOS(_MODEL_Szp1.Hamil);
+                }
 
             }
         }
@@ -2743,6 +2779,7 @@ int main(int argc, char** argv){
                 _LANCZOS_Dynamics_DOS.omega_sign=-1.0;
                 _LANCZOS_Dynamics_DOS.file_dynamics_out = _LANCZOS_Dynamics_DOS.file_dynamics_out + "_below_mu.txt";
                 _LANCZOS_Dynamics_DOS.Perform_LANCZOS(_MODEL_Nm1.Hamil);
+
 
                 //-----------------------
             }
