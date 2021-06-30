@@ -36,6 +36,7 @@ int Find_int_in_part_of_intarray(int num, Mat_1_int &array, int min_i, int max_i
 int Find_int_in_part_of_intarray(ulli num, Mat_1_ullint &array, int min_i, int max_i);
 void Print_Matrix_COO(Matrix_COO &A);
 void Print_Matrix(Mat_2_doub &A);
+void Print_Matrix(Mat_2_real &A);
 void Print_vector_in_file(Mat_1_doub vec, string filename);
 void Sort_vector_in_decreasing_order_in_file(Mat_1_doub vec, Mat_1_doub &Vec_new, Mat_1_int &Index_old);
 void Print_file_in_vector(Mat_1_doub &vec, string filename , int rows);

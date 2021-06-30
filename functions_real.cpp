@@ -9,6 +9,43 @@ extern "C" void dsyev_(char * , char * , int * , double * , int *, double *, dou
 #ifndef USE_COMPLEX
 
 
+
+
+void Sort_vector_in_decreasing_order_in_file(Mat_1_doub vec, Mat_1_doub &Vec_new, Mat_1_int &Index_old){
+
+    //ofstream outfile(filename.c_str());
+
+    Mat_1_doub Vec_temp;
+    Vec_temp=vec;
+    Vec_new.clear();
+    Index_old.clear();
+    Vec_new.resize(Vec_temp.size());
+    Index_old.resize(Vec_temp.size());
+
+    int count=0;
+    complex<double> max_temp=0.0;
+    int index_max;
+
+    while(count<Vec_temp.size()){
+        max_temp=0.0;
+        for(int j=0;j<Vec_temp.size();j++){
+            if(abs(Vec_temp[j])>=abs(max_temp)){
+                max_temp=Vec_temp[j];
+                index_max = j;
+            }
+
+        }
+        //outfile<<index_max<<"   "<<Vec_temp[index_max]<<endl;
+        Vec_new[count]=Vec_temp[index_max];
+        Index_old[count]=index_max;
+        count++;
+        Vec_temp[index_max]=0.0;
+    }
+
+
+}
+
+
 double conjugate(double val){
     return (val);
 }

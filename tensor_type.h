@@ -63,13 +63,15 @@ complex<double> const one_comp(1,0);
 complex<double> const zero_comp(0,0);
 complex<double> const iota_comp(0,1);
 
+double const one_real=1.0;
+double const zero_real=0.0;
 
 
 
 
 #ifndef USE_COMPLEX
-#define one 1.0
-#define zero 0.0
+#define one one_real
+#define zero zero_real
 #endif
 #ifdef USE_COMPLEX
 #define one one_comp

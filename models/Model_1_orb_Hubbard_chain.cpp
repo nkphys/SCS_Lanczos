@@ -733,11 +733,13 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     }
 
 
-    //  cout<<"PRINTING HOPPING MATRIX"<<endl;
-    //  Print_Matrix(Hopping_mat_NN);
+      cout<<"PRINTING HOPPING MATRIX"<<endl;
+      Print_Matrix(Hopping_mat_NN);
 
-    //Print_Matrix(NonLocalInteractions_mat);
-    //  cout<<"**************************"<<endl;
+      cout<<""<<endl;
+      cout<<"PRINTING Interaction MATRIX"<<endl;
+      Print_Matrix(NonLocalInteractions_mat);
+      cout<<"**************************"<<endl;
 
 
 
@@ -1008,8 +1010,8 @@ void MODEL_1_orb_Hubb_chain::Initialize_two_point_operator_sites_specific(string
                     D_dn = (int) (basis.D_dn_basis[j] + pow(2, site2)
                                   - pow(2, site) );
 
-                    i_new = Find_int_in_intarray(D_up,basis.D_up_basis);
-                    j_new = Find_int_in_intarray(D_dn,basis.D_dn_basis);
+                    i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                    j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
 
                     m_new = basis.D_dn_basis.size()*i_new + j_new;
 
@@ -1075,8 +1077,8 @@ void MODEL_1_orb_Hubb_chain::Initialize_two_point_operator_sites_specific(string
                     D_dn = (int) (basis.D_dn_basis[j] + pow(2, site)
                                   - pow(2, site2) );
 
-                    i_new = Find_int_in_intarray(D_up,basis.D_up_basis);
-                    j_new = Find_int_in_intarray(D_dn,basis.D_dn_basis);
+                    i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                    j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
 
                     m_new = basis.D_dn_basis.size()*i_new + j_new;
 

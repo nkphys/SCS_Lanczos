@@ -718,6 +718,19 @@ void Print_Matrix(Mat_2_doub &A){
 }
 
 
+void Print_Matrix(Mat_2_real &A){
+
+    for(int i=0;i<A.size();i++){
+        for(int j=0;j<A.size();j++){
+            cout<<A[i][j]<<"  ";
+        }
+        cout<<endl;
+    }
+
+
+}
+
+
 void Normalize_vec(Mat_1_doub &vec_in){
 
     complex<double> val_comp;
