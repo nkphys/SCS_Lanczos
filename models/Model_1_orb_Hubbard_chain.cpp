@@ -219,6 +219,8 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     string file_onsite_energies_, File_Onsite_Energies_ = "File_Onsite_Energies = ";
     string file_hopping_connections_, File_Hopping_Connections_ = "File_Hopping_Connections = ";
     string file_nonlocal_int_connections_, File_NonLocal_Int_Connections_ = "File_NonLocal_Int_Connections = ";
+    string file_three_point_observation_, File_Three_Point_Observation_ = "File_Three_Point_Observation = ";
+
 
     string read_onsite_energies;
 
@@ -268,6 +270,9 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
             if ((offset = line.find(NN_Hopp_, 0)) != string::npos) {
                 nn_hopp_ = line.substr (offset+NN_Hopp_.length());				}
 
+            if ((offset = line.find(File_Three_Point_Observation_, 0)) != string::npos) {
+                file_three_point_observation_ = line.substr (offset+File_Three_Point_Observation_.length());				}
+
             if ((offset = line.find(File_Onsite_Energies_, 0)) != string::npos) {
                 file_onsite_energies_ = line.substr (offset+File_Onsite_Energies_.length());				}
 
@@ -304,6 +309,35 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     basis.Length=Length_X_int*Length_Y_int;
     basis.Ndn=atoi(ndn.c_str());
     basis.Nup=atoi(nup.c_str());
+
+
+
+    // Mat_1_string three_point_oprs;
+    // Mat_1_trio_int three_point_oprs_sites_set;
+
+
+
+    int N_three_point_oprs;
+    int n_sites_set;
+   // stringstream _file_three_point_observation_(file_three_point_observation_);
+    ifstream inputfile_three_point_observation(file_three_point_observation_.c_str());
+
+    inputfile_three_point_observation>>N_three_point_oprs;
+    three_point_oprs.resize(N_three_point_oprs);
+    three_point_oprs_sites_set.resize(N_three_point_oprs);
+
+    for(int n=0;n<three_point_oprs.size();n++){
+        inputfile_three_point_observation>>three_point_oprs[n];
+        inputfile_three_point_observation>> n_sites_set;
+        three_point_oprs_sites_set[n].resize(n_sites_set);
+        for(int m=0;m<n_sites_set;m++){
+            three_point_oprs_sites_set[n][m].resize(3);
+            for(int i=0;i<3;i++){
+                inputfile_three_point_observation>>three_point_oprs_sites_set[n][m][i];
+            }
+        }
+    }
+
 
 
     stringstream _file_onsite_energies_(file_onsite_energies_);
@@ -350,12 +384,22 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
 
 
     double h;
-    h=atof(hmag.c_str());
+    int temp_Tsites;
+    stringstream _sstring_hmag_(hmag);
+    //h=atof(hmag.c_str());
+    _sstring_hmag_>> temp_Tsites;
+    assert(temp_Tsites==basis.Length);
     H_field.resize(basis.Length);
     for(int i=0;i<basis.Length;i++){
+        _sstring_hmag_>>h;
         H_field[i]=h;
     }
 
+    cout<<"H field used-----------------"<<endl;
+    for(int i=0;i<basis.Length;i++){
+        cout<<H_field[i]<<"  ";
+    }
+    cout<<"------------------------"<<endl;
 
 
     double hopping_double;
@@ -733,13 +777,13 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     }
 
 
-      cout<<"PRINTING HOPPING MATRIX"<<endl;
-      Print_Matrix(Hopping_mat_NN);
+    cout<<"PRINTING HOPPING MATRIX"<<endl;
+    Print_Matrix(Hopping_mat_NN);
 
-      cout<<""<<endl;
-      cout<<"PRINTING Interaction MATRIX"<<endl;
-      Print_Matrix(NonLocalInteractions_mat);
-      cout<<"**************************"<<endl;
+    cout<<""<<endl;
+    cout<<"PRINTING Interaction MATRIX"<<endl;
+    Print_Matrix(NonLocalInteractions_mat);
+    cout<<"**************************"<<endl;
 
 
 
@@ -949,10 +993,10 @@ void MODEL_1_orb_Hubb_chain::Initialize_two_point_operator_sites_specific(string
                 m=basis.D_dn_basis.size()*i + j;
                 value=0;
                 value+=1.0*( ( bit_value(basis.D_up_basis[i], site) +
-                                bit_value(basis.D_dn_basis[j], site) )*
-                              ( bit_value(basis.D_up_basis[i], site2) +
-                                bit_value(basis.D_dn_basis[j], site2) )
-                              );
+                               bit_value(basis.D_dn_basis[j], site) )*
+                             ( bit_value(basis.D_up_basis[i], site2) +
+                               bit_value(basis.D_dn_basis[j], site2) )
+                             );
                 if(value!=0){
                     OPR.value.push_back(value*one);
                     OPR.rows.push_back(m);
@@ -1115,6 +1159,81 @@ void MODEL_1_orb_Hubb_chain::Initialize_two_point_operator_sites_specific(string
     }
 
 
+
+
+}
+
+
+void MODEL_1_orb_Hubb_chain::Initialize_three_point_operator_sites_specific(string opr_type , Matrix_COO &OPR,
+                                                                          int site1, int site2, int site3, BASIS_1_orb_Hubb_chain &basis){
+
+    OPR.nrows = basis.D_up_basis.size()*basis.D_dn_basis.size();
+    OPR.ncols = OPR.nrows;
+
+
+    //Remember OPR[l][m]=<l|OPR|m>
+    int m;
+    double value;
+
+
+    if(opr_type=="SzSpSm"){
+        int D_up, D_dn,i_new,j_new,m_new, l, lp, sign_pow_up , sign_pow_dn;
+        double sign_FM;
+
+        for (int i=0;i<basis.D_up_basis.size();i++){
+            for (int j=0;j<basis.D_dn_basis.size();j++){
+                m=basis.D_dn_basis.size()*i + j;
+
+                //Sz[site1]Sp[site2]*Sm[site3]:
+                //there have to be ony up electron at site2
+                //there have to be only down electron at site
+
+                assert(site1!=site2);
+                assert(site1!=site3);
+                assert(site2!=site3);
+
+                if(((bit_value(basis.D_dn_basis[j], site2)==1)
+                    &&
+                    (bit_value(basis.D_up_basis[i], site2)==0)
+                    )
+                        &&
+                        ((bit_value(basis.D_up_basis[i], site3)==1)
+                         &&
+                         (bit_value(basis.D_dn_basis[j], site3)==0)
+                         ))
+                {
+
+                    D_up = (int) (basis.D_up_basis[i] - pow(2, site3)
+                                  + pow(2, site2) );
+                    D_dn = (int) (basis.D_dn_basis[j] + pow(2, site3)
+                                  - pow(2, site2) );
+
+                    i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                    j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+
+                    m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                    l= site3;
+                    lp= site2;
+
+                    sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+                    sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+                    sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn+1);
+
+
+                    value = sign_FM*(0.5*( bit_value(basis.D_up_basis[i_new], site1) -
+                                           bit_value(basis.D_dn_basis[j_new], site1) ));
+
+                    //assert(m_new<m);
+                    OPR.value.push_back(value*one);
+                    OPR.rows.push_back(m_new);
+                    OPR.columns.push_back(m);
+                }
+
+
+            }
+        }
+    }
 
 
 }

@@ -97,6 +97,7 @@ int main(int argc, char** argv){
         if(Hamil_construct){
             _MODEL.Add_diagonal_terms(_BASIS);
             _MODEL.Add_connections(_BASIS);
+            //cout<<"---PRINTING HAMIL-----"<<endl;
             //Print_Matrix_COO(_MODEL.Hamil);
         }
 
@@ -1023,10 +1024,10 @@ int main(int argc, char** argv){
 
                     double Sz_offset;
                     if(_MODEL.Dyn_opr_string=="Splus"){
-                       Sz_offset=1.0;
+                        Sz_offset=1.0;
                     }
                     if(_MODEL.Dyn_opr_string=="Sminus"){
-                       Sz_offset=-1.0;
+                        Sz_offset=-1.0;
                     }
                     Mat_1_doub Vec_Dyn;
                     MODEL_Spins_Target_Sz _MODEL_Szp1;
@@ -1043,7 +1044,7 @@ int main(int argc, char** argv){
 
                     _MODEL.Initialize_State_for_Dynamics(_BASIS_Szp1, _BASIS, _LANCZOS.Eig_vec, Vec_Dyn);
 
-                     LANCZOS _LANCZOS_Dynamics;
+                    LANCZOS _LANCZOS_Dynamics;
                     _LANCZOS_Dynamics.Dynamics_performed=true;
                     _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
                     _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
@@ -3141,6 +3142,47 @@ int main(int argc, char** argv){
                         cout<<endl;
                     }
                     cout<<"Sum="<<Sum_<<endl;
+
+                }
+
+
+                //three_point_observables
+                double_type value_three_point;
+                cout<<"Three point observables :"<<endl;
+
+                double_type Sum_temp;
+                for(int type=0;type<_MODEL.three_point_oprs.size();type++){
+                    cout<<"________________________________"<<endl;
+                    cout<<_MODEL.three_point_oprs[type]<<":"<<endl;
+                    cout<<"````````````````````````````````"<<endl;
+                    Sum_temp=0.0;
+                    for(int sites_set=0;sites_set<_MODEL.three_point_oprs_sites_set[type].size();sites_set++){
+                        int site1, site2, site3;
+                        site1=_MODEL.three_point_oprs_sites_set[type][sites_set][0];
+                        site2=_MODEL.three_point_oprs_sites_set[type][sites_set][1];
+                        site3=_MODEL.three_point_oprs_sites_set[type][sites_set][2];
+
+                        assert(site1!=site2);
+                        assert(site1!=site3);
+                        assert(site2!=site3);
+
+                        OPR_.columns.clear();
+                        OPR_.rows.clear();
+                        OPR_.value.clear();
+                        _MODEL.Initialize_three_point_operator_sites_specific(_MODEL.three_point_oprs[type] , OPR_, site1, site2, site3, _BASIS);
+                        value_three_point=_LANCZOS.Measure_observable(OPR_, state_no);
+
+                        cout<<site1<<" "<<site2<<" "<<site3<<" "<<value_three_point<<"  ";
+                        //Sum_+=value_two_point;
+
+                        vector< int >().swap( OPR_.columns );
+                        vector< int >().swap( OPR_.rows );
+                        vector< double_type >().swap( OPR_.value );
+
+                        cout<<endl;
+
+                        //cout<<"Sum="<<Sum_<<endl;
+                    }
 
                 }
 

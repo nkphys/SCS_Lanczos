@@ -35,6 +35,10 @@ public:
     Mat_1_string One_point_strs;
     Mat_1_tetra_int Four_point_sites_set;
 
+    Mat_1_string three_point_oprs;
+    Mat_3_int three_point_oprs_sites_set;
+
+
     Matrix_COO Dyn_opr;
     string Dyn_opr_string;
     double Dyn_Momentum;
@@ -61,6 +65,7 @@ void Initialize_one_point_to_calculate(BASIS_1_orb_Hubb_chain &basis);
 void Initialize_two_point_to_calculate(BASIS_1_orb_Hubb_chain &basis);
 void Initialize_one_point_operator_site_specific(string opr_type , Matrix_COO &OPR, int site, BASIS_1_orb_Hubb_chain &basis);
 void Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR, int site1, int site2, BASIS_1_orb_Hubb_chain &basis);
+void Initialize_three_point_operator_sites_specific(string opr_type , Matrix_COO &OPR, int site1, int site2, int site3, BASIS_1_orb_Hubb_chain &basis);
 void Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_chain &basis);
 void Get_cdagger_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hubb_chain & basis_Np1, BASIS_1_orb_Hubb_chain & basis, Mat_1_trio_int TRIO_VEC, Mat_1_doub values);
 void Get_c_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hubb_chain & basis_Nm1, BASIS_1_orb_Hubb_chain & basis, Mat_1_trio_int TRIO_VEC, Mat_1_doub values);

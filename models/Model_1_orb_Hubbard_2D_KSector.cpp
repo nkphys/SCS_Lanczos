@@ -292,7 +292,7 @@ void MODEL_1_orb_Hubb_2D_KSector::Add_connections(BASIS_1_orb_Hubb_2D_KSector &b
                                     m_new = i_new;
 
 #ifdef USE_COMPLEX
-                                    phase_=exp(-1.0*iota_*( ((2.0*PI*Inv_Trnsltns_x_*basis.Momentum_nx)/(basis.Lx)) + ((2.0*PI*Inv_Trnsltns_y_*basis.Momentum_ny)/(basis.Ly))   )
+                                    phase_=exp(-1.0*iota_*( ((2.0*PI*(Inv_Trnsltns_x_)*basis.Momentum_nx)/(basis.Lx)) + ((2.0*PI*(Inv_Trnsltns_y_)*basis.Momentum_ny)/(basis.Ly))   )
                                                )
                                             *sqrt((1.0*basis.D_Norm[m_new])/(1.0*basis.D_Norm[m]));
 #endif
@@ -2795,6 +2795,7 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
     string file_hopping_connections_, File_Hopping_Connections_ = "File_Hopping_Connections = ";
     string file_nonlocal_int_connections_, File_NonLocal_Int_Connections_ = "File_NonLocal_Int_Connections = ";
 
+    string file_three_point_observation_, File_Three_Point_Observation_ = "File_Three_Point_Observation = ";
 
     int offset;
     string line;
@@ -2854,6 +2855,9 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
 
             if ((offset = line.find(Hopp_, 0)) != string::npos) {
                 hopp_ = line.substr (offset+Hopp_.length());				}
+
+            if ((offset = line.find(File_Three_Point_Observation_, 0)) != string::npos) {
+                file_three_point_observation_ = line.substr (offset+File_Three_Point_Observation_.length());				}
 
             if ((offset = line.find(File_Onsite_Energies_, 0)) != string::npos) {
                 file_onsite_energies_ = line.substr (offset+File_Onsite_Energies_.length());				}
@@ -2972,6 +2976,14 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
             }
         }
 
+        for(int site_i=0;site_i<basis.Length;site_i++){
+            for(int site_j=site_i+1;site_j<basis.Length;site_j++){
+                if(abs(Hopping_mat_NN[site_j][site_i]-Hopping_mat_NN[site_i][site_j]) >0.000001){
+                    Hopping_mat_NN[site_j][site_i]=Hopping_mat_NN[site_i][site_j];
+                }
+            }
+        }
+
 
 
 
@@ -3050,6 +3062,15 @@ void MODEL_1_orb_Hubb_2D_KSector::Read_parameters(BASIS_1_orb_Hubb_2D_KSector &b
 
 
     }
+
+
+    cout<<"PRINTING HOPPING MATRIX"<<endl;
+    Print_Matrix(Hopping_mat_NN);
+
+    cout<<""<<endl;
+    cout<<"PRINTING Interaction MATRIX"<<endl;
+    Print_Matrix(NonLocalInteractions_mat);
+    cout<<"**************************"<<endl;
 
 
 
