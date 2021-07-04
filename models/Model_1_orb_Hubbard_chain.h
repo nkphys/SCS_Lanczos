@@ -38,6 +38,9 @@ public:
     Mat_1_string three_point_oprs;
     Mat_3_int three_point_oprs_sites_set;
 
+    Mat_1_string three_point_intrs;
+    Mat_3_int three_point_intrs_sites_set;
+    Mat_2_doub three_point_intrs_vals;
 
     Matrix_COO Dyn_opr;
     string Dyn_opr_string;

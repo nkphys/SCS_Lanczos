@@ -479,13 +479,19 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
 
 
                 if(Check_Ghosts==true){
+                    double_type value_local;
                     string out3 = "ghost.txt";
                     ofstream file_out3(out3.c_str());
 
                     for(int Ts1=0;Ts1<Eig_vecs.size();Ts1++){
 
                         for(int Ts2=0;Ts2<Eig_vecs.size();Ts2++){
-                            file_out3<<dot_product(Eig_vecs[Ts1],Eig_vecs[Ts2])<<"  ";
+                            value_local = dot_product(Eig_vecs[Ts1],Eig_vecs[Ts2]);
+                            if(abs(value_local)<0.00000001){
+                                file_out3<<zero<<"  ";
+                            }
+                            else{
+                                file_out3<<value_local<<"  ";}
 
                         }
                         file_out3<<endl;

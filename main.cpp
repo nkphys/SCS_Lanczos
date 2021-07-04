@@ -2996,6 +2996,10 @@ int main(int argc, char** argv){
         cout<<"Basis contructed"<<endl;
         _MODEL.Add_diagonal_terms(_BASIS);
         cout<<"Diagonal terms added"<<endl;
+
+        _MODEL.Add_non_diagonal_terms(_BASIS);
+        cout<<"Non_Diagonal(includes three point oprs) terms added"<<endl;
+
         _MODEL.Add_connections(_BASIS);
         cout<<"Connections added"<<endl;
 

@@ -5,35 +5,37 @@ PBC = true
 Length_X = 4
 Length_Y = 4
 Total_Sites = 16
-Ndown = 2
-Nup = 2
+Ndown = 4
+Nup = 4
  
 Hopping = 1.0
 Hopping_NN = 0.0
 U = 12.0
 H_mag = 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 File_Onsite_Energies = false pinning_ener.txt
-File_Hopping_Connections = Hopppings.txt
+File_Hopping_Connections = Hoppings.txt
 File_NonLocal_Int_Connections = Interactions_SNAKE3_6X4_OBCXPBC.txt
 
 
 File_Three_Point_Observation = ThreePointOprs.txt
+File_Three_Point_Interaction = ThreePointIntrs.txt
 ----------------------------------------
 -------------------------------------
 Random_seed_generator = 564
-Lanc_Error = -10e-14
+Lanc_Error = 10e-14
 max_steps = 300
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = true
-get_overlap_bw_eigstates_and_K_vecs = true
-lanczos_reorthogonalization = true
-Get_Full_Spectrum = true
-need_few_eig_vecs = true
-few = 20
+save_all_Krylov_space_vecs = truee
+get_overlap_bw_eigstates_and_K_vecs = truee
+lanczos_reorthogonalization = truee
+Get_Full_Spectrum = truee
+need_few_eig_vecs = truee
+few = 2
 ----------------------------------------
-Get_overlap_with_basis = false
-States_to_look = 20 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
-overlap_out_file = out0.txt
+Get_overlap_with_basis = truee
+States_to_look = 2 0 1
+# 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+overlap_out_file = out1.txt
 calculate_local_obs_for_states_to_look = false
 calculate_local_obs_for_states_to_look_for_first_n_basis = 100
 file_out_local_obs_for_states_to_look = local_obs_for_state_no
