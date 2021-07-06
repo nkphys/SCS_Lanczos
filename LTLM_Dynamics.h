@@ -15,12 +15,19 @@
 
 using namespace std;
 
-#ifndef LTLM_DYNAMICS_engine
-#define LTLM_DYNAMICS_engine
+#ifndef LTLM_DYNAMICS_class
+#define LTLM_DYNAMICS_class
 
+template <typename Basis_type, typename Model_type>
 class LTLM_DYNAMICS{
 
 public:
+    LTLM_DYNAMICS(Basis_type& Basis_, Model_type& Model_)
+        :basis(Basis_), model(Model_)
+    {
+
+    }
+
 
     //NOTATION : STATISTICAL AVG is average over random initial seeds
     //           Qauntum Avg is just expectation values.
@@ -40,8 +47,13 @@ public:
 
     Mat_1_real Evals1, Evals2;
 
-
     void Perform_LTLM(string inp_filename, Matrix_COO& OPR_);
+
+
+private :
+    Basis_type& basis;
+    Model_type& model;
+
 
 };
 

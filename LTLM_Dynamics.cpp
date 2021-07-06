@@ -7,12 +7,16 @@ using namespace std;
 //#ifdef USE_COMPLEX
 
 
+#ifndef LTLM_DYNAMICS_functions
+#define LTLM_DYNAMICS_functions
 
-void LTLM_DYNAMICS::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
+template <typename Basis_type, typename Model_type>
+void LTLM_DYNAMICS<Basis_type, Model_type>::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
 
 
-    LANCZOS Lanczos1_;
-    LANCZOS Lanczos2_;
+    LANCZOS<Basis_type, Model_type> Lanczos1_(basis, model);
+    LANCZOS<Basis_type, Model_type> Lanczos2_(basis, model);
+
 
     double offset_E;
 
@@ -219,3 +223,6 @@ void LTLM_DYNAMICS::Perform_LTLM(string inp_filename, Matrix_COO& OPR_){
 
 
 }
+
+
+#endif

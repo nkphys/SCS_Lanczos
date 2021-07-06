@@ -19,6 +19,13 @@ using namespace std;
     m=basis.D_dn_basis.size()*i + j;
 */
 
+
+void MODEL_3_orb_Hubb_chain::Act_Hamil(BASIS_3_orb_Hubb_chain &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
+
+ cout<<"NOT WORKING AT PRESENT"<<endl;
+
+}
+
 void MODEL_3_orb_Hubb_chain::Add_diagonal_terms(BASIS_3_orb_Hubb_chain &basis){
 
     Hamil.nrows = basis.D_up_basis.size()*basis.D_dn_basis.size();
@@ -1672,23 +1679,25 @@ void MODEL_3_orb_Hubb_chain::Initialize_Opr_for_Dynamics(BASIS_3_orb_Hubb_chain 
 
 
 
-void MODEL_3_orb_Hubb_chain::Calculate_Local_Obs_for_States_to_Look(LANCZOS & lanczos, BASIS_3_orb_Hubb_chain & basis){
+void MODEL_3_orb_Hubb_chain::Calculate_Local_Obs_for_States_to_Look(bool calculate_local_obs_for_states_to_look,
+                                                                                   Mat_1_int & states_to_look,
+                                                                                   string file_Loc_obs_in_basis_of_states,
+                                                                                   int no_basis_to_check,
+                                                                                   Mat_2_pair_realint &Overlaps,
+                                                                                   BASIS_3_orb_Hubb_chain & basis){
 
     bool grouping_by_orb2 =true;
 
 
 
 
-    if(lanczos.calculate_local_obs_for_states_to_look == true){
+    if(calculate_local_obs_for_states_to_look == true){
         div_t divresult;
 
         int nup,ndn,temp_d;
 
 
-
-
-
-        for(int Ts=0;Ts<lanczos.states_to_look.size();Ts++){
+        for(int Ts=0;Ts<states_to_look.size();Ts++){
 
             Mat_1_int nup_2_old,ndn_2_old;
             nup_2_old.resize(basis.Length);ndn_2_old.resize(basis.Length);
@@ -1706,13 +1715,13 @@ void MODEL_3_orb_Hubb_chain::Calculate_Local_Obs_for_States_to_Look(LANCZOS & la
 
 
 
-            string out0 = lanczos.file_Loc_obs_in_basis_of_states + NumberToString (lanczos.states_to_look[Ts])+ ".txt";
+            string out0 = file_Loc_obs_in_basis_of_states + NumberToString (states_to_look[Ts])+ ".txt";
             ofstream file_out0(out0.c_str());
 
-            for(int bi=0;bi<lanczos.no_basis_to_check;bi++){
-                file_out0<<"#For Basis no = "<<lanczos.Overlaps[Ts][bi].second<<"["<<bi<<"]"<<endl;
+            for(int bi=0;bi<no_basis_to_check;bi++){
+                file_out0<<"#For Basis no = "<<Overlaps[Ts][bi].second<<"["<<bi<<"]"<<endl;
                 // m=basis.D_dn_basis.size()*i + j;
-                divresult = div (lanczos.Overlaps[Ts][bi].second,basis.D_dn_basis.size());
+                divresult = div (Overlaps[Ts][bi].second,basis.D_dn_basis.size());
 
                 int bi_up = divresult.quot;
                 int bi_dn = divresult.rem;
@@ -1738,7 +1747,7 @@ void MODEL_3_orb_Hubb_chain::Calculate_Local_Obs_for_States_to_Look(LANCZOS & la
                     file_out0<<endl;
                 }
 
-                file_out0<<lanczos.Overlaps[Ts][bi].first<<endl;
+                file_out0<<Overlaps[Ts][bi].first<<endl;
             }
 
 
@@ -1746,14 +1755,12 @@ void MODEL_3_orb_Hubb_chain::Calculate_Local_Obs_for_States_to_Look(LANCZOS & la
 
             if(grouping_by_orb2==true){
 
-
-
-                string out2 = lanczos.file_Loc_obs_in_basis_of_states + NumberToString (lanczos.states_to_look[Ts])+ "_groupwise.txt";
+                string out2 = file_Loc_obs_in_basis_of_states + NumberToString (states_to_look[Ts])+ "_groupwise.txt";
                 ofstream file_out2(out2.c_str());
 
-                for(int bi=0;bi<lanczos.no_basis_to_check;bi++){
+                for(int bi=0;bi<no_basis_to_check;bi++){
 
-                    divresult = div (lanczos.Overlaps[Ts][bi].second,basis.D_dn_basis.size());
+                    divresult = div (Overlaps[Ts][bi].second,basis.D_dn_basis.size());
 
                     int bi_up = divresult.quot;
                     int bi_dn = divresult.rem;
@@ -1766,13 +1773,13 @@ void MODEL_3_orb_Hubb_chain::Calculate_Local_Obs_for_States_to_Look(LANCZOS & la
                     int pos;
                     if( present_before(nup_2, ndn_2, nup_2_group, ndn_2_group, pos) == false ) //if new group
                     {
-                        group_weight.push_back(lanczos.Overlaps[Ts][bi].first);
+                        group_weight.push_back(Overlaps[Ts][bi].first);
                         nup_2_group.push_back(nup_2);
                         ndn_2_group.push_back(ndn_2);
                     }
                     else{
                         bool test = present_before(nup_2, ndn_2, nup_2_group, ndn_2_group, pos);
-                        group_weight[pos] = group_weight[pos]  + lanczos.Overlaps[Ts][bi].first;
+                        group_weight[pos] = group_weight[pos]  + Overlaps[Ts][bi].first;
                     }
 
 
@@ -1810,4 +1817,5 @@ void MODEL_3_orb_Hubb_chain::Calculate_Local_Obs_for_States_to_Look(LANCZOS & la
     }
 
 }
+
 #endif

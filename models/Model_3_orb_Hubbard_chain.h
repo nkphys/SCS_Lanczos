@@ -3,10 +3,8 @@ This class includes the Model for which Lanczos is being done
 */
 
 #include "../basis/Basis_3_orb_Hubbard_chain.h"
-
-#include "../Lanczos_engine.h"
-
-
+#include "../functions_real.h"
+#include "../functions_complex.h"
 #ifndef Model_3_orb_Hubb_chain
 #define Model_3_orb_Hubb_chain
 
@@ -48,7 +46,15 @@ void Initialize_macro_oprs_to_calculate(BASIS_3_orb_Hubb_chain &basis);
 void Initialize_one_point_to_calculate(BASIS_3_orb_Hubb_chain &basis);
 void Initialize_two_point_to_calculate(BASIS_3_orb_Hubb_chain &basis);
 void Initialize_Opr_for_Dynamics(BASIS_3_orb_Hubb_chain &basis);
-void Calculate_Local_Obs_for_States_to_Look(LANCZOS & lanczos, BASIS_3_orb_Hubb_chain & basis);
+void Calculate_Local_Obs_for_States_to_Look(bool calculate_local_obs_for_states_to_look,
+                                                                                   Mat_1_int & states_to_look,
+                                                                                   string file_Loc_obs_in_basis_of_states,
+                                                                                   int no_basis_to_check,
+                                                                                   Mat_2_pair_realint &Overlaps,
+                                                                                   BASIS_3_orb_Hubb_chain & basis);
+
+void Act_Hamil(BASIS_3_orb_Hubb_chain &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+
 };
 
 #endif

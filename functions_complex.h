@@ -7,6 +7,13 @@
 #include <cstdlib>
 #include <algorithm>
 #include <sstream>
+#include <math.h>  //fabs(double x) =|x|
+#include <stdlib.h>  //for div(q,n).rem(quot),rand
+#include <time.h>
+#include <fstream>
+#include <limits>
+#include <iomanip>
+#include <stdio.h>
 //#include "mkl_spblas.h"
 //#include <mkl_types.h>
 //#include <mkl_cblas.h>

@@ -3,8 +3,8 @@ This class includes the Model for which Lanczos is being done
 */
 
 #include "../basis/Basis_1_orb_Hubbard_2D_KSector.h"
-#include "../Lanczos_engine.h"
-
+#include "../functions_real.h"
+#include "../functions_complex.h"
 
 #ifndef Model_1_orb_Hubb_2D_KSector
 #define Model_1_orb_Hubb_2D_KSector
@@ -61,6 +61,7 @@ public:
     void Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR_ , int site_x, int site_y, BASIS_1_orb_Hubb_2D_KSector &basis);
     void Initialize_three_point_operator_sites_specific(string opr_type  , Matrix_COO &OPR_, int sitejx, int sitejy, int sitelx, int sitely, BASIS_1_orb_Hubb_2D_KSector &basis);
     void Initialize_chiral_corr_operator_sites_specific(string opr_type, Matrix_COO &OPR_, int lx_rel, int ly_rel , BASIS_1_orb_Hubb_2D_KSector &basis);
+    void Act_Hamil(BASIS_1_orb_Hubb_2D_KSector &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
 
 
 

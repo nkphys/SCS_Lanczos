@@ -1,3 +1,5 @@
+#ifndef Model_3_orb_Hubb_chain_GC_Functions
+#define Model_3_orb_Hubb_chain_GC_Functions
 #include "Model_3_orb_Hubbard_chain_GC.h"
 #include <stdlib.h>
 using namespace std;
@@ -13,6 +15,14 @@ using namespace std;
 
     4) orb_0 = d_xz, orb_1 = d_yz, orb_2 = d_xy
     */
+
+template <typename Basis_type>
+void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Act_Hamil(Basis_type &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
+
+ cout<<"NOT WORKING AT PRESENT"<<endl;
+
+}
+
 template <typename Basis_type>
 void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_diagonal_terms(){
 
@@ -3956,7 +3966,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_ExcitonCoherence_Length(Mat_1_do
 
 
 template <typename Basis_type>
-void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_Delta_Matrix(LANCZOS & lanczos){
+void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_Delta_Matrix(Mat_2_doub &EigVecs_){
 
     double_type value =zero;
     Mat_1_doub vec_out, vec_in;
@@ -3969,13 +3979,13 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_Delta_Matrix(LANCZOS & lanczos){
         cout<<"Matrix for "<<one_point_obs[opr_no]<<"[site="<<site_<<"] in eigenstates:"<<endl;
 
         cout<<"------------------------------------------------------------------"<<endl;
-        for(int row=0;row<lanczos.Eig_vecs.size();row++){
-            for(int col=0;col<lanczos.Eig_vecs.size();col++){
+        for(int row=0;row<EigVecs_.size();row++){
+            for(int col=0;col<EigVecs_.size();col++){
 
                 OPR_ =  One_point_oprts[opr_no][site_];
-                vec_in = lanczos.Eig_vecs[col];
+                vec_in = EigVecs_[col];
                 Matrix_COO_vector_multiplication("XX", OPR_, vec_in , vec_out);
-                value=dot_product(vec_out, lanczos.Eig_vecs[row]);
+                value=dot_product(vec_out, EigVecs_[row]);
                 if(abs(value)<0.0001){
                     value = zero;
                 }
@@ -4337,7 +4347,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_two_point_to_calculate(){
 
 
 template <typename Basis_type>
-void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_Opr_for_Dynamics(LANCZOS &lanczos_GS){
+void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_Opr_for_Dynamics(){
 
     int nup_temp, ndn_temp;
     if(Dyn_Momentum_Resolved){
@@ -4559,7 +4569,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_Opr_for_Dynamics(LANCZOS 
 
             for(int site=0;site<basis.Length;site++){
                 Iden_temp=Identity_COO(One_point_oprts[12][site].nrows,One_point_oprts[12][site].ncols);
-                Sum(One_point_oprts[12][site],Iden_temp , Oprs_local[site], one, (-1.0*lanczos_GS.One_point_observables_values[12][site]));
+                //Sum(One_point_oprts[12][site],Iden_temp , Oprs_local[site], one, (-1.0*lanczos_GS.One_point_observables_values[12][site]));
                 //                Oprs_local[site] = One_point_oprts[12][site];
 
 
@@ -5320,7 +5330,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Initialize_Opr_for_Dynamics(LANCZOS 
 
 
 template <typename Basis_type>
-void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_c_on_GS(LANCZOS & lanczos, BASIS_3_orb_Hubb_chain_GC & basis_Nm1,
+void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_c_on_GS(Mat_1_doub & EigVec_, BASIS_3_orb_Hubb_chain_GC & basis_Nm1,
                                                         Mat_1_trio_int TRIO_VEC, Mat_1_doub values){
 
 
@@ -5371,7 +5381,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_c_on_GS(LANCZOS & lanczos, BASIS
 
                     sign_FM = pow(-1.0, sign_pow_up);
 
-                    value = sign_FM*lanczos.Eig_vec[i]*value_in;
+                    value = sign_FM*EigVec_[i]*value_in;
 
                     State_c_on_GS[i_new] += value;
 
@@ -5402,7 +5412,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_c_on_GS(LANCZOS & lanczos, BASIS
 
                     sign_FM = pow(-1.0, sign_pow_dn);
 
-                    value = sign_FM*lanczos.Eig_vec[i]*value_in;
+                    value = sign_FM*EigVec_[i]*value_in;
 
                     State_c_on_GS[i_new] += value;
 
@@ -5424,7 +5434,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_c_on_GS(LANCZOS & lanczos, BASIS
 
 
 template <typename Basis_type>
-void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_cdagger_on_GS(LANCZOS & lanczos, BASIS_3_orb_Hubb_chain_GC & basis_Np1,
+void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_cdagger_on_GS(Mat_1_doub & EigVec_, BASIS_3_orb_Hubb_chain_GC & basis_Np1,
                                                               Mat_1_trio_int TRIO_VEC, Mat_1_doub values){
 
 
@@ -5476,10 +5486,10 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_cdagger_on_GS(LANCZOS & lanczos,
                     sign_FM = pow(-1.0, sign_pow_up);
 
 #ifdef USE_COMPLEX
-                    value = sign_FM*lanczos.Eig_vec[i]*conj(value_in);
+                    value = sign_FM*EigVec_[i]*conj(value_in);
 #endif
 #ifndef USE_COMPLEX
-                    value = sign_FM*lanczos.Eig_vec[i]*(value_in);
+                    value = sign_FM*EigVec_[i]*(value_in);
 #endif
 
 
@@ -5514,10 +5524,10 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_cdagger_on_GS(LANCZOS & lanczos,
 
 
 #ifdef USE_COMPLEX
-                    value = sign_FM*lanczos.Eig_vec[i]*conj(value_in);
+                    value = sign_FM*EigVec_[i]*conj(value_in);
 #endif
 #ifndef USE_COMPLEX
-                    value = sign_FM*lanczos.Eig_vec[i]*(value_in);
+                    value = sign_FM*EigVec_[i]*(value_in);
 #endif
 
                     State_cdagger_on_GS[i_new] += value;
@@ -5538,23 +5548,24 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Get_cdagger_on_GS(LANCZOS & lanczos,
 }
 
 template <typename Basis_type>
-void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Calculate_Local_Obs_for_States_to_Look(LANCZOS & lanczos){
+void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Calculate_Local_Obs_for_States_to_Look(bool calculate_local_obs_for_states_to_look,
+                                                                                   Mat_1_int & states_to_look,
+                                                                                   string file_Loc_obs_in_basis_of_states,
+                                                                                   int no_basis_to_check,
+                                                                                   Mat_2_pair_realint &Overlaps ){
 
     bool grouping_by_orb2 =true;
 
 
 
 
-    if(lanczos.calculate_local_obs_for_states_to_look == true){
+    if(calculate_local_obs_for_states_to_look == true){
         div_t divresult;
 
         int nup,ndn,temp_d;
 
 
-
-
-
-        for(int Ts=0;Ts<lanczos.states_to_look.size();Ts++){
+        for(int Ts=0;Ts<states_to_look.size();Ts++){
 
             Mat_1_int nup_2_old,ndn_2_old;
             nup_2_old.resize(basis.Length);ndn_2_old.resize(basis.Length);
@@ -5572,13 +5583,13 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Calculate_Local_Obs_for_States_to_Lo
 
 
 
-            string out0 = lanczos.file_Loc_obs_in_basis_of_states + NumberToString (lanczos.states_to_look[Ts])+ ".txt";
+            string out0 = file_Loc_obs_in_basis_of_states + NumberToString (states_to_look[Ts])+ ".txt";
             ofstream file_out0(out0.c_str());
 
-            for(int bi=0;bi<lanczos.no_basis_to_check;bi++){
-                file_out0<<"#For Basis no = "<<lanczos.Overlaps[Ts][bi].second<<"["<<bi<<"]"<<endl;
+            for(int bi=0;bi<no_basis_to_check;bi++){
+                file_out0<<"#For Basis no = "<<Overlaps[Ts][bi].second<<"["<<bi<<"]"<<endl;
                 // m=basis.D_dn_basis.size()*i + j;
-                divresult = div (lanczos.Overlaps[Ts][bi].second,basis.D_dn_basis.size());
+                divresult = div (Overlaps[Ts][bi].second,basis.D_dn_basis.size());
 
                 int bi_up = divresult.quot;
                 int bi_dn = divresult.rem;
@@ -5604,7 +5615,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Calculate_Local_Obs_for_States_to_Lo
                     file_out0<<endl;
                 }
 
-                file_out0<<lanczos.Overlaps[Ts][bi].first<<endl;
+                file_out0<<Overlaps[Ts][bi].first<<endl;
             }
 
 
@@ -5612,14 +5623,12 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Calculate_Local_Obs_for_States_to_Lo
 
             if(grouping_by_orb2==true){
 
-
-
-                string out2 = lanczos.file_Loc_obs_in_basis_of_states + NumberToString (lanczos.states_to_look[Ts])+ "_groupwise.txt";
+                string out2 = file_Loc_obs_in_basis_of_states + NumberToString (states_to_look[Ts])+ "_groupwise.txt";
                 ofstream file_out2(out2.c_str());
 
-                for(int bi=0;bi<lanczos.no_basis_to_check;bi++){
+                for(int bi=0;bi<no_basis_to_check;bi++){
 
-                    divresult = div (lanczos.Overlaps[Ts][bi].second,basis.D_dn_basis.size());
+                    divresult = div (Overlaps[Ts][bi].second,basis.D_dn_basis.size());
 
                     int bi_up = divresult.quot;
                     int bi_dn = divresult.rem;
@@ -5632,13 +5641,13 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Calculate_Local_Obs_for_States_to_Lo
                     int pos;
                     if( present_before(nup_2, ndn_2, nup_2_group, ndn_2_group, pos) == false ) //if new group
                     {
-                        group_weight.push_back(lanczos.Overlaps[Ts][bi].first);
+                        group_weight.push_back(Overlaps[Ts][bi].first);
                         nup_2_group.push_back(nup_2);
                         ndn_2_group.push_back(ndn_2);
                     }
                     else{
                         bool test = present_before(nup_2, ndn_2, nup_2_group, ndn_2_group, pos);
-                        group_weight[pos] = group_weight[pos]  + lanczos.Overlaps[Ts][bi].first;
+                        group_weight[pos] = group_weight[pos]  + Overlaps[Ts][bi].first;
                     }
 
 
@@ -5680,3 +5689,4 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Calculate_Local_Obs_for_States_to_Lo
 
 
 
+#endif

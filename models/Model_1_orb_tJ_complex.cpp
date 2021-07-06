@@ -21,6 +21,13 @@ using namespace std;
     m=basis.D_up_basis.size();
 */
 
+
+void MODEL_1_orb_tJ::Act_Hamil(BASIS_1_orb_tJ &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
+
+ cout<<"NOT WORKING AT PRESENT"<<endl;
+
+}
+
 void MODEL_1_orb_tJ::Add_diagonal_terms(BASIS_1_orb_tJ &basis, string run_type){
 
 

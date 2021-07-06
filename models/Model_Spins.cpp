@@ -21,6 +21,14 @@ using namespace std;
     m=basis.D_up_basis.size();
 */
 
+
+void MODEL_Spins::Act_Hamil(BASIS_Spins &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
+
+ cout<<"NOT WORKING AT PRESENT"<<endl;
+
+}
+
+
 void MODEL_Spins::Add_diagonal_terms(BASIS_Spins &basis){
 
 

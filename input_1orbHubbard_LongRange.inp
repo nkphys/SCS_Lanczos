@@ -5,8 +5,8 @@ PBC = true
 Length_X = 4
 Length_Y = 4
 Total_Sites = 16
-Ndown = 4
-Nup = 4
+Ndown = 3
+Nup = 3
  
 Hopping = 1.0
 Hopping_NN = 0.0
@@ -21,6 +21,7 @@ File_Three_Point_Observation = ThreePointOprs.txt
 File_Three_Point_Interaction = ThreePointIntrs.txt
 ----------------------------------------
 -------------------------------------
+Saving_Hamiltonian_and_Oprs = truee
 Random_seed_generator = 564
 Lanc_Error = 10e-14
 max_steps = 300
@@ -68,5 +69,5 @@ Number_of_LowKrylov_States_used = 100
 Temperature = 0.2
 
 
-Processors = 4
+Processors = 8
 

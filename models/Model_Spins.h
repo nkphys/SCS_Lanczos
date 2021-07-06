@@ -51,6 +51,7 @@ void Read_parameters_for_dynamics(string filename);
 void Initialize_Opr_for_Dynamics(BASIS_Spins &basis, int site);
 void Initialize_Opr_for_Dynamics(BASIS_Spins &basis);
 void Initialize_one_point_to_calculate_from_file(BASIS_Spins &basis);
+void Act_Hamil(BASIS_Spins &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
 
 
 //void Initialize_one_point_to_calculate(BASIS_1_orb_tJ &basis);

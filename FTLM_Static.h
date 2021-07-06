@@ -18,9 +18,18 @@ using namespace std;
 #ifndef FTLM_STATIC_engine
 #define FTLM_STATIC_engine
 
+template <typename Basis_type, typename Model_type>
 class FTLM_STATIC{
 
+
 public:
+    FTLM_STATIC(Basis_type& Basis_, Model_type& Model_)
+        :basis(Basis_), model(Model_)
+    {
+
+    }
+
+
 
     //NOTATION : STATISTICAL AVG is average over random initial seeds
     //           Qauntum Avg is just expectation values.
@@ -39,6 +48,9 @@ public:
     Mat_1_real Quantum_Avg_Hamil, Quantum_Avg_Hamil2;
 
     Matrix_COO Hamil;
+
+    Basis_type& basis;
+    Model_type& model;
 
 
     void Perform_FTLM(string inp_filename, Hamiltonian_1_COO& OPR_);

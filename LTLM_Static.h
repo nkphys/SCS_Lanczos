@@ -15,12 +15,20 @@
 
 using namespace std;
 
-#ifndef LTLM_STATIC_engine
-#define LTLM_STATIC_engine
+#ifndef LTLM_STATIC_class
+#define LTLM_STATIC_class
 
+template <typename Basis_type, typename Model_type>
 class LTLM_STATIC{
 
+
 public:
+    LTLM_STATIC(Basis_type& Basis_, Model_type& Model_)
+        :basis(Basis_), model(Model_)
+    {
+
+    }
+
 
     //NOTATION : STATISTICAL AVG is average over random initial seeds
     //           Qauntum Avg is just expectation values.
@@ -40,8 +48,12 @@ public:
 
     Matrix_COO Hamil;
 
-
     void Perform_LTLM(string inp_filename, Hamiltonian_1_COO& OPR_);
+
+
+private:
+    Basis_type& basis;
+    Model_type& model;
 
 };
 

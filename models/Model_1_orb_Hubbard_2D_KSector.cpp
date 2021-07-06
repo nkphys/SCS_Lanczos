@@ -22,6 +22,12 @@ using namespace std;
     m=basis.D_dn_basis.size()*i + j;
 */
 
+void MODEL_1_orb_Hubb_2D_KSector::Act_Hamil(BASIS_1_orb_Hubb_2D_KSector &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
+
+ cout<<"NOT WORKING AT PRESENT"<<endl;
+
+}
+
 void MODEL_1_orb_Hubb_2D_KSector::Add_diagonal_terms(BASIS_1_orb_Hubb_2D_KSector &basis){
 
 

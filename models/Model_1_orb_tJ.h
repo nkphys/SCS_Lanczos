@@ -74,10 +74,13 @@ void Initialize_two_point_to_calculate(BASIS_1_orb_tJ &basis);
 void Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR, int site1, int site2, BASIS_1_orb_tJ &basis);
 void Initialize_Opr_for_Dynamics(BASIS_1_orb_tJ &basis);
 void Get_Sm_on_GS(Mat_1_doub GS_Sz, BASIS_1_orb_tJ & _BASIS_Szm1, BASIS_1_orb_tJ & _BASIS ,int site);
+void Act_Hamil(BASIS_1_orb_tJ &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+
 
 };
 
 #endif
+
 
 //#endif
 

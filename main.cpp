@@ -7,39 +7,20 @@
 #include <sstream>
 #include <string>
 #include "iconprint.h"
-#include "models/Model_3_orb_Hubbard_chain.h"
-#include "models/Model_2_orb_Hubbard_chain.h"
-#include "models/Model_2_orb_Hubbard_chain_KSector.h"
-#include "models/Model_3_orb_Hubbard_chain_two_SzSectors.h"
-#include "basis/Basis_3_orb_Hubbard_chain.h"
-#include "basis/Basis_2_orb_Hubbard_chain.h"
-#include "basis/Basis_2_orb_Hubbard_chain_KSector.h"
-#include "basis/Basis_1_orb_Hubbard_2D_KSector.h"
-#include "models/Model_1_orb_Hubbard_2D_KSector.h"
-#include "basis/Basis_3_orb_Hubbard_chain_two_SzSectors.h"
-#include "models/Model_1_orb_Hubbard_chain.h"
-#include "models/Model_1_orb_tJ.h"
-#include "basis/Basis_1_orb_Hubbard_chain.h"
-#include "basis/Basis_1_orb_Hubbard_GC.h"
-#include "basis/Basis_1_orb_tJ.h"
-#include "basis/Basis_Spins.h"
-#include "models/Model_Spins.h"
-#include "basis/Basis_Spins_Target_Sz.h"
-#include "models/Model_Spins_Target_Sz.h"
-#include "models/Model_3_orb_Hubbard_chain_GC.h"
-#include "models/Model_1_orb_Hubbard_GC.h"
-#include "basis/Basis_3_orb_Hubbard_chain_GC.h"
-#include "basis/Basis_3_orb_Hubbard_chain_GC_restricted.h"
 #include "Lanczos_engine.h"
+#include "Lanczos_engine.cpp"
 #include "FTLM_Static.h"
 #include "LTLM_Static.h"
 #include "FTLM_Dynamics.h"
 #include "LTLM_Dynamics.h"
+#include "FTLM_Static.cpp"
+#include "LTLM_Static.cpp"
+#include "FTLM_Dynamics.cpp"
+#include "LTLM_Dynamics.cpp"
 #include "reading_input.h"
 
 //Remember "cpp" files for templated class over basis need to be included in this code
-#include "models/Model_3_orb_Hubbard_chain_GC.cpp"
-#include "models/Model_1_orb_Hubbard_GC.cpp"
+
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -105,8 +86,7 @@ int main(int argc, char** argv){
 
         if(! (Static_Finite_Temp || Dynamics_Finite_Temp) ){
 
-
-            LANCZOS _LANCZOS;
+            LANCZOS<BASIS_1_orb_Hubb_2D_KSector, MODEL_1_orb_Hubb_2D_KSector> _LANCZOS(_BASIS, _MODEL);
             _LANCZOS.Dynamics_performed=false;
             _LANCZOS.Read_Lanczos_parameters(inp_filename);
 
@@ -331,7 +311,8 @@ int main(int argc, char** argv){
 
 
 
-                LANCZOS _LANCZOS_Dynamics;
+
+                LANCZOS<BASIS_1_orb_Hubb_2D_KSector, MODEL_1_orb_Hubb_2D_KSector> _LANCZOS_Dynamics(_BASIS_Kminusq, _MODEL_Kminusq);
                 _LANCZOS_Dynamics.Dynamics_performed=true;
                 _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
                 _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
@@ -392,7 +373,7 @@ int main(int argc, char** argv){
             //            _MODEL.Initialize_Oprs_for_meausurement(_BASIS);
             //            _FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Oprts_array);
 
-            LTLM_STATIC _LTLM_STATIC;
+            LTLM_STATIC<BASIS_1_orb_Hubb_2D_KSector, MODEL_1_orb_Hubb_2D_KSector> _LTLM_STATIC(_BASIS, _MODEL);
             _LTLM_STATIC.Hamil = _MODEL.Hamil;
             _MODEL.Read_parameters_for_dynamics(inp_filename);
             _MODEL.Initialize_Oprs_for_meausurement(_BASIS);
@@ -435,7 +416,7 @@ int main(int argc, char** argv){
 
 
 
-                LTLM_DYNAMICS _LTLM_DYNAMICS;
+                LTLM_DYNAMICS<BASIS_1_orb_Hubb_2D_KSector, MODEL_1_orb_Hubb_2D_KSector> _LTLM_DYNAMICS(_BASIS, _MODEL);
                 _LTLM_DYNAMICS.Hamil = _MODEL.Hamil;
                 vector < int >().swap(_MODEL.Hamil.columns);
                 vector < int >().swap(_MODEL.Hamil.rows);
@@ -476,7 +457,7 @@ int main(int argc, char** argv){
 
         Print_Matrix_COO(_MODEL.Hamil);
 
-        LANCZOS _LANCZOS;
+        LANCZOS<BASIS_Spins, MODEL_Spins> _LANCZOS(_BASIS, _MODEL);
         _LANCZOS.Dynamics_performed=false;
         _LANCZOS.Read_Lanczos_parameters(inp_filename);
 
@@ -497,7 +478,7 @@ int main(int argc, char** argv){
             int site_=0;
             _MODEL.Read_parameters_for_dynamics(inp_filename);
 
-            LANCZOS _LANCZOS_Dynamics;
+            LANCZOS<BASIS_Spins, MODEL_Spins> _LANCZOS_Dynamics(_BASIS, _MODEL);
             _LANCZOS_Dynamics.Dynamics_performed=true;
             _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
             _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
@@ -522,7 +503,7 @@ int main(int argc, char** argv){
 
         if(Static_Finite_Temp){
 
-            FTLM_STATIC _FTLM_STATIC;
+            FTLM_STATIC<BASIS_Spins, MODEL_Spins>  _FTLM_STATIC(_BASIS, _MODEL);
             _FTLM_STATIC.Hamil = _MODEL.Hamil;
 
             // _FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);
@@ -532,7 +513,7 @@ int main(int argc, char** argv){
         if(Dynamics_Finite_Temp){
 
             if(false){
-                FTLM_DYNAMICS _FTLM_DYNAMICS;
+                FTLM_DYNAMICS<BASIS_Spins, MODEL_Spins>  _FTLM_DYNAMICS(_BASIS, _MODEL);
                 _FTLM_DYNAMICS.Hamil = _MODEL.Hamil;
 
                 _MODEL.Read_parameters_for_dynamics(inp_filename);
@@ -548,7 +529,7 @@ int main(int argc, char** argv){
             }
 
             if(true){
-                LTLM_DYNAMICS _LTLM_DYNAMICS;
+                LTLM_DYNAMICS<BASIS_Spins, MODEL_Spins> _LTLM_DYNAMICS(_BASIS, _MODEL);
                 _LTLM_DYNAMICS.Hamil = _MODEL.Hamil;
 
                 _MODEL.Read_parameters_for_dynamics(inp_filename);
@@ -582,7 +563,8 @@ int main(int argc, char** argv){
         _MODEL.Add_connections_new(_BASIS);
         //Print_Matrix_COO(_MODEL.Hamil);
 
-        LANCZOS _LANCZOS;
+
+        LANCZOS<BASIS_Spins_Target_Sz, MODEL_Spins_Target_Sz> _LANCZOS(_BASIS, _MODEL);
         _LANCZOS.Dynamics_performed=false;
         _LANCZOS.Read_Lanczos_parameters(inp_filename);
 
@@ -1011,7 +993,7 @@ int main(int argc, char** argv){
                 if(_MODEL.Dyn_opr_string=="Sz"){
                     _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
 
-                    LANCZOS _LANCZOS_Dynamics;
+                    LANCZOS<BASIS_Spins_Target_Sz, MODEL_Spins_Target_Sz> _LANCZOS_Dynamics(_BASIS, _MODEL);
                     _LANCZOS_Dynamics.Dynamics_performed=true;
                     _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
                     _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
@@ -1044,7 +1026,7 @@ int main(int argc, char** argv){
 
                     _MODEL.Initialize_State_for_Dynamics(_BASIS_Szp1, _BASIS, _LANCZOS.Eig_vec, Vec_Dyn);
 
-                    LANCZOS _LANCZOS_Dynamics;
+                    LANCZOS<BASIS_Spins_Target_Sz, MODEL_Spins_Target_Sz> _LANCZOS_Dynamics(_BASIS_Szp1, _MODEL_Szp1);
                     _LANCZOS_Dynamics.Dynamics_performed=true;
                     _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
                     _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
@@ -1103,8 +1085,7 @@ int main(int argc, char** argv){
         //Print_Matrix_COO(_MODEL.Hamil);
         cout<<scientific<<setprecision(8);
 
-
-        LANCZOS _LANCZOS;
+        LANCZOS<BASIS_2_orb_Hubb_chain_KSector, MODEL_2_orb_Hubb_chain_KSector> _LANCZOS(_BASIS, _MODEL);
         _LANCZOS.Dynamics_performed=false;
         _LANCZOS.Read_Lanczos_parameters(inp_filename);
 
@@ -1286,7 +1267,7 @@ int main(int argc, char** argv){
             cout<<"GS energy from ED(without Lanczos) = "<<EG<<endl;
         }
 
-        LANCZOS _LANCZOS;
+        LANCZOS<BASIS_3_orb_Hubb_chain, MODEL_3_orb_Hubb_chain> _LANCZOS(_BASIS, _MODEL);
         _LANCZOS.Dynamics_performed=false;
         _LANCZOS.Read_Lanczos_parameters(inp_filename);
         _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
@@ -1306,7 +1287,7 @@ int main(int argc, char** argv){
             _MODEL_Np1.Add_non_diagonal_terms(_BASIS_Np1);
             _MODEL_Np1.Add_connections(_BASIS_Np1);
 
-            LANCZOS _LANCZOS_Np1;
+            LANCZOS<BASIS_3_orb_Hubb_chain_two_SzSectors, MODEL_3_orb_Hubb_chain_two_SzSectors> _LANCZOS_Np1(_BASIS_Np1, _MODEL_Np1);
             _LANCZOS_Np1.Read_Lanczos_parameters(inp_filename);
             _LANCZOS_Np1.Perform_LANCZOS(_MODEL_Np1.Hamil);
 
@@ -1327,7 +1308,12 @@ int main(int argc, char** argv){
                 _LANCZOS.Measure_macro_observables(_MODEL.macro_obs, _MODEL.Macro_oprts ,i);
             }
 
-            _MODEL.Calculate_Local_Obs_for_States_to_Look(_LANCZOS,_BASIS);
+            _MODEL.Calculate_Local_Obs_for_States_to_Look(_LANCZOS.calculate_local_obs_for_states_to_look,
+                                                          _LANCZOS.states_to_look,
+                                                          _LANCZOS.file_Loc_obs_in_basis_of_states,
+                                                          _LANCZOS.no_basis_to_check,
+                                                          _LANCZOS.Overlaps
+                                                          ,_BASIS);
 
         }
 
@@ -1339,7 +1325,7 @@ int main(int argc, char** argv){
 
             _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
 
-            LANCZOS _LANCZOS_Dynamics;
+            LANCZOS<BASIS_3_orb_Hubb_chain, MODEL_3_orb_Hubb_chain> _LANCZOS_Dynamics(_BASIS, _MODEL);
             _LANCZOS_Dynamics.Dynamics_performed=true;
             _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
             _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
@@ -1422,7 +1408,7 @@ int main(int argc, char** argv){
         double EG;
         Mat_1_doub vecG;
 
-        LANCZOS _LANCZOS;
+        LANCZOS<BASIS_2_orb_Hubb_chain, MODEL_2_orb_Hubb_chain> _LANCZOS(_BASIS, _MODEL);
         _LANCZOS.Dynamics_performed=false;
         _LANCZOS.Read_Lanczos_parameters(inp_filename);
         _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
@@ -1512,7 +1498,7 @@ int main(int argc, char** argv){
 
             _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
 
-            LANCZOS _LANCZOS_Dynamics;
+            LANCZOS<BASIS_2_orb_Hubb_chain, MODEL_2_orb_Hubb_chain> _LANCZOS_Dynamics(_BASIS, _MODEL);
             _LANCZOS_Dynamics.Dynamics_performed=true;
             _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
             _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
@@ -1583,8 +1569,7 @@ int main(int argc, char** argv){
                 cout<<scientific<<setprecision(8);
                 //Print_Matrix_COO(_MODEL.Hamil);
 
-
-                LANCZOS _LANCZOS_Nm2;
+                LANCZOS<BASIS_2_orb_Hubb_chain, MODEL_2_orb_Hubb_chain> _LANCZOS_Nm2(_BASIS_Nm2, _MODEL_Nm2);
                 _LANCZOS_Nm2.Dynamics_performed=false;
                 _LANCZOS_Nm2.Read_Lanczos_parameters(inp_filename);
                 _LANCZOS_Nm2.Perform_LANCZOS(_MODEL_Nm2.Hamil);
@@ -2505,8 +2490,7 @@ int main(int argc, char** argv){
         //        cout<<scientific<<setprecision(15);
         //        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
 
-
-        LANCZOS _LANCZOS;
+        LANCZOS<BASIS_3_orb_Hubb_chain_GC, MODEL_3_orb_Hubb_chain_GC<BASIS_3_orb_Hubb_chain_GC>> _LANCZOS(_BASIS, _MODEL);
         _LANCZOS.Dynamics_performed=false;
         _LANCZOS.Read_Lanczos_parameters(inp_filename);
         _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
@@ -2712,9 +2696,9 @@ int main(int argc, char** argv){
 
             _MODEL.Read_parameters_for_dynamics(inp_filename);
 
-            _MODEL.Initialize_Opr_for_Dynamics(_LANCZOS);
+            _MODEL.Initialize_Opr_for_Dynamics();
 
-            LANCZOS _LANCZOS_Dynamics;
+            LANCZOS<BASIS_3_orb_Hubb_chain_GC, MODEL_3_orb_Hubb_chain_GC<BASIS_3_orb_Hubb_chain_GC>> _LANCZOS_Dynamics(_BASIS, _MODEL);
             _LANCZOS_Dynamics.Dynamics_performed=true;
             _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
             _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
@@ -2768,13 +2752,13 @@ int main(int argc, char** argv){
                 _MODEL_Nm1.Read_parameters_for_dynamics(inp_filename);
 
 
-                LANCZOS _LANCZOS_Dynamics_DOS;
+                LANCZOS<BASIS_3_orb_Hubb_chain_GC, MODEL_3_orb_Hubb_chain_GC<BASIS_3_orb_Hubb_chain_GC>> _LANCZOS_Dynamics_DOS(_BASIS_Nm1, _MODEL_Nm1);
                 _LANCZOS_Dynamics_DOS.Dynamics_performed=true;
                 _LANCZOS_Dynamics_DOS.Read_Lanczos_parameters(inp_filename);
                 _LANCZOS_Dynamics_DOS.Eig_vec=_LANCZOS.Eig_vec;
                 _LANCZOS_Dynamics_DOS.GS_energy=_LANCZOS.GS_energy;
 
-                _MODEL.Get_c_on_GS(_LANCZOS_Dynamics_DOS, _BASIS_Nm1,TRIO_VEC, values_ );
+                _MODEL.Get_c_on_GS(_LANCZOS_Dynamics_DOS.Eig_vec, _BASIS_Nm1,TRIO_VEC, values_ );
                 _LANCZOS_Dynamics_DOS.Get_Dynamics_seed(_MODEL.State_c_on_GS);
 
                 _LANCZOS_Dynamics_DOS.omega_sign=-1.0;
@@ -2821,13 +2805,14 @@ int main(int argc, char** argv){
 
                 _MODEL_Np1.Read_parameters_for_dynamics(inp_filename);
 
-                LANCZOS _LANCZOS_Dynamics_DOS2;
+
+                LANCZOS<BASIS_3_orb_Hubb_chain_GC, MODEL_3_orb_Hubb_chain_GC<BASIS_3_orb_Hubb_chain_GC>> _LANCZOS_Dynamics_DOS2(_BASIS_Np1, _MODEL_Np1);
                 _LANCZOS_Dynamics_DOS2.Dynamics_performed=true;
                 _LANCZOS_Dynamics_DOS2.Read_Lanczos_parameters(inp_filename);
                 _LANCZOS_Dynamics_DOS2.Eig_vec=_LANCZOS.Eig_vec;
                 _LANCZOS_Dynamics_DOS2.GS_energy=_LANCZOS.GS_energy;
 
-                _MODEL.Get_cdagger_on_GS(_LANCZOS_Dynamics_DOS2, _BASIS_Np1,TRIO_VEC, values_ );
+                _MODEL.Get_cdagger_on_GS(_LANCZOS_Dynamics_DOS2.Eig_vec, _BASIS_Np1,TRIO_VEC, values_ );
                 _LANCZOS_Dynamics_DOS2.Get_Dynamics_seed(_MODEL.State_cdagger_on_GS);
 
                 _LANCZOS_Dynamics_DOS2.omega_sign=1.0;
@@ -2890,7 +2875,7 @@ int main(int argc, char** argv){
         cout<<scientific<<setprecision(6);
 
 
-        LANCZOS _LANCZOS;
+        LANCZOS<BASIS_3_orb_Hubb_chain_GC_Restricted, MODEL_3_orb_Hubb_chain_GC<BASIS_3_orb_Hubb_chain_GC_Restricted>> _LANCZOS(_BASIS, _MODEL);
         _LANCZOS.Dynamics_performed=false;
         _LANCZOS.Read_Lanczos_parameters(inp_filename);
         _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
@@ -2929,9 +2914,9 @@ int main(int argc, char** argv){
 
             _MODEL.Read_parameters_for_dynamics(inp_filename);
 
-            _MODEL.Initialize_Opr_for_Dynamics(_LANCZOS);
+            _MODEL.Initialize_Opr_for_Dynamics();
 
-            LANCZOS _LANCZOS_Dynamics;
+            LANCZOS<BASIS_3_orb_Hubb_chain_GC_Restricted, MODEL_3_orb_Hubb_chain_GC<BASIS_3_orb_Hubb_chain_GC_Restricted>> _LANCZOS_Dynamics(_BASIS, _MODEL);
             _LANCZOS_Dynamics.Dynamics_performed=true;
             _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
             _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
@@ -2994,50 +2979,58 @@ int main(int argc, char** argv){
         _MODEL.Read_parameters(_BASIS,inp_filename);
         _BASIS.Construct_basis();
         cout<<"Basis contructed"<<endl;
-        _MODEL.Add_diagonal_terms(_BASIS);
-        cout<<"Diagonal terms added"<<endl;
-
-        _MODEL.Add_non_diagonal_terms(_BASIS);
-        cout<<"Non_Diagonal(includes three point oprs) terms added"<<endl;
-
-        _MODEL.Add_connections(_BASIS);
-        cout<<"Connections added"<<endl;
 
 
-        cout<<"Size of Hilbert space = "<<_MODEL.Hamil.nrows<<endl;
-        cout<<"Sparsity = "<<(1.0*_MODEL.Hamil.value.size())/(1.0*_MODEL.Hamil.nrows*_MODEL.Hamil.nrows)<<endl;
-        cout<<scientific<<setprecision(20);
-        //  Print_Matrix_COO(_MODEL.Hamil);
-
-        LANCZOS _LANCZOS;
+        LANCZOS<BASIS_1_orb_Hubb_chain, MODEL_1_orb_Hubb_chain> _LANCZOS(_BASIS, _MODEL);
         _LANCZOS.Dynamics_performed=false;
+        _LANCZOS.Read_Lanczos_parameters(inp_filename);
 
-        double EG;
-        Mat_1_doub vecG;
+        cout<<scientific<<setprecision(20);
 
-        if(_MODEL.Hamil.nrows<400){
-            DO_FULL_DIAGONALIZATION=true;
+
+        if(_LANCZOS.Saving_Hamil){
+            _MODEL.Add_diagonal_terms(_BASIS);
+            cout<<"Diagonal terms added"<<endl;
+            _MODEL.Add_non_diagonal_terms(_BASIS);
+            cout<<"Non_Diagonal(includes three point oprs) terms added"<<endl;
+            _MODEL.Add_connections(_BASIS);
+            cout<<"Connections added"<<endl;
+            cout<<"Size of Hilbert space = "<<_MODEL.Hamil.nrows<<endl;
+            cout<<"Sparsity = "<<(1.0*_MODEL.Hamil.value.size())/(1.0*_MODEL.Hamil.nrows*_MODEL.Hamil.nrows)<<endl;
+
+
+            //  Print_Matrix_COO(_MODEL.Hamil);
+
+
+            if(_MODEL.Hamil.nrows<400){
+                DO_FULL_DIAGONALIZATION=true;
+            }
+            else{
+                DO_FULL_DIAGONALIZATION=false;
+            }
+            if(DO_FULL_DIAGONALIZATION==true){
+                double EG;
+                Mat_1_real Evals_temp;
+                Mat_1_doub vecG;
+                Diagonalize(_MODEL.Hamil, Evals_temp, vecG);
+                cout<<"GS energy from ED(without Lanczos) = "<<Evals_temp[0]<<endl;
+                cout<<"All eigenvalues using ED------------------------------"<<endl;
+                cout<<"-------------------------------------------------------"<<endl;
+                for(int i=0;i<Evals_temp.size();i++){
+                    cout<<i<<"  "<<Evals_temp[i]<<endl;
+                }
+                cout<<"-------------------------------------------------------"<<endl;
+                cout<<"-------------------------------------------------------"<<endl;
+            }
         }
         else{
-            DO_FULL_DIAGONALIZATION=false;
-        }
-        if(DO_FULL_DIAGONALIZATION==true){
-            double EG;
-            Mat_1_real Evals_temp;
-            Mat_1_doub vecG;
-            Diagonalize(_MODEL.Hamil, Evals_temp, vecG);
-            cout<<"GS energy from ED(without Lanczos) = "<<Evals_temp[0]<<endl;
-            cout<<"All eigenvalues using ED------------------------------"<<endl;
-            cout<<"-------------------------------------------------------"<<endl;
-            for(int i=0;i<Evals_temp.size();i++){
-                cout<<i<<"  "<<Evals_temp[i]<<endl;
-            }
-            cout<<"-------------------------------------------------------"<<endl;
-            cout<<"-------------------------------------------------------"<<endl;
+            _MODEL.Hamil.nrows = _BASIS.D_dn_basis.size()*_BASIS.D_up_basis.size();
+            _MODEL.Hamil.ncols = _MODEL.Hamil.nrows;
+            cout<<"Hamiltonian is acted in-situ [NOT SAVED]"<<endl;
         }
 
 
-        _LANCZOS.Read_Lanczos_parameters(inp_filename);
+
         _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
         _LANCZOS.Write_full_spectrum();
 
@@ -3107,8 +3100,13 @@ int main(int argc, char** argv){
                         OPR_.columns.clear();
                         OPR_.rows.clear();
                         OPR_.value.clear();
+                        if(_LANCZOS.Saving_Hamil){
                         _MODEL.Initialize_one_point_operator_site_specific(opr_type_[type] , OPR_, site, _BASIS);
-                        value_one_point=_LANCZOS.Measure_observable(OPR_, state_no);
+                        value_one_point=_LANCZOS.Measure_observable(OPR_, state_no);}
+                        else{
+                        value_one_point = _MODEL.Measure_one_point_operator_site_specific(opr_type_[type] , _LANCZOS.Eig_vecs[state_no], site, _BASIS);
+                        }
+
                         cout<<opr_type_[type]<<"["<<site<<"]="<<value_one_point<<endl;
                     }
                 }
@@ -3133,8 +3131,15 @@ int main(int argc, char** argv){
                             OPR_.columns.clear();
                             OPR_.rows.clear();
                             OPR_.value.clear();
+                             if(_LANCZOS.Saving_Hamil){
                             _MODEL.Initialize_two_point_operator_sites_specific(opr_type_[type] , OPR_, site1, site2, _BASIS);
                             value_two_point=_LANCZOS.Measure_observable(OPR_, state_no);
+                             }
+                             else{
+                            value_two_point=_MODEL.Measure_two_point_operator_sites_specific(opr_type_[type] , _LANCZOS.Eig_vecs[state_no], site1, site2, _BASIS);
+                             }
+
+
                             cout<<value_two_point<<"  ";
                             Sum_+=value_two_point;
 
@@ -3173,8 +3178,13 @@ int main(int argc, char** argv){
                         OPR_.columns.clear();
                         OPR_.rows.clear();
                         OPR_.value.clear();
+                         if(_LANCZOS.Saving_Hamil){
                         _MODEL.Initialize_three_point_operator_sites_specific(_MODEL.three_point_oprs[type] , OPR_, site1, site2, site3, _BASIS);
                         value_three_point=_LANCZOS.Measure_observable(OPR_, state_no);
+                         }
+                         else{
+                        value_three_point=_MODEL.Measure_three_point_operator_sites_specific(_MODEL.three_point_oprs[type] , _LANCZOS.Eig_vecs[state_no], site1, site2, site3, _BASIS);
+                         }
 
                         cout<<site1<<" "<<site2<<" "<<site3<<" "<<value_three_point<<"  ";
                         //Sum_+=value_two_point;
@@ -3211,7 +3221,7 @@ int main(int argc, char** argv){
             _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
 
 
-            LANCZOS _LANCZOS_Dynamics;
+            LANCZOS<BASIS_1_orb_Hubb_chain, MODEL_1_orb_Hubb_chain> _LANCZOS_Dynamics(_BASIS, _MODEL);
 
             _LANCZOS_Dynamics.Dynamics_performed=true;
             _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
@@ -3274,13 +3284,13 @@ int main(int argc, char** argv){
 
                 _MODEL_Nm1.Read_parameters_for_dynamics(inp_filename);
 
-
-                LANCZOS _LANCZOS_Dynamics_DOS;
+                LANCZOS<BASIS_1_orb_Hubb_chain, MODEL_1_orb_Hubb_chain> _LANCZOS_Dynamics_DOS(_BASIS_Nm1, _MODEL_Nm1);
                 _LANCZOS_Dynamics_DOS.Dynamics_performed=true;
                 _LANCZOS_Dynamics_DOS.Read_Lanczos_parameters(inp_filename);
                 _LANCZOS_Dynamics_DOS.GS_energy=_LANCZOS.GS_energy;
 
-                _MODEL.Get_c_on_GS(_LANCZOS, _BASIS_Nm1, _BASIS, TRIO_VEC, values_);
+
+                _MODEL.Get_c_on_GS(_LANCZOS.Eig_vec, _BASIS_Nm1, _BASIS, TRIO_VEC, values_);
                 _LANCZOS_Dynamics_DOS.Get_Dynamics_seed(_MODEL.State_c_on_GS);
 
 
@@ -3336,12 +3346,12 @@ int main(int argc, char** argv){
 
                 _MODEL_Np1.Read_parameters_for_dynamics(inp_filename);
 
-                LANCZOS _LANCZOS_Dynamics_DOS2;
+                LANCZOS<BASIS_1_orb_Hubb_chain, MODEL_1_orb_Hubb_chain> _LANCZOS_Dynamics_DOS2(_BASIS_Np1, _MODEL_Np1);
                 _LANCZOS_Dynamics_DOS2.Dynamics_performed=true;
                 _LANCZOS_Dynamics_DOS2.Read_Lanczos_parameters(inp_filename);
                 _LANCZOS_Dynamics_DOS2.GS_energy=_LANCZOS.GS_energy;
 
-                _MODEL.Get_cdagger_on_GS(_LANCZOS, _BASIS_Np1, _BASIS, TRIO_VEC, values_ );
+                _MODEL.Get_cdagger_on_GS(_LANCZOS.Eig_vec, _BASIS_Np1, _BASIS, TRIO_VEC, values_ );
                 _LANCZOS_Dynamics_DOS2.Get_Dynamics_seed(_MODEL.State_cdagger_on_GS);
 
                 _LANCZOS_Dynamics_DOS2.omega_sign=1.0;
@@ -3359,7 +3369,7 @@ int main(int argc, char** argv){
 
         if(Static_Finite_Temp){
 
-            FTLM_STATIC _FTLM_STATIC;
+            FTLM_STATIC<BASIS_1_orb_Hubb_chain, MODEL_1_orb_Hubb_chain> _FTLM_STATIC(_BASIS, _MODEL);
             _FTLM_STATIC.Hamil = _MODEL.Hamil;
             // _FTLM_STATIC.Perform_FTLM(inp_filename);
 
@@ -3399,7 +3409,7 @@ int main(int argc, char** argv){
         cout<<scientific<<setprecision(20);
         //Print_Matrix_COO(_MODEL.Hamil);
 
-        LANCZOS _LANCZOS;
+        LANCZOS<BASIS_1_orb_tJ, MODEL_1_orb_tJ> _LANCZOS(_BASIS, _MODEL);
         _LANCZOS.Dynamics_performed=false;
 
         double EG;
@@ -3521,8 +3531,7 @@ int main(int argc, char** argv){
 
                 _MODEL_Szm1.Read_parameters_for_dynamics(inp_filename);
 
-
-                LANCZOS _LANCZOS_Dynamics_SpSm;
+                LANCZOS<BASIS_1_orb_tJ, MODEL_1_orb_tJ> _LANCZOS_Dynamics_SpSm(_BASIS_Szm1, _MODEL_Szm1);
                 _LANCZOS_Dynamics_SpSm.Dynamics_performed=true;
                 _LANCZOS_Dynamics_SpSm.Read_Lanczos_parameters(inp_filename);
                 _LANCZOS_Dynamics_SpSm.Eig_vec=_LANCZOS.Eig_vec;
@@ -3573,7 +3582,7 @@ int main(int argc, char** argv){
         cout<<scientific<<setprecision(16);
         //Print_Matrix_COO(_MODEL.Hamil);
 
-        LANCZOS _LANCZOS;
+        LANCZOS<BASIS_1_orb_Hubbard_GC, MODEL_1_orb_Hubbard_GC<BASIS_1_orb_Hubbard_GC>> _LANCZOS(_BASIS, _MODEL);
         _LANCZOS.Dynamics_performed=false;
 
 
@@ -3663,12 +3672,12 @@ int main(int argc, char** argv){
                 _MODEL_Nm1.Read_parameters_for_dynamics(inp_filename);
 
 
-                LANCZOS _LANCZOS_Dynamics_DOS;
+                LANCZOS<BASIS_1_orb_Hubbard_GC, MODEL_1_orb_Hubbard_GC<BASIS_1_orb_Hubbard_GC>> _LANCZOS_Dynamics_DOS(_BASIS_Nm1, _MODEL_Nm1);
                 _LANCZOS_Dynamics_DOS.Dynamics_performed=true;
                 _LANCZOS_Dynamics_DOS.Read_Lanczos_parameters(inp_filename);
                 _LANCZOS_Dynamics_DOS.GS_energy=_LANCZOS.GS_energy;
 
-                _MODEL.Get_c_on_GS(_LANCZOS, _BASIS_Nm1, TRIO_VEC, values_);
+                _MODEL.Get_c_on_GS(_LANCZOS.Eig_vec, _BASIS_Nm1, TRIO_VEC, values_);
                 _LANCZOS_Dynamics_DOS.Get_Dynamics_seed(_MODEL.State_c_on_GS);
 
 
@@ -3715,12 +3724,12 @@ int main(int argc, char** argv){
 
                 _MODEL_Np1.Read_parameters_for_dynamics(inp_filename);
 
-                LANCZOS _LANCZOS_Dynamics_DOS2;
+                LANCZOS<BASIS_1_orb_Hubbard_GC, MODEL_1_orb_Hubbard_GC<BASIS_1_orb_Hubbard_GC>> _LANCZOS_Dynamics_DOS2(_BASIS_Np1, _MODEL_Np1);
                 _LANCZOS_Dynamics_DOS2.Dynamics_performed=true;
                 _LANCZOS_Dynamics_DOS2.Read_Lanczos_parameters(inp_filename);
                 _LANCZOS_Dynamics_DOS2.GS_energy=_LANCZOS.GS_energy;
 
-                _MODEL.Get_cdagger_on_GS(_LANCZOS, _BASIS_Np1, TRIO_VEC, values_ );
+                _MODEL.Get_cdagger_on_GS(_LANCZOS.Eig_vec, _BASIS_Np1, TRIO_VEC, values_ );
                 _LANCZOS_Dynamics_DOS2.Get_Dynamics_seed(_MODEL.State_cdagger_on_GS);
 
                 _LANCZOS_Dynamics_DOS2.omega_sign=1.0;
@@ -3739,7 +3748,7 @@ int main(int argc, char** argv){
 
         if(Static_Finite_Temp){
 
-            FTLM_STATIC _FTLM_STATIC;
+            FTLM_STATIC<BASIS_1_orb_Hubbard_GC, MODEL_1_orb_Hubbard_GC<BASIS_1_orb_Hubbard_GC>> _FTLM_STATIC(_BASIS, _MODEL);
             _FTLM_STATIC.Hamil = _MODEL.Hamil;
 
             //_FTLM_STATIC.Perform_FTLM(inp_filename, _MODEL.Dyn_opr);

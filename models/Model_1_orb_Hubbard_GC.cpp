@@ -1,3 +1,6 @@
+#ifndef Model_1_orb_Hubbard_GC_Functions
+#define Model_1_orb_Hubbard_GC_Functions
+
 #include "Model_1_orb_Hubbard_GC.h"
 #include <stdlib.h>
 using namespace std;
@@ -12,6 +15,15 @@ using namespace std;
     2)  similarly for "down-spin" basis
 
     */
+
+
+template <typename Basis_type>
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Act_Hamil(BASIS_1_orb_Hubbard_GC &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
+
+ cout<<"NOT WORKING AT PRESENT"<<endl;
+
+}
+
 template <typename Basis_type>
 void MODEL_1_orb_Hubbard_GC<Basis_type>::Add_diagonal_terms(){
 
@@ -958,14 +970,14 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, 
 
 
 template <typename Basis_type>
-void MODEL_1_orb_Hubbard_GC<Basis_type>::Initialize_Opr_for_Dynamics(LANCZOS &lanczos_GS){
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Initialize_Opr_for_Dynamics(){
 
 }
 
 
 
 template <typename Basis_type>
-void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_c_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hubbard_GC & basis_Nm1,
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_c_on_GS(Mat_1_doub &EigVec_, BASIS_1_orb_Hubbard_GC & basis_Nm1,
                                                      Mat_1_trio_int TRIO_VEC, Mat_1_doub values){
 
 
@@ -1016,7 +1028,7 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_c_on_GS(LANCZOS & lanczos, BASIS_1_
 
                     sign_FM = pow(-1.0, sign_pow_up);
 
-                    value = sign_FM*lanczos.Eig_vec[i]*value_in;
+                    value = sign_FM*EigVec_[i]*value_in;
 
                     State_c_on_GS[i_new] += value;
 
@@ -1047,7 +1059,7 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_c_on_GS(LANCZOS & lanczos, BASIS_1_
 
                     sign_FM = pow(-1.0, sign_pow_dn);
 
-                    value = sign_FM*lanczos.Eig_vec[i]*value_in;
+                    value = sign_FM*EigVec_[i]*value_in;
 
                     State_c_on_GS[i_new] += value;
 
@@ -1069,7 +1081,7 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_c_on_GS(LANCZOS & lanczos, BASIS_1_
 
 
 template <typename Basis_type>
-void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_cdagger_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hubbard_GC & basis_Np1,
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_cdagger_on_GS(Mat_1_doub & EigVec_, BASIS_1_orb_Hubbard_GC & basis_Np1,
                                                            Mat_1_trio_int TRIO_VEC, Mat_1_doub values){
 
 
@@ -1121,10 +1133,10 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_cdagger_on_GS(LANCZOS & lanczos, BA
                     sign_FM = pow(-1.0, sign_pow_up);
 
 #ifdef USE_COMPLEX
-                    value = sign_FM*lanczos.Eig_vec[i]*conj(value_in);
+                    value = sign_FM*EigVec_[i]*conj(value_in);
 #endif
 #ifndef USE_COMPLEX
-                    value = sign_FM*lanczos.Eig_vec[i]*(value_in);
+                    value = sign_FM*EigVec_[i]*(value_in);
 #endif
 
 
@@ -1159,10 +1171,10 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_cdagger_on_GS(LANCZOS & lanczos, BA
 
 
 #ifdef USE_COMPLEX
-                    value = sign_FM*lanczos.Eig_vec[i]*conj(value_in);
+                    value = sign_FM*EigVec_[i]*conj(value_in);
 #endif
 #ifndef USE_COMPLEX
-                    value = sign_FM*lanczos.Eig_vec[i]*(value_in);
+                    value = sign_FM*EigVec_[i]*(value_in);
 #endif
 
                     State_cdagger_on_GS[i_new] += value;
@@ -1184,5 +1196,5 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_cdagger_on_GS(LANCZOS & lanczos, BA
 
 
 
-
+#endif
 

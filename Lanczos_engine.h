@@ -7,6 +7,36 @@
 #include <limits>
 #include <iomanip>
 #include <stdio.h>
+#include "models/Model_1_orb_Hubbard_chain.h"
+#include "basis/Basis_1_orb_Hubbard_chain.h"
+#include "models/Model_3_orb_Hubbard_chain.h"
+#include "models/Model_2_orb_Hubbard_chain.h"
+#include "models/Model_2_orb_Hubbard_chain_KSector.h"
+#include "models/Model_3_orb_Hubbard_chain_two_SzSectors.h"
+#include "basis/Basis_3_orb_Hubbard_chain.h"
+#include "basis/Basis_2_orb_Hubbard_chain.h"
+#include "basis/Basis_2_orb_Hubbard_chain_KSector.h"
+#include "basis/Basis_1_orb_Hubbard_2D_KSector.h"
+#include "models/Model_1_orb_Hubbard_2D_KSector.h"
+#include "basis/Basis_3_orb_Hubbard_chain_two_SzSectors.h"
+#include "models/Model_1_orb_Hubbard_chain.h"
+#include "models/Model_1_orb_tJ.h"
+#include "basis/Basis_1_orb_Hubbard_chain.h"
+#include "basis/Basis_1_orb_Hubbard_GC.h"
+#include "basis/Basis_1_orb_tJ.h"
+#include "basis/Basis_Spins.h"
+#include "models/Model_Spins.h"
+#include "basis/Basis_Spins_Target_Sz.h"
+#include "models/Model_Spins_Target_Sz.h"
+#include "models/Model_3_orb_Hubbard_chain_GC.h"
+#include "models/Model_1_orb_Hubbard_GC.h"
+#include "basis/Basis_3_orb_Hubbard_chain_GC.h"
+#include "basis/Basis_3_orb_Hubbard_chain_GC_restricted.h"
+
+//Remember "cpp" files for templated class over basis need to be included in this code
+#include "models/Model_3_orb_Hubbard_chain_GC.cpp"
+#include "models/Model_1_orb_Hubbard_GC.cpp"
+
 
 #ifdef USE_COMPLEX
 #include "functions_complex.h"
@@ -20,9 +50,15 @@ using namespace std;
 #ifndef Lanczos_engine
 #define Lanczos_engine
 
+template <typename Basis_type, typename Model_type>
 class LANCZOS{
 
 public:
+        LANCZOS(Basis_type& Basis_, Model_type& Model_)
+            :basis(Basis_), model(Model_)
+        {
+
+        }
     int max_steps;
     double Lanc_Error;
     Mat_2_doub Krylov_space_vecs;
@@ -80,6 +116,12 @@ public:
     Mat_2_doub Mat_elements;
 
     bool Eig_vecs_required;
+
+    bool Saving_Hamil;
+
+    Basis_type& basis;
+    Model_type& model;
+
 
 
 

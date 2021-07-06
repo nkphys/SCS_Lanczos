@@ -6,7 +6,9 @@ This class includes the Model for which Lanczos is being done
 #include "../basis/Basis_1_orb_Hubbard_chain.h"
 #include "../functions_real.h"
 #include "../functions_complex.h"
-#include "../Lanczos_engine.h"
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 using namespace std;
 
 #ifndef Model_1_orb_Hubb_chain
@@ -56,6 +58,7 @@ public:
 
     Mat_1_doub State_c_on_GS;
     Mat_1_doub State_cdagger_on_GS;
+    int NProcessors_;
 
 
 
@@ -67,12 +70,23 @@ void Add_connections(BASIS_1_orb_Hubb_chain &basis);
 void Initialize_one_point_to_calculate(BASIS_1_orb_Hubb_chain &basis);
 void Initialize_two_point_to_calculate(BASIS_1_orb_Hubb_chain &basis);
 void Initialize_one_point_operator_site_specific(string opr_type , Matrix_COO &OPR, int site, BASIS_1_orb_Hubb_chain &basis);
+double_type Measure_one_point_operator_site_specific(string opr_type , Mat_1_doub &EigVec_, int site, BASIS_1_orb_Hubb_chain &basis);
 void Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR, int site1, int site2, BASIS_1_orb_Hubb_chain &basis);
-void Initialize_three_point_operator_sites_specific(string opr_type , Matrix_COO &OPR, int site1, int site2, int site3, BASIS_1_orb_Hubb_chain &basis);
-void Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_chain &basis);
-void Get_cdagger_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hubb_chain & basis_Np1, BASIS_1_orb_Hubb_chain & basis, Mat_1_trio_int TRIO_VEC, Mat_1_doub values);
-void Get_c_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hubb_chain & basis_Nm1, BASIS_1_orb_Hubb_chain & basis, Mat_1_trio_int TRIO_VEC, Mat_1_doub values);
+double_type Measure_two_point_operator_sites_specific(string opr_type , Mat_1_doub &EigVec_, int site1, int site2, BASIS_1_orb_Hubb_chain &basis);
 
+
+void Initialize_three_point_operator_sites_specific(string opr_type , Matrix_COO &OPR, int site1, int site2, int site3, BASIS_1_orb_Hubb_chain &basis);
+
+double_type Measure_three_point_operator_sites_specific(string opr_type , Mat_1_doub &EigVec_, int site1, int site2, int site3, BASIS_1_orb_Hubb_chain &basis);
+
+void Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_chain &basis);
+void Get_cdagger_on_GS(Mat_1_doub & EigVec_, BASIS_1_orb_Hubb_chain & basis_Np1, BASIS_1_orb_Hubb_chain & basis, Mat_1_trio_int TRIO_VEC, Mat_1_doub values);
+void Get_c_on_GS(Mat_1_doub & EigVec_, BASIS_1_orb_Hubb_chain & basis_Nm1, BASIS_1_orb_Hubb_chain & basis, Mat_1_trio_int TRIO_VEC, Mat_1_doub values);
+
+void Act_Hamil(BASIS_1_orb_Hubb_chain &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+void Act_connections(BASIS_1_orb_Hubb_chain &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+void Act_non_diagonal_terms (BASIS_1_orb_Hubb_chain &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+void Act_diagonal_terms(BASIS_1_orb_Hubb_chain &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
 
 };
 

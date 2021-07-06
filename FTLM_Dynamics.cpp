@@ -7,11 +7,16 @@ using namespace std;
 //#ifdef USE_COMPLEX
 
 
+#ifndef FTLM_DYN_functions
+#define FTLM_DYN_functions
 
-void FTLM_DYNAMICS::Perform_FTLM(string inp_filename, Matrix_COO& OPR_){
+
+template <typename Basis_type, typename Model_type>
+void FTLM_DYNAMICS<Basis_type, Model_type>::Perform_FTLM(string inp_filename, Matrix_COO& OPR_){
 
 
-    LANCZOS Lanczos1_;LANCZOS Lanczos2_;
+    LANCZOS<Basis_type, Model_type> Lanczos1_(basis,model);
+    LANCZOS<Basis_type, Model_type> Lanczos2_(basis,model);
 
     double offset_E;
 
@@ -213,3 +218,6 @@ void FTLM_DYNAMICS::Perform_FTLM(string inp_filename, Matrix_COO& OPR_){
 
 
 }
+
+
+#endif

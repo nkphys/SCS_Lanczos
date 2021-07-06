@@ -36,6 +36,10 @@ void BASIS_1_orb_Hubb_chain::Construct_basis(){
         d_dn_max=d_dn_max+ temp;
     }
 
+    DdnMax_ = d_dn_max;
+    DdnMin_ = d_dn_min;
+    DupMax_ = d_up_max;
+    DupMin_ = d_up_min;
 
     //putting correct D_'s in the D arrays
     int num;

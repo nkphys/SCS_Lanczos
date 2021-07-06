@@ -21,6 +21,14 @@ using namespace std;
       (basis.D_dn_basis_sec2.size()*i2 + j2);
 */
 
+
+
+void MODEL_3_orb_Hubb_chain_two_SzSectors::Act_Hamil(BASIS_3_orb_Hubb_chain_two_SzSectors &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
+
+ cout<<"NOT WORKING AT PRESENT"<<endl;
+
+}
+
 void MODEL_3_orb_Hubb_chain_two_SzSectors::Add_diagonal_terms(BASIS_3_orb_Hubb_chain_two_SzSectors &basis){
 
 }

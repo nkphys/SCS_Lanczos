@@ -3,11 +3,12 @@ This class includes the Model for which Lanczos is being done
 */
 
 #include "../basis/Basis_1_orb_Hubbard_GC.h"
-#include "../Lanczos_engine.h"
+#include "../functions_real.h"
+#include "../functions_complex.h"
 #define PI 3.14159265
 
-#ifndef Model_1_orb_Hubbard_GC
-#define Model_1_orb_Hubbard_GC
+#ifndef Model_1_orb_Hubbard_GC_Class
+#define Model_1_orb_Hubbard_GC_Class
 
 template <typename Basis_type>
 class MODEL_1_orb_Hubbard_GC{
@@ -51,16 +52,18 @@ public:
     void Add_connections();
     //    void Initialize_one_point_to_calculate();
     //    void Initialize_two_point_to_calculate();
-    void Initialize_Opr_for_Dynamics(LANCZOS &lanczos_GS);
+    void Initialize_Opr_for_Dynamics();
     //    void Calculate_Local_Obs_for_States_to_Look(LANCZOS & lanczos);
-    void Get_c_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hubbard_GC & basis_Nm1,
+    void Get_c_on_GS(Mat_1_doub & EigVec_, BASIS_1_orb_Hubbard_GC & basis_Nm1,
                      Mat_1_trio_int TRIO_VEC, Mat_1_doub values);
-    void Get_cdagger_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hubbard_GC & basis_Np1,
+    void Get_cdagger_on_GS(Mat_1_doub & EigVec_, BASIS_1_orb_Hubbard_GC & basis_Np1,
                            Mat_1_trio_int TRIO_VEC, Mat_1_doub values);
     void Calculate_one_point_observables(Mat_1_doub &Vec_);
     void Calculate_two_point_observables(Mat_1_doub &Vec_);
     void Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site);
     void Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site, int site_p);
+
+    void Act_Hamil(BASIS_1_orb_Hubbard_GC &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
 
 
 private:

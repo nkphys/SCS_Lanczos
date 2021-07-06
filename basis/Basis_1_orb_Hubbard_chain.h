@@ -32,6 +32,9 @@ public:
     int partitions_length_dn;
 
 
+    int DupMax_, DupMin_;
+    int DdnMax_, DdnMin_;
+
 
 
 

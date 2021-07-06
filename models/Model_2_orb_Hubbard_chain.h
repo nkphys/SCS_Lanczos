@@ -3,8 +3,9 @@ This class includes the Model for which Lanczos is being done
 */
 
 #include "../basis/Basis_2_orb_Hubbard_chain.h"
+#include "../functions_real.h"
+#include "../functions_complex.h"
 
-#include "../Lanczos_engine.h"
 
 
 #ifndef Model_2_orb_Hubb_chain
@@ -106,9 +107,16 @@ public:
     void Initialize_two_point_operator_sites_specific(string type , Matrix_COO &OPR_, int site, int site2, BASIS_2_orb_Hubb_chain &basis);
     void Initialize_two_point_to_calculate(BASIS_2_orb_Hubb_chain &basis);
     void Initialize_Opr_for_Dynamics(BASIS_2_orb_Hubb_chain &basis);
-    void Calculate_Local_Obs_for_States_to_Look(LANCZOS & lanczos, BASIS_2_orb_Hubb_chain & basis);
+    void Calculate_Local_Obs_for_States_to_Look(bool calculate_local_obs_for_states_to_look,
+                                                Mat_1_int & states_to_look,
+                                                string file_Loc_obs_in_basis_of_states,
+                                                int no_basis_to_check,
+                                                Mat_2_pair_realint &Overlaps,
+                                                BASIS_3_orb_Hubb_chain & basis);
     void Get_Variational_State(BASIS_2_orb_Hubb_chain &basis, int no_of_pairs);
     void Read_Mat_2_trio(Mat_2_trio_int &MAT_TEMP, Mat_1_doub &VALUES_TEMP,int pair_no);
+    void Act_Hamil(BASIS_2_orb_Hubb_chain &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+
 
 };
 

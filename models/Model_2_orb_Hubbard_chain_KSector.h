@@ -3,9 +3,8 @@ This class includes the Model for which Lanczos is being done
 */
 
 #include "../basis/Basis_2_orb_Hubbard_chain_KSector.h"
-
-#include "../Lanczos_engine.h"
-
+#include "../functions_real.h"
+#include "../functions_complex.h"
 
 #ifndef Model_2_orb_Hubb_chain_KSector
 #define Model_2_orb_Hubb_chain_KSector
@@ -101,6 +100,8 @@ public:
     void Get_overlap_matrix_for_Anzatz_basis(BASIS_2_orb_Hubb_chain_KSector &basis, Mat_1_doub &GS_);
     void Variational_state_optimization(BASIS_2_orb_Hubb_chain_KSector &basis, Mat_1_doub GS_);
     void Variational_state_optimization_old(BASIS_2_orb_Hubb_chain_KSector &basis, Mat_1_doub GS_);
+    void Act_Hamil(BASIS_2_orb_Hubb_chain_KSector &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+
 
 };
 

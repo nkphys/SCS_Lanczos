@@ -3,9 +3,8 @@ This class includes the Model for which Lanczos is being done
 */
 
 #include "../basis/Basis_3_orb_Hubbard_chain_two_SzSectors.h"
-#include "../Lanczos_engine.h"
-
-
+#include "../functions_real.h"
+#include "../functions_complex.h"
 
 #ifndef Model_3_orb_Hubb_chain_two_SzSectors
 #define Model_3_orb_Hubb_chain_two_SzSectors
@@ -42,6 +41,8 @@ void Read_parameters(BASIS_3_orb_Hubb_chain_two_SzSectors &basis, string filenam
 void Add_diagonal_terms(BASIS_3_orb_Hubb_chain_two_SzSectors &basis);
 void Add_non_diagonal_terms(BASIS_3_orb_Hubb_chain_two_SzSectors &basis);
 void Add_connections(BASIS_3_orb_Hubb_chain_two_SzSectors &basis);
+void Act_Hamil(BASIS_3_orb_Hubb_chain_two_SzSectors &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+
 /*
 void Read_parameters_for_dynamics(string filename);
 

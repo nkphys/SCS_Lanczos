@@ -13,6 +13,13 @@ using namespace std;
 #define PI 3.14159265
 
 
+
+void MODEL_Spins_Target_Sz::Act_Hamil(BASIS_Spins_Target_Sz &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
+
+ cout<<"NOT WORKING AT PRESENT"<<endl;
+
+}
+
 void MODEL_Spins_Target_Sz::Add_diagonal_terms(BASIS_Spins_Target_Sz &basis){
 
 

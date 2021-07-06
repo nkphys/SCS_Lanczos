@@ -6,7 +6,8 @@ using namespace std;
 //#ifdef USE_COMPLEX
 
 
-void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
+template <typename Basis_type, typename Model_type>
+void LANCZOS<Basis_type, Model_type>::Perform_LANCZOS(Matrix_COO &Hamil){
 
 
     // Print_Matrix_COO(Hamil);
@@ -166,7 +167,12 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
 
         clock_t oprt_SB_time = clock();
 
-        Matrix_COO_vector_multiplication("U", Hamil, Kvector_n, Kvector_np1); // saved in K_vector_np1
+        if(Saving_Hamil){
+            Matrix_COO_vector_multiplication("U", Hamil, Kvector_n, Kvector_np1); // saved in K_vector_np1
+        }
+        else{
+            model.Act_Hamil(basis, Kvector_n, Kvector_np1);
+        }
 
         cout<<"Time to operate Hamiltonian : "<<double( clock() - oprt_SB_time ) / (double)CLOCKS_PER_SEC<<endl;//cout<<"here"<<endl;
 
@@ -394,7 +400,12 @@ void LANCZOS::Perform_LANCZOS(Matrix_COO &Hamil){
                         Subtract(Eig_vecs[Ts], (-1.0*(red_eig_vecs[Ts][lanc_iter2])), Kvector_n);
 
                         // saved in K_vector_np1
-                        Matrix_COO_vector_multiplication("U", Hamil, Kvector_n, Kvector_np1);
+                        if(Saving_Hamil){
+                            Matrix_COO_vector_multiplication("U", Hamil, Kvector_n, Kvector_np1); // saved in K_vector_np1
+                        }
+                        else{
+                            model.Act_Hamil(basis, Kvector_n, Kvector_np1);
+                        }
 
                         Subtract(Kvector_np1, A[lanc_iter2], Kvector_n);
                         if(lanc_iter2!=0){
@@ -536,7 +547,8 @@ sort(numbers.begin(), numbers.end(), comp);
 
 }
 
-void LANCZOS::Clear(){
+template <typename Basis_type, typename Model_type>
+void LANCZOS<Basis_type, Model_type>::Clear(){
     vector< double >().swap( B2 );
     vector< double >().swap( Norms );
 
@@ -570,7 +582,8 @@ void LANCZOS::Clear(){
 
 }
 
-void LANCZOS::Measure_macro_observables(Mat_1_string macro_obs, Hamiltonian_1_COO &Macro_oprts, int state_no){
+template <typename Basis_type, typename Model_type>
+void LANCZOS<Basis_type, Model_type>::Measure_macro_observables(Mat_1_string macro_obs, Hamiltonian_1_COO &Macro_oprts, int state_no){
 
     cout<<"Macro obs Measurement is started after completing Lanczos algorithm"<<endl;
     cout<<"Macro obs Measurement is started after completing Lanczos algorithm fo state_no = "<<states_to_look[state_no]<<endl;
@@ -595,8 +608,8 @@ void LANCZOS::Measure_macro_observables(Mat_1_string macro_obs, Hamiltonian_1_CO
 
 
 
-
-void LANCZOS::Measure_KE(Matrix_COO &Macro_oprt, int state_no){
+template <typename Basis_type, typename Model_type>
+void LANCZOS<Basis_type, Model_type>::Measure_KE(Matrix_COO &Macro_oprt, int state_no){
 
 
     double_type value;
@@ -616,7 +629,8 @@ void LANCZOS::Measure_KE(Matrix_COO &Macro_oprt, int state_no){
 }
 
 
-void LANCZOS::Measure_Total_Energy(Matrix_COO &Macro_oprt, int state_no){
+template <typename Basis_type, typename Model_type>
+void LANCZOS<Basis_type, Model_type>::Measure_Total_Energy(Matrix_COO &Macro_oprt, int state_no){
 
 
     double_type value;
@@ -638,7 +652,8 @@ void LANCZOS::Measure_Total_Energy(Matrix_COO &Macro_oprt, int state_no){
 
 
 
-void LANCZOS::Time_evolution_type1(Matrix_COO &Hamil, double dt_, double &Energy_){
+template <typename Basis_type, typename Model_type>
+void LANCZOS<Basis_type, Model_type>::Time_evolution_type1(Matrix_COO &Hamil, double dt_, double &Energy_){
 
 #ifdef USE_COMPLEX
     time_evolution_order=3;
@@ -692,7 +707,8 @@ void LANCZOS::Time_evolution_type1(Matrix_COO &Hamil, double dt_, double &Energy
 #endif
 }
 
-void LANCZOS::Measure_one_point_observables(Mat_1_string one_point_obs, Hamiltonian_2_COO &One_point_oprts, int T_sites, int state_no){
+template <typename Basis_type, typename Model_type>
+void LANCZOS<Basis_type, Model_type>::Measure_one_point_observables(Mat_1_string one_point_obs, Hamiltonian_2_COO &One_point_oprts, int T_sites, int state_no){
 
     cout<<"One-point Measurement is started after completing Lanczos algorithm"<<endl;
 
@@ -724,7 +740,8 @@ void LANCZOS::Measure_one_point_observables(Mat_1_string one_point_obs, Hamilton
 }
 
 
-void LANCZOS::Measure_two_point_observables_smartly(Mat_1_string one_point_obs, Hamiltonian_2_COO &One_point_oprts, int T_sites, int state_no, string _model_){
+template <typename Basis_type, typename Model_type>
+void LANCZOS<Basis_type, Model_type>::Measure_two_point_observables_smartly(Mat_1_string one_point_obs, Hamiltonian_2_COO &One_point_oprts, int T_sites, int state_no, string _model_){
     cout<<"Two-point Measurement is done smartly for state no = "<<states_to_look[state_no]<<endl;
 
     double_type value;
@@ -837,7 +854,8 @@ void LANCZOS::Measure_two_point_observables_smartly(Mat_1_string one_point_obs, 
 }
 
 
-double_type LANCZOS::Measure_observable(Matrix_COO &OPR_, int state_no){
+template <typename Basis_type, typename Model_type>
+double_type LANCZOS<Basis_type, Model_type>::Measure_observable(Matrix_COO &OPR_, int state_no){
 
     double_type value;
     string mult_type="not_U";
@@ -851,7 +869,8 @@ double_type LANCZOS::Measure_observable(Matrix_COO &OPR_, int state_no){
 }
 
 
-double_type LANCZOS::Measure_observable(Matrix_COO &OPR_, int state_no, string mult_type){
+template <typename Basis_type, typename Model_type>
+double_type LANCZOS<Basis_type, Model_type>::Measure_observable(Matrix_COO &OPR_, int state_no, string mult_type){
 
     double_type value;
     Mat_1_doub temp_vec;
@@ -863,7 +882,8 @@ double_type LANCZOS::Measure_observable(Matrix_COO &OPR_, int state_no, string m
 
 }
 
-void LANCZOS::Measure_four_point_observables(Hamiltonian_3_COO &Two_point_oprts, Mat_1_tetra_int sites_set, int state_no){
+template <typename Basis_type, typename Model_type>
+void LANCZOS<Basis_type, Model_type>::Measure_four_point_observables(Hamiltonian_3_COO &Two_point_oprts, Mat_1_tetra_int sites_set, int state_no){
 
     cout<<"Four-point Measurement is started after completing Lanczos algorithm for state_no = "<<states_to_look[state_no]<<endl;
     cout<<"Only <GS|c_{iup}^{dagger}c_{jup}^{dagger}c_{lup}c_{kup}|GS> for 'j' ne 'l' is calculated"<<endl;
@@ -926,7 +946,8 @@ void LANCZOS::Measure_four_point_observables(Hamiltonian_3_COO &Two_point_oprts,
 
 }
 
-void LANCZOS::Measure_two_point_observables(Mat_1_string two_point_obs, Hamiltonian_3_COO &Two_point_oprts, int T_sites,  int state_no, bool PBC_check){
+template <typename Basis_type, typename Model_type>
+void LANCZOS<Basis_type, Model_type>::Measure_two_point_observables(Mat_1_string two_point_obs, Hamiltonian_3_COO &Two_point_oprts, int T_sites,  int state_no, bool PBC_check){
 
     cout<<"Two-point Measurement is started after completing Lanczos algorithm for state_no = "<<states_to_look[state_no]<<endl;
 
@@ -1030,7 +1051,8 @@ void LANCZOS::Measure_two_point_observables(Mat_1_string two_point_obs, Hamilton
 
 }
 
-void LANCZOS::Write_full_spectrum(){
+template <typename Basis_type, typename Model_type>
+void LANCZOS<Basis_type, Model_type>::Write_full_spectrum(){
 
     ofstream file_out(file_eval_spectrum.c_str());
 
@@ -1047,9 +1069,11 @@ void LANCZOS::Write_full_spectrum(){
 
 }
 
-void LANCZOS::Read_Lanczos_parameters(string filename){
+template <typename Basis_type, typename Model_type>
+void LANCZOS<Basis_type, Model_type>::Read_Lanczos_parameters(string filename){
 
     omega_sign =1.0;
+
 
     string random_seed_generator_, Random_Seed_Generator_ = "Random_seed_generator = ";
     string eta_, Eta_ = "eta = ";
@@ -1072,6 +1096,7 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
     string get_overlap_bw_eigstates_and_k_vecs_, Get_Overlap_Bw_Eigstates_And_K_Vecs_ = "get_overlap_bw_eigstates_and_K_vecs = ";
     string calculate_local_obs_for_states_to_look_, Calculate_Local_Obs_For_States_To_Look_ = "calculate_local_obs_for_states_to_look = ";
     string lanczos_reorthogonalization_, Lanczos_Reorthogonalization_ = "lanczos_reorthogonalization = ";
+    string saving_hamil_, Saving_Hamil_ = "Saving_Hamiltonian_and_Oprs = ";
     string need_few_eig_vecs_ ,Need_Few_Eig_Vecs_ = "need_few_eig_vecs = ";
     string get_overlap_with_basis_, Get_Overlap_With_Basis_ = "Get_overlap_with_basis = ";
     string states_to_look_, States_To_Look_ = "States_to_look = ";
@@ -1176,6 +1201,9 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
             if ((offset = line.find(Lanczos_Reorthogonalization_, 0)) != string::npos) {
                 lanczos_reorthogonalization_ = line.substr (offset + Lanczos_Reorthogonalization_.length());		}
 
+            if ((offset = line.find(Saving_Hamil_, 0)) != string::npos) {
+                saving_hamil_ = line.substr (offset + Saving_Hamil_.length());		}
+
             if ((offset = line.find(Get_Full_Spectrum_, 0)) != string::npos) {
                 get_full_spectrum_ = line.substr (offset + Get_Full_Spectrum_.length());		}
 
@@ -1274,6 +1302,14 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
         lanczos_reorthogonalization=false;
     }
 
+    if(saving_hamil_=="true"){
+        Saving_Hamil=true;
+    }
+    else{
+        Saving_Hamil=false;
+    }
+
+
     if(need_few_eig_vecs_=="true"){
         need_few_eig_vecs=true;
         Get_Full_Spectrum=true;
@@ -1298,7 +1334,8 @@ void LANCZOS::Read_Lanczos_parameters(string filename){
 
 }
 
-void LANCZOS::Get_Dynamics_seed(Matrix_COO &Opr){
+template <typename Basis_type, typename Model_type>
+void LANCZOS<Basis_type, Model_type>::Get_Dynamics_seed(Matrix_COO &Opr){
 
     Matrix_COO_vector_multiplication("not_U", Opr, Eig_vec, Dynamics_seed);
 
@@ -1315,7 +1352,8 @@ void LANCZOS::Get_Dynamics_seed(Matrix_COO &Opr){
     }
 }
 
-void LANCZOS::Get_Dynamics_seed(Mat_1_doub vec_){
+template <typename Basis_type, typename Model_type>
+void LANCZOS<Basis_type, Model_type>::Get_Dynamics_seed(Mat_1_doub vec_){
 
     Dynamics_seed=vec_;
     double tmpnrm_type_double;

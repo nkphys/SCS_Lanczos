@@ -18,9 +18,15 @@ using namespace std;
 #ifndef FTLM_DYNAMICS_engine
 #define FTLM_DYNAMICS_engine
 
+template <typename Basis_type, typename Model_type>
 class FTLM_DYNAMICS{
 
 public:
+    FTLM_DYNAMICS(Basis_type& Basis_, Model_type& Model_)
+        :basis(Basis_), model(Model_)
+    {
+
+    }
 
     //NOTATION : STATISTICAL AVG is average over random initial seeds
     //           Qauntum Avg is just expectation values.
@@ -40,6 +46,8 @@ public:
 
     Mat_1_real Evals1, Evals2;
 
+    Basis_type& basis;
+    Model_type& model;
 
     void Perform_FTLM(string inp_filename, Matrix_COO& OPR_);
 

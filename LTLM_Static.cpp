@@ -7,11 +7,14 @@ using namespace std;
 //#ifdef USE_COMPLEX
 
 
+#ifndef LTLM_STATIC_functions
+#define LTLM_STATIC_functions
 
-void LTLM_STATIC::Perform_LTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
+template <typename Basis_type, typename Model_type>
+void LTLM_STATIC<Basis_type, Model_type>::Perform_LTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
 
 
-    LANCZOS Lanczos_;
+    LANCZOS<Basis_type, Model_type> Lanczos_(basis, model);
 
     int No_of_oprts;
     No_of_oprts=OPR_.size();
@@ -225,4 +228,4 @@ void LTLM_STATIC::Perform_LTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
 
 
 
-
+#endif

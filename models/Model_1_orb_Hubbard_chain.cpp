@@ -148,10 +148,10 @@ void MODEL_1_orb_Hubb_chain::Add_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
 
                             //assert(m_new<m);
                             if(m_new<m){
-                                if(abs(value)>0.00000001){
-                                Hamil.value.push_back(value*one);
-                                Hamil.rows.push_back((m_new));
-                                Hamil.columns.push_back((m));
+                                if(abs(value)>0.0000000001){
+                                    Hamil.value.push_back(value*one);
+                                    Hamil.rows.push_back((m_new));
+                                    Hamil.columns.push_back((m));
                                 }
                             }
                         }
@@ -161,8 +161,6 @@ void MODEL_1_orb_Hubb_chain::Add_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
             }
 
         }
-
-
 
 
     }
@@ -279,6 +277,383 @@ void MODEL_1_orb_Hubb_chain::Add_connections(BASIS_1_orb_Hubb_chain &basis){
     } // "i" i.e up_decimals
 
 }
+
+
+
+
+
+void MODEL_1_orb_Hubb_chain::Act_Hamil(BASIS_1_orb_Hubb_chain &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
+
+    assert (Vec_in.size() == basis.D_up_basis.size()*basis.D_dn_basis.size());
+    Vec_out.clear();
+    Vec_out.resize(basis.D_up_basis.size()*basis.D_dn_basis.size());
+    Act_diagonal_terms(basis, Vec_in, Vec_out);
+    cout<<"Diagonal done"<<endl;
+    Act_non_diagonal_terms(basis, Vec_in, Vec_out);
+    cout<<"Non diagonal done"<<endl;
+    Act_connections(basis, Vec_in, Vec_out);
+    cout<<"Connections done"<<endl;
+
+}
+
+
+
+
+
+void MODEL_1_orb_Hubb_chain::Act_connections(BASIS_1_orb_Hubb_chain &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
+
+
+    Mat_2_doub Vec_out_temp;
+    int no_of_proc;
+    no_of_proc=1;
+
+#ifdef _OPENMP
+    no_of_proc=min(basis.Length, NProcessors_);
+    omp_set_num_threads(no_of_proc);
+    cout<<"Connections acted: "<<no_of_proc<<" processors"<<endl;
+    Vec_out_temp.resize(no_of_proc);
+    for(int i=0;i<no_of_proc;i++){
+        Vec_out_temp[i].resize(Vec_in.size());
+    }
+#endif
+
+
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
+    for(int site=0;site<basis.Length ;site++){
+        int mytid;
+#ifdef _OPENMP
+        mytid = omp_get_thread_num();
+#endif
+
+        for(int site_p=0;site_p<basis.Length ;site_p++){
+            double value;
+            int m;
+            int D_up,D_dn;
+            int i_new,j_new;
+            int m_new;
+            double sign_FM;
+            int sign_pow_up, sign_pow_dn;
+            int l,lp;
+
+            if((Hopping_mat_NN[site_p][site])!=zero)
+
+            {
+
+                for (int i=0;i<basis.D_up_basis.size();i++){
+                    for (int j=0;j<basis.D_dn_basis.size();j++){
+                        m=basis.D_dn_basis.size()*i + j;
+
+                        value=0;
+
+
+                        //---------------Hopping for up electrons-------------------//
+                        //there have to be one up electron in site
+                        //there have to be no up electron in site_p
+                        if(
+                                (bit_value(basis.D_up_basis[i], site)==1)
+                                &&
+                                (bit_value(basis.D_up_basis[i], site_p)==0)
+                                )
+                        {
+
+                            D_up = (int) (basis.D_up_basis[i] + pow(2, site_p)
+                                          - pow(2,site) );
+
+
+                            //i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                            i_new = basis.inverse_Dup[D_up - basis.DupMin_];
+                            j_new = j;
+
+                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                            l= site;
+                            lp= site_p;
+
+                            sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+
+                            sign_FM = pow(-1.0, sign_pow_up);
+
+                            if(m_new>=m){
+                                cout<<" Hopping: "<<site_p<<"  "<< site<<"  "<<Hopping_mat_NN[site_p][site]<<endl;
+                            }
+                            assert(m_new<m);
+
+                            //HERE
+
+#ifdef _OPENMP
+                            Vec_out_temp[mytid][m_new] += Vec_in[m]*-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one;
+                            Vec_out_temp[mytid][m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one);
+#else
+                            Vec_out[m_new] += Vec_in[m]*-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one;
+                            Vec_out[m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one);
+#endif
+
+
+                        } // if up hopping possible
+
+
+                        //---------------Hopping for dn electrons-------------------//
+                        //there have to be one dn electron in site
+                        //there have to be no dn electron in site_p
+                        if(
+                                (bit_value(basis.D_dn_basis[j],site)==1)
+                                &&
+                                (bit_value(basis.D_dn_basis[j],site_p)==0)
+                                )
+                        {
+
+                            D_dn = (int) (basis.D_dn_basis[j] + pow(2,site_p)
+                                          - pow(2,site) );
+
+
+                            //j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+                            j_new = basis.inverse_Ddn[D_dn - basis.DdnMin_];
+                            i_new = i;
+
+                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                            l= site;
+                            lp= site_p;
+
+                            sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+
+                            sign_FM = pow(-1.0, sign_pow_dn);
+
+                            assert(m_new<m);
+
+#ifdef _OPENMP
+                            Vec_out_temp[mytid][m_new] += Vec_in[m]*-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one;
+                            Vec_out_temp[mytid][m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one);
+#else
+                            Vec_out[m_new] += Vec_in[m]*-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one;
+                            Vec_out[m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one);
+#endif
+
+
+                        } // if dn hopping possible
+
+
+
+                    }// "j" i.e dn_decimals
+                } // "i" i.e up_decimals
+
+
+            }//Hopping non-zero
+        }//site_p
+
+    } // site
+
+
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+    for(int comp=0;comp<Vec_in.size();comp++){
+        for(int Np=0;Np<no_of_proc;Np++){
+            Vec_out[comp] += Vec_out_temp[Np][comp];
+        }
+    }
+#endif
+
+
+
+}
+
+
+void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basis,  Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
+
+
+    for(int type_ind=0;type_ind<three_point_intrs.size();type_ind++){
+
+
+        if(three_point_intrs[type_ind]=="SzSpSm"){
+
+            Mat_2_doub Vec_out_temp;
+            int no_of_proc;
+            no_of_proc=1;
+            int temp_int= three_point_intrs_sites_set[type_ind].size();
+
+#ifdef _OPENMP
+            no_of_proc=min(temp_int, NProcessors_);
+            omp_set_num_threads(no_of_proc);
+            cout<<"Connections acted: "<<no_of_proc<<" processors"<<endl;
+            Vec_out_temp.resize(no_of_proc);
+            for(int i=0;i<no_of_proc;i++){
+                Vec_out_temp[i].resize(Vec_in.size());
+            }
+#endif
+
+
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
+            for(int sites_set=0;sites_set<three_point_intrs_sites_set[type_ind].size();sites_set++){
+                int mytid;
+#ifdef _OPENMP
+                mytid = omp_get_thread_num();
+#endif
+                int m;
+                double_type value;
+                int D_up, D_dn,i_new,j_new,m_new, l, lp, sign_pow_up , sign_pow_dn;
+                double sign_FM;
+                int site1, site2, site3;
+
+                site1=three_point_intrs_sites_set[type_ind][sites_set][0];
+                site2=three_point_intrs_sites_set[type_ind][sites_set][1];
+                site3=three_point_intrs_sites_set[type_ind][sites_set][2];
+
+                for (int i=0;i<basis.D_up_basis.size();i++){
+                    for (int j=0;j<basis.D_dn_basis.size();j++){
+                        m=basis.D_dn_basis.size()*i + j;
+
+                        //Sz[site1]Sp[site2]*Sm[site3]:
+                        //there have to be ony up electron at site2
+                        //there have to be only down electron at site
+
+                        assert(site1!=site2);
+                        assert(site1!=site3);
+                        assert(site2!=site3);
+
+                        if(((bit_value(basis.D_dn_basis[j], site2)==1)
+                            &&
+                            (bit_value(basis.D_up_basis[i], site2)==0)
+                            )
+                                &&
+                                ((bit_value(basis.D_up_basis[i], site3)==1)
+                                 &&
+                                 (bit_value(basis.D_dn_basis[j], site3)==0)
+                                 ))
+                        {
+
+                            D_up = (int) (basis.D_up_basis[i] - pow(2, site3)
+                                          + pow(2, site2) );
+                            D_dn = (int) (basis.D_dn_basis[j] + pow(2, site3)
+                                          - pow(2, site2) );
+
+                            //i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                            //j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+                            i_new = basis.inverse_Dup[D_up - basis.DupMin_];
+                            j_new = basis.inverse_Ddn[D_dn - basis.DdnMin_];
+
+                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                            l= site3;
+                            lp= site2;
+
+                            sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+                            sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+                            sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn+1);
+
+
+                            value = sign_FM*(0.5*( bit_value(basis.D_up_basis[i_new], site1) -
+                                                   bit_value(basis.D_dn_basis[j_new], site1) ))*three_point_intrs_vals[type_ind][sites_set];
+
+                            //assert(m_new<m);
+                            if(abs(value)>0.0000000001){
+
+#ifdef _OPENMP
+                                Vec_out_temp[mytid][m_new] += Vec_in[m]*value*one;
+#else
+                                Vec_out[m_new] += Vec_in[m]*value*one;
+#endif
+
+
+                            }
+
+                        }
+                    }
+                }
+            }
+
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+            for(int comp=0;comp<Vec_in.size();comp++){
+                for(int Np=0;Np<no_of_proc;Np++){
+                    Vec_out[comp] += Vec_out_temp[Np][comp];
+                }
+            }
+#endif
+
+        }
+
+
+    }
+
+
+
+}
+
+void MODEL_1_orb_Hubb_chain::Act_diagonal_terms(BASIS_1_orb_Hubb_chain &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
+
+
+    assert (Vec_out.size() == basis.D_up_basis.size()*basis.D_dn_basis.size());
+    assert (Vec_in.size() == Vec_out.size());
+
+
+    //Remember H[l][m]=<l|H|m>
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
+    for (int i=0;i<basis.D_up_basis.size();i++){
+        for (int j=0;j<basis.D_dn_basis.size();j++){
+            int m;
+            double value;
+            m=basis.D_dn_basis.size()*i + j;
+
+            value=0;
+            //coulomb repulsion:
+            value+=U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
+
+
+
+            //magnetic Field
+            for(int site=0;site<basis.Length;site++){
+                value+=0.5*(H_field[site])*
+                        ( ( bit_value(basis.D_up_basis[i],site) -
+                            bit_value(basis.D_dn_basis[j],site) )
+                          );
+            }
+
+            //Onsite_Energy
+            for(int site=0;site<basis.Length;site++){
+                value+=1.0*(Onsite_Energy[site])*
+                        ( ( bit_value(basis.D_up_basis[i],site) +
+                            bit_value(basis.D_dn_basis[j],site) )
+                          );
+                //  cout<<"site = "<<site<<" : "<<Onsite_Energy[site]<<endl;
+            }
+
+            //LongRange interactions ninj
+            for(int site_i=0;site_i<basis.Length;site_i++){
+                for(int site_j=0;site_j<basis.Length;site_j++){
+
+                    if(NonLocalInteractions_mat[site_i][site_j]!=0.0){
+
+                        value+=1.0*NonLocalInteractions_mat[site_i][site_j]*(
+                                    ( bit_value(basis.D_up_basis[i],site_i) + bit_value(basis.D_dn_basis[j],site_i))*
+                                    ( bit_value(basis.D_up_basis[i],site_j) + bit_value(basis.D_dn_basis[j],site_j))
+                                    );
+
+                    }
+                }
+            }
+
+
+
+
+            if(value!=0){
+                Vec_out[m] +=value*one*Vec_in[m];
+            }
+        }
+    }
+
+}
+
 void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, string filename){
 
 
@@ -305,6 +680,8 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     string file_nonlocal_int_connections_, File_NonLocal_Int_Connections_ = "File_NonLocal_Int_Connections = ";
     string file_three_point_observation_, File_Three_Point_Observation_ = "File_Three_Point_Observation = ";
     string file_three_point_interaction_, File_Three_Point_Interaction_ = "File_Three_Point_Interaction = ";
+
+    string processors_, Processors_ = "Processors = ";
 
     string read_onsite_energies;
 
@@ -369,6 +746,9 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
             if ((offset = line.find(File_NonLocal_Int_Connections_, 0)) != string::npos) {
                 file_nonlocal_int_connections_ = line.substr (offset+File_NonLocal_Int_Connections_.length());				}
 
+            if ((offset = line.find(Processors_ , 0)) != string::npos) {
+                processors_ = line.substr (offset+Processors_ .length());	}
+
         }
         inputfile.close();
     }
@@ -378,6 +758,8 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
 
 
 
+
+    NProcessors_=atoi(processors_.c_str());
 
 
     if(pbc_ == "true"){
@@ -1005,6 +1387,49 @@ void MODEL_1_orb_Hubb_chain::Initialize_one_point_operator_site_specific(string 
     }
 }
 
+double_type MODEL_1_orb_Hubb_chain::Measure_one_point_operator_site_specific(string opr_type , Mat_1_doub &EigVec_, int site, BASIS_1_orb_Hubb_chain &basis){
+
+    int orb=0;
+    int spin;
+    if(opr_type=="n_up"){
+        spin=0;
+    }
+    if(opr_type=="n_dn"){
+        spin=1;
+    }
+    assert(opr_type=="n_up" || opr_type =="n_dn");
+
+
+    Mat_1_doub Vec_new;
+    Vec_new.resize(EigVec_.size());
+
+    //Remember OPR[l][m]=<l|OPR|m>
+    int m;
+    double_type value;
+    double_type value_final;
+
+    value_final=zero;
+    for (int i=0;i<basis.D_up_basis.size();i++){
+        for (int j=0;j<basis.D_dn_basis.size();j++){
+            m=basis.D_dn_basis.size()*i + j;
+
+            //n_orb_spin[site]:
+            if(spin==0){
+                value=one*(1.0*bit_value(basis.D_up_basis[i],orb*basis.Length + site));
+            }
+            else{
+                value=one*(1.0*bit_value(basis.D_dn_basis[j],orb*basis.Length + site));
+            }
+
+            if(value!=zero){
+                value_final +=value*EigVec_[m]*conjugate(EigVec_[m]);
+            }
+        }
+    }
+
+    return value_final;
+}
+
 void MODEL_1_orb_Hubb_chain::Initialize_one_point_to_calculate(BASIS_1_orb_Hubb_chain &basis){
 
 
@@ -1273,6 +1698,269 @@ void MODEL_1_orb_Hubb_chain::Initialize_two_point_operator_sites_specific(string
 
 
 
+
+}
+
+
+
+
+
+
+
+
+double_type MODEL_1_orb_Hubb_chain::Measure_two_point_operator_sites_specific(string opr_type , Mat_1_doub &EigVec_, int site, int site2, BASIS_1_orb_Hubb_chain &basis){
+
+
+
+    //Remember OPR[l][m]=<l|OPR|m>
+    int m;
+    double value;
+    double_type value_final;
+    value_final=zero;
+
+    if(opr_type=="denden"){
+        value_final=zero;
+        for (int i=0;i<basis.D_up_basis.size();i++){
+            for (int j=0;j<basis.D_dn_basis.size();j++){
+                m=basis.D_dn_basis.size()*i + j;
+                value=0;
+                value+=1.0*( ( bit_value(basis.D_up_basis[i], site) +
+                               bit_value(basis.D_dn_basis[j], site) )*
+                             ( bit_value(basis.D_up_basis[i], site2) +
+                               bit_value(basis.D_dn_basis[j], site2) )
+                             );
+                if(value!=0){
+                    value_final += value*EigVec_[m]*conjugate(EigVec_[m]);
+                }
+            }
+        }
+    }
+
+    if(opr_type=="SzSz"){
+        for (int i=0;i<basis.D_up_basis.size();i++){
+            for (int j=0;j<basis.D_dn_basis.size();j++){
+                m=basis.D_dn_basis.size()*i + j;
+                value=0;
+                value+=0.25*( ( bit_value(basis.D_up_basis[i], site) -
+                                bit_value(basis.D_dn_basis[j], site) )*
+                              ( bit_value(basis.D_up_basis[i], site2) -
+                                bit_value(basis.D_dn_basis[j], site2) )
+                              );
+                if(value!=0){
+                    value_final += value*EigVec_[m]*conjugate(EigVec_[m]);
+                }
+            }
+        }
+    }
+
+
+    if(opr_type=="SpSm"){
+        //Remember OPR[l][m]=<l|OPR|m>
+        int D_up, D_dn,i_new,j_new,m_new, l, lp, sign_pow_up , sign_pow_dn;
+        double sign_FM;
+        for (int i=0;i<basis.D_up_basis.size();i++){
+            for (int j=0;j<basis.D_dn_basis.size();j++){
+                m=basis.D_dn_basis.size()*i + j;
+
+                //Sp_site[site]*Sm_site[site2]:
+                //there have to be ony up electron at site2
+                //there have to be only down electron at site
+
+                if(((bit_value(basis.D_dn_basis[j], site)==1)
+                    &&
+                    (bit_value(basis.D_up_basis[i], site)==0)
+                    )
+                        &&
+                        ((bit_value(basis.D_up_basis[i], site2)==1)
+                         &&
+                         (bit_value(basis.D_dn_basis[j], site2)==0)
+                         ))
+                {
+
+                    D_up = (int) (basis.D_up_basis[i] - pow(2, site2)
+                                  + pow(2, site) );
+                    D_dn = (int) (basis.D_dn_basis[j] + pow(2, site2)
+                                  - pow(2, site) );
+
+                    i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                    j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+
+                    m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                    l= site;
+                    lp= site2;
+
+                    sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+                    sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+                    sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn+1);
+
+
+
+                    //assert(m_new<m);
+
+                    value_final += sign_FM*EigVec_[m]*conjugate(EigVec_[m_new]);
+                }
+
+                if((site==site2)){
+                    if(
+                            ((bit_value(basis.D_up_basis[i], site2)==1)
+                             &&
+                             (bit_value(basis.D_dn_basis[j], site2)==0)
+                             )
+                            )
+                    {
+
+                        value_final += one*EigVec_[m]*conjugate(EigVec_[m]);
+                    }
+                }
+            }
+        }
+    }
+
+    if(opr_type=="SmSp"){
+        //Remember OPR[l][m]=<l|OPR|m>
+        int D_up, D_dn,i_new,j_new,m_new, l, lp, sign_pow_up , sign_pow_dn;
+        double sign_FM;
+        for (int i=0;i<basis.D_up_basis.size();i++){
+            for (int j=0;j<basis.D_dn_basis.size();j++){
+                m=basis.D_dn_basis.size()*i + j;
+
+                /*if site !=site2
+                Sm[site]*Sp[site2]=Sp[site2]*Sm[site]
+                */
+                //there have to be ony up electron at site2
+                //there have to be only down electron at site
+
+                if(((bit_value(basis.D_dn_basis[j], site2)==1)
+                    &&
+                    (bit_value(basis.D_up_basis[i], site2)==0)
+                    )
+                        &&
+                        ((bit_value(basis.D_up_basis[i], site)==1)
+                         &&
+                         (bit_value(basis.D_dn_basis[j], site)==0)
+                         ))
+                {
+
+                    D_up = (int) (basis.D_up_basis[i] - pow(2, site)
+                                  + pow(2, site2) );
+                    D_dn = (int) (basis.D_dn_basis[j] + pow(2, site)
+                                  - pow(2, site2) );
+
+                    i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                    j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+
+                    m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                    l= site2;
+                    lp= site;
+
+                    sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+                    sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+                    sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn+1);
+
+
+
+                    //assert(m_new<m);
+                    value_final += sign_FM*EigVec_[m]*conjugate(EigVec_[m_new]);
+                }
+
+                if((site==site2)){
+                    if(
+                            ((bit_value(basis.D_up_basis[i], site2)==0)
+                             &&
+                             (bit_value(basis.D_dn_basis[j], site2)==1)
+                             )
+                            )
+                    {
+                        value_final += EigVec_[m]*conjugate(EigVec_[m]);
+                    }
+                }
+            }
+        }
+    }
+
+
+
+    return value_final;
+
+
+}
+
+
+
+
+
+double_type MODEL_1_orb_Hubb_chain::Measure_three_point_operator_sites_specific(string opr_type , Mat_1_doub &EigVec_, int site1, int site2, int site3, BASIS_1_orb_Hubb_chain &basis){
+
+
+    //Remember OPR[l][m]=<l|OPR|m>
+    int m;
+    double value;
+    double_type value_final;
+    value_final=zero;
+
+    if(opr_type=="SzSpSm"){
+        int D_up, D_dn,i_new,j_new,m_new, l, lp, sign_pow_up , sign_pow_dn;
+        double sign_FM;
+
+        for (int i=0;i<basis.D_up_basis.size();i++){
+            for (int j=0;j<basis.D_dn_basis.size();j++){
+                m=basis.D_dn_basis.size()*i + j;
+
+                //Sz[site1]Sp[site2]*Sm[site3]:
+                //there have to be ony up electron at site2
+                //there have to be only down electron at site
+
+                assert(site1!=site2);
+                assert(site1!=site3);
+                assert(site2!=site3);
+
+                if(((bit_value(basis.D_dn_basis[j], site2)==1)
+                    &&
+                    (bit_value(basis.D_up_basis[i], site2)==0)
+                    )
+                        &&
+                        ((bit_value(basis.D_up_basis[i], site3)==1)
+                         &&
+                         (bit_value(basis.D_dn_basis[j], site3)==0)
+                         ))
+                {
+
+                    D_up = (int) (basis.D_up_basis[i] - pow(2, site3)
+                                  + pow(2, site2) );
+                    D_dn = (int) (basis.D_dn_basis[j] + pow(2, site3)
+                                  - pow(2, site2) );
+
+                    i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                    j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+
+                    m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                    l= site3;
+                    lp= site2;
+
+                    sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+                    sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+                    sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn+1);
+
+
+                    value = sign_FM*(0.5*( bit_value(basis.D_up_basis[i_new], site1) -
+                                           bit_value(basis.D_dn_basis[j_new], site1) ));
+
+                    //assert(m_new<m);
+                    value_final += value*EigVec_[m]*conjugate(EigVec_[m_new]);
+
+                }
+
+
+            }
+        }
+    }
+
+
+
+    return value_final;
 
 }
 
@@ -1804,7 +2492,7 @@ void MODEL_1_orb_Hubb_chain::Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_chain 
 
 }
 
-void MODEL_1_orb_Hubb_chain::Get_c_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hubb_chain & basis_Nm1, BASIS_1_orb_Hubb_chain & basis,
+void MODEL_1_orb_Hubb_chain::Get_c_on_GS(Mat_1_doub & EigVec_, BASIS_1_orb_Hubb_chain & basis_Nm1, BASIS_1_orb_Hubb_chain & basis,
                                          Mat_1_trio_int TRIO_VEC, Mat_1_doub values){
 
 
@@ -1861,7 +2549,7 @@ void MODEL_1_orb_Hubb_chain::Get_c_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hubb_cha
 
                         sign_FM = pow(-1.0, sign_pow_up);
 
-                        value = sign_FM*lanczos.Eig_vec[m]*value_in;
+                        value = sign_FM*EigVec_[m]*value_in;
 
                         State_c_on_GS[m_new] += value;
                     }
@@ -1901,7 +2589,7 @@ void MODEL_1_orb_Hubb_chain::Get_c_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hubb_cha
 
                         sign_FM = pow(-1.0, sign_pow_dn);
 
-                        value = sign_FM*lanczos.Eig_vec[m]*value_in;
+                        value = sign_FM*EigVec_[m]*value_in;
 
                         State_c_on_GS[m_new] += value;
 
@@ -1917,7 +2605,7 @@ void MODEL_1_orb_Hubb_chain::Get_c_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hubb_cha
 
 
 
-void MODEL_1_orb_Hubb_chain::Get_cdagger_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hubb_chain & basis_Np1, BASIS_1_orb_Hubb_chain & basis,
+void MODEL_1_orb_Hubb_chain::Get_cdagger_on_GS(Mat_1_doub & EigVec_, BASIS_1_orb_Hubb_chain & basis_Np1, BASIS_1_orb_Hubb_chain & basis,
                                                Mat_1_trio_int TRIO_VEC, Mat_1_doub values){
 
 
@@ -1974,7 +2662,7 @@ void MODEL_1_orb_Hubb_chain::Get_cdagger_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hu
 
                         sign_FM = pow(-1.0, sign_pow_up);
 
-                        value = sign_FM*lanczos.Eig_vec[m]*(value_in);
+                        value = sign_FM*EigVec_[m]*(value_in);
 
                         State_cdagger_on_GS[m_new] += value;
 
@@ -2014,7 +2702,7 @@ void MODEL_1_orb_Hubb_chain::Get_cdagger_on_GS(LANCZOS & lanczos, BASIS_1_orb_Hu
 
                         sign_FM = pow(-1.0, sign_pow_dn);
 
-                        value = sign_FM*lanczos.Eig_vec[m]*(value_in);
+                        value = sign_FM*EigVec_[m]*(value_in);
 
                         State_cdagger_on_GS[m_new] += value;
                     }

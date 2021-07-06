@@ -8,10 +8,14 @@ using namespace std;
 
 
 
-void FTLM_STATIC::Perform_FTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
+#ifndef FTLM_STATIC_functions
+#define FTLM_STATIC_functions
+
+template <typename Basis_type, typename Model_type>
+void FTLM_STATIC<Basis_type, Model_type>::Perform_FTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
 
 
-    LANCZOS Lanczos_;
+    LANCZOS<Basis_type, Model_type> Lanczos_(basis,model);
 
     int No_of_oprts;
     No_of_oprts=OPR_.size();
@@ -198,3 +202,5 @@ void FTLM_STATIC::Perform_FTLM(string inp_filename, Hamiltonian_1_COO& OPR_){
 
 
 }
+
+#endif

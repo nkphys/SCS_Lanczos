@@ -66,6 +66,8 @@ void Initialize_four_point_operator_sites_specific(string opr_type , Matrix_COO 
 void Direct_product_of_localJ_Ansatz(Mat_1_pair_realInt JJzBasis_state, Mat_1_real &Coefficients, Mat_1_int &m_basis, BASIS_Spins_Target_Sz &basis);
 void Create_JJz_Trial_States(Mat_2_pair_realint &JJzBasis_states, Mat_2_real &Coefficients, Mat_2_int &m_basis, BASIS_Spins_Target_Sz &basis);
 void Overlap_of_JJzBasis_with_State(Mat_1_doub &Vec_ , Mat_1_doub &Overlaps_ , Mat_1_int &sorted_indices,  Mat_2_pair_realint &JJzBasis_states, Mat_2_real &Coefficients, Mat_2_int &m_basis, BASIS_Spins_Target_Sz &basis);
+void Act_Hamil(BASIS_Spins_Target_Sz &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+
 //void Initialize_one_point_to_calculate(BASIS_1_orb_tJ &basis);
 //void Initialize_two_point_to_calculate(BASIS_1_orb_tJ &basis);
 //void Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR, int site1, int site2, BASIS_1_orb_tJ &basis);
