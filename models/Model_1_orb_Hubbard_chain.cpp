@@ -303,48 +303,84 @@ void MODEL_1_orb_Hubb_chain::Act_Hamil(BASIS_1_orb_Hubb_chain &basis, Mat_1_doub
 void MODEL_1_orb_Hubb_chain::Act_connections(BASIS_1_orb_Hubb_chain &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
 
 
-    Mat_2_doub Vec_out_temp;
+
+    //Symmetrized, so that parallelization can be done efficiently.
+    Mat_2_doub Hopping_Mat;
+    Hopping_Mat.resize(basis.Length);
+    for(int sitei=0;sitei<basis.Length;sitei++){
+        Hopping_Mat[sitei].resize(basis.Length);
+        for(int sitej=0;sitej<basis.Length;sitej++){
+            if(sitej>=sitei){
+                Hopping_Mat[sitei][sitej] = Hopping_mat_NN[sitei][sitej];
+            }
+            else{
+                Hopping_Mat[sitei][sitej] = conj(Hopping_mat_NN[sitej][sitei]);
+            }
+        }
+    }
+
+    //    Mat_2_doub Vec_out_temp;
     int no_of_proc;
     no_of_proc=1;
 
 #ifdef _OPENMP
     no_of_proc=min(basis.Length, NProcessors_);
     omp_set_num_threads(no_of_proc);
-    cout<<"Connections acted: "<<no_of_proc<<" processors"<<endl;
-    Vec_out_temp.resize(no_of_proc);
-    for(int i=0;i<no_of_proc;i++){
-        Vec_out_temp[i].resize(Vec_in.size());
-    }
+    cout<<"Connections acting: "<<no_of_proc<<" processors"<<endl;
+    //    Vec_out_temp.resize(no_of_proc);
+    //    for(int i=0;i<no_of_proc;i++){
+    //        Vec_out_temp[i].resize(Vec_in.size());
+    //    }
 #endif
 
 
 
-#ifdef _OPENMP
-#pragma omp parallel for default(shared)
-#endif
+
+
+    //    for (int i=0;i<basis.D_up_basis.size();i++){
+    //        for (int j=0;j<basis.D_dn_basis.size();j++){
+    //            m=basis.D_dn_basis.size()*i + j;
+
+
     for(int site=0;site<basis.Length ;site++){
-        int mytid;
-#ifdef _OPENMP
-        mytid = omp_get_thread_num();
-#endif
-
         for(int site_p=0;site_p<basis.Length ;site_p++){
-            double value;
-            int m;
-            int D_up,D_dn;
-            int i_new,j_new;
-            int m_new;
-            double sign_FM;
-            int sign_pow_up, sign_pow_dn;
-            int l,lp;
 
-            if((Hopping_mat_NN[site_p][site])!=zero)
+
+            if(abs(Hopping_Mat[site_p][site])>0.0000000001)
 
             {
 
-                for (int i=0;i<basis.D_up_basis.size();i++){
-                    for (int j=0;j<basis.D_dn_basis.size();j++){
-                        m=basis.D_dn_basis.size()*i + j;
+
+
+#ifdef _OPENMP
+#pragma omp parallel
+                {
+#endif
+
+
+#ifdef _OPENMP
+#pragma omp for nowait
+#endif
+                    for(int m=0;m<basis.D_up_basis.size()*basis.D_dn_basis.size();m++){
+
+                        double value;
+                        int D_up,D_dn;
+                        int i_new,j_new;
+                        int m_new;
+                        double sign_FM;
+                        int sign_pow_up, sign_pow_dn;
+                        int l,lp;
+
+                        int mytid;
+#ifdef _OPENMP
+                        mytid = omp_get_thread_num();
+#endif
+
+                        int i,j;
+                        j = m%basis.D_dn_basis.size();
+                        i = int (m/basis.D_dn_basis.size());
+
+
 
                         value=0;
 
@@ -376,19 +412,21 @@ void MODEL_1_orb_Hubb_chain::Act_connections(BASIS_1_orb_Hubb_chain &basis, Mat_
 
                             sign_FM = pow(-1.0, sign_pow_up);
 
-                            if(m_new>=m){
-                                cout<<" Hopping: "<<site_p<<"  "<< site<<"  "<<Hopping_mat_NN[site_p][site]<<endl;
-                            }
-                            assert(m_new<m);
+                            //if(m_new>=m){
+                            //cout<<" Hopping: "<<site_p<<"  "<< site<<"  "<<Hopping_mat_NN[site_p][site]<<endl;
+                            //}
+                            //assert(m_new<m);
 
                             //HERE
 
 #ifdef _OPENMP
-                            Vec_out_temp[mytid][m_new] += Vec_in[m]*-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one;
-                            Vec_out_temp[mytid][m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one);
+                            // Vec_out_temp[mytid][m_new] += Vec_in[m]*-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one;
+                            //Vec_out_temp[mytid][m] += Vec_in[m_new]*-1.0*sign_FM*(conjugate(Hopping_Mat[site_p][site]));
+                            Vec_out[m] += Vec_in[m_new]*-1.0*sign_FM*(conjugate(Hopping_Mat[site_p][site]));
+
 #else
-                            Vec_out[m_new] += Vec_in[m]*-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one;
-                            Vec_out[m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one);
+                            // Vec_out[m_new] += Vec_in[m]*-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one;
+                            Vec_out[m] += Vec_in[m_new]*-1.0*sign_FM*(conjugate(Hopping_Mat[site_p][site]));
 #endif
 
 
@@ -422,14 +460,15 @@ void MODEL_1_orb_Hubb_chain::Act_connections(BASIS_1_orb_Hubb_chain &basis, Mat_
 
                             sign_FM = pow(-1.0, sign_pow_dn);
 
-                            assert(m_new<m);
+                            //                            assert(m_new<m);
 
 #ifdef _OPENMP
-                            Vec_out_temp[mytid][m_new] += Vec_in[m]*-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one;
-                            Vec_out_temp[mytid][m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one);
+                            // Vec_out_temp[mytid][m_new] += Vec_in[m]*-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one;
+                            //Vec_out_temp[mytid][m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(Hopping_Mat[site_p][site])*one);
+                            Vec_out[m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(Hopping_Mat[site_p][site])*one);
 #else
-                            Vec_out[m_new] += Vec_in[m]*-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one;
-                            Vec_out[m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one);
+                            //Vec_out[m_new] += Vec_in[m]*-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one;
+                            Vec_out[m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(Hopping_Mat[site_p][site])*one);
 #endif
 
 
@@ -437,8 +476,11 @@ void MODEL_1_orb_Hubb_chain::Act_connections(BASIS_1_orb_Hubb_chain &basis, Mat_
 
 
 
-                    }// "j" i.e dn_decimals
-                } // "i" i.e up_decimals
+                    }//m
+
+#ifdef _OPENMP
+                }
+#endif
 
 
             }//Hopping non-zero
@@ -446,16 +488,32 @@ void MODEL_1_orb_Hubb_chain::Act_connections(BASIS_1_orb_Hubb_chain &basis, Mat_
 
     } // site
 
+    //        }// "j" i.e dn_decimals
+    //    } // "i" i.e up_decimals
 
 
-#ifdef _OPENMP
-#pragma omp parallel for default(shared)
-    for(int comp=0;comp<Vec_in.size();comp++){
-        for(int Np=0;Np<no_of_proc;Np++){
-            Vec_out[comp] += Vec_out_temp[Np][comp];
-        }
-    }
-#endif
+
+
+
+
+
+
+
+
+    //#ifdef _OPENMP
+    //#pragma omp parallel for default(shared)
+    //    for(int comp=0;comp<Vec_in.size();comp++){
+    //        for(int Np=0;Np<no_of_proc;Np++){
+    //            Vec_out[comp] += Vec_out_temp[Np][comp];
+    //        }
+    //    }
+
+    //    for(int Np=0;Np<no_of_proc;Np++){
+    //        vector < double_type >().swap(Vec_out_temp[Np]);
+    //    }
+    //#endif
+
+
 
 
 
@@ -478,36 +536,49 @@ void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
 #ifdef _OPENMP
             no_of_proc=min(temp_int, NProcessors_);
             omp_set_num_threads(no_of_proc);
-            cout<<"Connections acted: "<<no_of_proc<<" processors"<<endl;
-            Vec_out_temp.resize(no_of_proc);
-            for(int i=0;i<no_of_proc;i++){
-                Vec_out_temp[i].resize(Vec_in.size());
-            }
+            cout<<"Non diagonal acting: "<<no_of_proc<<" processors"<<endl;
+            //            Vec_out_temp.resize(no_of_proc);
+            //            for(int i=0;i<no_of_proc;i++){
+            //                Vec_out_temp[i].resize(Vec_in.size());
+            //            }
 #endif
 
 
 
 #ifdef _OPENMP
-#pragma omp parallel for default(shared)
+#pragma omp parallel
+            {
 #endif
-            for(int sites_set=0;sites_set<three_point_intrs_sites_set[type_ind].size();sites_set++){
-                int mytid;
+
+
 #ifdef _OPENMP
-                mytid = omp_get_thread_num();
+#pragma omp for nowait
 #endif
-                int m;
-                double_type value;
-                int D_up, D_dn,i_new,j_new,m_new, l, lp, sign_pow_up , sign_pow_dn;
-                double sign_FM;
-                int site1, site2, site3;
+                for(int m=0;m<basis.D_up_basis.size()*basis.D_dn_basis.size();m++){
 
-                site1=three_point_intrs_sites_set[type_ind][sites_set][0];
-                site2=three_point_intrs_sites_set[type_ind][sites_set][1];
-                site3=three_point_intrs_sites_set[type_ind][sites_set][2];
+                    int mytid;
+#ifdef _OPENMP
+                    mytid = omp_get_thread_num();
+#endif
 
-                for (int i=0;i<basis.D_up_basis.size();i++){
-                    for (int j=0;j<basis.D_dn_basis.size();j++){
-                        m=basis.D_dn_basis.size()*i + j;
+                    int i,j;
+                    j = m%basis.D_dn_basis.size();
+                    i = int (m/basis.D_dn_basis.size());
+
+
+                    for(int sites_set=0;sites_set<three_point_intrs_sites_set[type_ind].size();sites_set++){
+
+
+                        double_type value;
+                        int D_up, D_dn,i_new,j_new,m_new, l, lp, sign_pow_up , sign_pow_dn;
+                        double sign_FM;
+                        int site1, site2, site3;
+
+                        site1=three_point_intrs_sites_set[type_ind][sites_set][0];
+                        site2=three_point_intrs_sites_set[type_ind][sites_set][1];
+                        site3=three_point_intrs_sites_set[type_ind][sites_set][2];
+
+
 
                         //Sz[site1]Sp[site2]*Sm[site3]:
                         //there have to be ony up electron at site2
@@ -555,7 +626,8 @@ void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
                             if(abs(value)>0.0000000001){
 
 #ifdef _OPENMP
-                                Vec_out_temp[mytid][m_new] += Vec_in[m]*value*one;
+                                //Vec_out_temp[mytid][m_new] += Vec_in[m]*value*one;
+                                Vec_out[m] += Vec_in[m_new]*conjugate(value)*one;
 #else
                                 Vec_out[m_new] += Vec_in[m]*value*one;
 #endif
@@ -566,17 +638,23 @@ void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
                         }
                     }
                 }
-            }
-
 
 #ifdef _OPENMP
-#pragma omp parallel for default(shared)
-            for(int comp=0;comp<Vec_in.size();comp++){
-                for(int Np=0;Np<no_of_proc;Np++){
-                    Vec_out[comp] += Vec_out_temp[Np][comp];
-                }
             }
 #endif
+
+            //#ifdef _OPENMP
+            //#pragma omp parallel for default(shared)
+            //            for(int comp=0;comp<Vec_in.size();comp++){
+            //                for(int Np=0;Np<no_of_proc;Np++){
+            //                    Vec_out[comp] += Vec_out_temp[Np][comp];
+            //                }
+            //            }
+
+            //            for(int Np=0;Np<no_of_proc;Np++){
+            //                vector < double_type >().swap(Vec_out_temp[Np]);
+            //            }
+            //#endif
 
         }
 
@@ -1250,8 +1328,6 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
                 inputfile_hopping_connections>>Hopping_mat_NN[site_i][site_j];
             }
         }
-
-
 
 
         //Interactions  Mat(i,j)ninj

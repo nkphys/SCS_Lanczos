@@ -5,8 +5,8 @@ PBC = true
 Length_X = 4
 Length_Y = 4
 Total_Sites = 16
-Ndown = 3
-Nup = 3
+Ndown = 8
+Nup = 8
  
 Hopping = 1.0
 Hopping_NN = 0.0
@@ -70,4 +70,3 @@ Temperature = 0.2
 
 
 Processors = 8
-
