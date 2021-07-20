@@ -1233,8 +1233,8 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_1_doub & vecG){
     for(int i=0;i<X.value.size();i++){
         int r=X.rows[i];
         int c=X.columns[i];
-        Ham_(r,c) = X.value[i];
-        Ham_(c,r) = X.value[i];
+        Ham_(r,c) += X.value[i];
+        Ham_(c,r) += X.value[i];
     }
 
     char jobz='V';
@@ -1295,8 +1295,8 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_2_doub & vecs){
     for(int i=0;i<X.value.size();i++){
         int r=X.rows[i];
         int c=X.columns[i];
-        Ham_(r,c) = X.value[i];
-        Ham_(c,r) = X.value[i];
+        Ham_(r,c) += X.value[i];
+        Ham_(c,r) += X.value[i];
     }
 
     char jobz='V';
@@ -1362,8 +1362,8 @@ void Diagonalize(Matrix_COO &X, double & EG, Mat_1_doub & vecG){
     for(int i=0;i<X.value.size();i++){
         int r=X.rows[i];
         int c=X.columns[i];
-        Ham_(r,c) = X.value[i];
-        Ham_(c,r) = X.value[i];
+        Ham_(r,c) += X.value[i];
+        Ham_(c,r) += X.value[i];
     }
 
     char jobz='V';

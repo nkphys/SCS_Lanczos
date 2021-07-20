@@ -330,6 +330,35 @@ void Print_vector_in_file(Mat_1_doub vec, string filename){
 }
 
 
+void Print_Matrix_COO_in_file(Matrix_COO &A, string filename){
+
+    ofstream outfile(filename.c_str());
+
+    outfile<<scientific<<setprecision(16);
+
+    Mat_2_doub B;
+    B.resize(A.nrows);
+    for(int i=0;i<B.size();i++){
+        B[i].resize(A.nrows);
+        for(int j=0;j<A.nrows;j++){
+            B[i][j]=0.0;
+        }
+    }
+
+    for(int i=0;i<A.value.size();i++){
+        B[A.rows[i]][A.columns[i]]=A.value[i];
+    }
+
+    for(int i=0;i<B.size();i++){
+        for(int j=0;j<B.size();j++){
+
+            outfile<<B[i][j]<<"  ";
+        }
+        outfile<<endl;
+    }
+
+}
+
 void Sort_vector_in_decreasing_order_in_file(Mat_1_doub vec, Mat_1_doub &Vec_new, Mat_1_int &Index_old){
 
     //ofstream outfile(filename.c_str());
@@ -363,6 +392,78 @@ void Sort_vector_in_decreasing_order_in_file(Mat_1_doub vec, Mat_1_doub &Vec_new
 
 
 }
+
+
+
+void Sort_vector_in_decreasing_order(Mat_1_doub vec, Mat_1_doub &Vec_new, Mat_1_int &Index_old, int n_basis){
+
+
+    Mat_1_doub Vec_temp;
+    Vec_temp=vec;
+    Vec_new.clear();
+    Index_old.clear();
+    Vec_new.resize(n_basis);
+    Index_old.resize(n_basis);
+
+    int count=0;
+    complex<double> max_temp=0.0;
+    int index_max;
+
+    while(count<n_basis){
+        max_temp=0.0;
+
+        for(int j=0;j<Vec_temp.size();j++){
+            if(abs(Vec_temp[j])>=abs(max_temp)){
+                max_temp=Vec_temp[j];
+                index_max = j;
+            }
+        }
+
+        Vec_new[count]=Vec_temp[index_max];
+        Index_old[count]=index_max;
+        count++;
+        Vec_temp[index_max]=0.0;
+    }
+
+
+}
+
+
+void Sort_vector_in_decreasing_order(Mat_1_doub vec, Mat_1_doub &Vec_new, Mat_1_int &Index_old, Mat_1_int &Index_new, int n_basis){
+
+
+    Mat_1_doub Vec_temp;
+    Vec_temp=vec;
+    Vec_new.clear();
+    Index_new.clear();
+    Vec_new.resize(n_basis);
+    Index_new.resize(n_basis);
+
+    int count=0;
+    complex<double> max_temp=0.0;
+    int index_max;
+
+    while(count<n_basis){
+        max_temp=0.0;
+
+        for(int j=0;j<Vec_temp.size();j++){
+            if(abs(Vec_temp[j])>=abs(max_temp)){
+                max_temp=Vec_temp[j];
+                index_max = j;
+            }
+        }
+
+        Vec_new[count]=Vec_temp[index_max];
+        Index_new[count]=Index_old[index_max];
+        count++;
+        Vec_temp[index_max]=0.0;
+    }
+
+
+
+
+}
+
 
 void Print_file_in_vector(Mat_1_doub &vec, string filename, int rows){
 
@@ -1027,23 +1128,20 @@ void Diagonalize(Matrix_COO &X, double & EG, Mat_1_doub & vecG){
     Ham_.resize(X.nrows,X.ncols);
 
 
-#ifdef _OPENMP
-#pragma omp parallel for default(shared)
-#endif
     for(int i=0;i<X.nrows;i++){
         for(int j=i;j<X.ncols;j++){
             Ham_(i,j) = complex<double>(0.0,0.0);
         }
     }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(shared)
-#endif
+
     for(int i=0;i<X.value.size();i++){
         int r=X.rows[i];
         int c=X.columns[i];
-        Ham_(r,c) = X.value[i];
-        Ham_(c,r) = X.value[i];
+        Ham_(r,c) += X.value[i];
+        if(r!=c){
+            assert(c>r);
+            Ham_(c,r) += conjugate(X.value[i]);}
     }
 
     char jobz='V';
@@ -1096,28 +1194,89 @@ void Diagonalize(Matrix_COO &X, double & EG, Mat_1_doub & vecG){
 
 void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_1_doub & vecG){
 
+
     Mat_1_real eigs_;
     Matrix< complex<double> > Ham_;
     Ham_.resize(X.nrows,X.ncols);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(shared)
-#endif
+
     for(int i=0;i<X.nrows;i++){
-        for(int j=i;j<X.ncols;j++){
+        for(int j=0;j<X.ncols;j++){
             Ham_(i,j) = complex<double>(0.0,0.0);
         }
     }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(shared)
-#endif
     for(int i=0;i<X.value.size();i++){
         int r=X.rows[i];
         int c=X.columns[i];
-        Ham_(r,c) = X.value[i];
-        Ham_(c,r) = X.value[i];
+        Ham_(r,c) += X.value[i];
+        if(r!=c){
+            assert(c>r);
+            Ham_(c,r) += conjugate(X.value[i]);}
     }
+
+
+
+
+    //    Mat_1_real eigs_;
+    //    Matrix< complex<double> > Ham_;
+    //    Ham_.resize(36,36);
+
+    //    for(int i=0;i<36;i++){
+    //        for(int j=0;j<36;j++){
+    //            Ham_(i,j) = complex<double>(0.0,0.0);
+    //        }
+    //    }
+
+    //    Ham_(5,10)=complex<double>(0.0,0.5);
+    //    Ham_(5,15)=complex<double>(0.0,0.5);
+    //    Ham_(5,20)=complex<double>(0.0,0.5);
+    //    Ham_(10,15)=complex<double>(0.0,0.5);
+    //    Ham_(10,20)=complex<double>(0.0,0.5);
+    //    Ham_(15,25)=complex<double>(0.0,-0.5);
+    //    Ham_(15,30)=complex<double>(0.0,-0.5);
+    //    Ham_(20,25)=complex<double>(0.0,-0.5);
+    //    Ham_(20,30)=complex<double>(0.0,-0.5);
+    //    Ham_(25,30)=complex<double>(0.0,-0.5);
+
+    //    Ham_(10,5)=complex<double>(0.0,-0.5);
+    //    Ham_(15,5)=complex<double>(0.0,-0.5);
+    //    Ham_(20,5)=complex<double>(0.0,-0.5);
+    //    Ham_(15,10)=complex<double>(0.0,-0.5);
+    //    Ham_(20,10)=complex<double>(0.0,-0.5);
+    //    Ham_(25,15)=complex<double>(0.0,0.5);
+    //    Ham_(30,15)=complex<double>(0.0,0.5);
+    //    Ham_(25,20)=complex<double>(0.0,0.5);
+    //    Ham_(30,20)=complex<double>(0.0,0.5);
+    //    Ham_(30,25)=complex<double>(0.0,0.5);
+
+
+    //    Ham_(5,10)=complex<double>(-1.0,0.0);
+    //    Ham_(5,15)=complex<double>(-1.0,0.0);
+    //    Ham_(5,20)=complex<double>(-1.0,0.0);
+    //    Ham_(10,15)=complex<double>(-1.0,0.0);
+    //    Ham_(10,20)=complex<double>(-1.0,0.0);
+    //    Ham_(15,25)=complex<double>(1.0,0.0);
+    //    Ham_(15,30)=complex<double>(1.0,0.0);
+    //    Ham_(20,25)=complex<double>(1.0,0.0);
+    //    Ham_(20,30)=complex<double>(1.0,0.0);
+    //    Ham_(25,30)=complex<double>(1.0,0.0);
+
+    //    Ham_(10,5)=complex<double>(-1.0,0.0);
+    //    Ham_(15,5)=complex<double>(-1.0,0.0);
+    //    Ham_(20,5)=complex<double>(-1.0,0.0);
+    //    Ham_(15,10)=complex<double>(-1.0,0.0);
+    //    Ham_(20,10)=complex<double>(-1.0,0.0);
+    //    Ham_(25,15)=complex<double>(1.0,0.0);
+    //    Ham_(30,15)=complex<double>(1.0,0.0);
+    //    Ham_(25,20)=complex<double>(1.0,0.0);
+    //    Ham_(30,20)=complex<double>(1.0,0.0);
+    //    Ham_(30,25)=complex<double>(1.0,0.0);
+
+
+
+    //    cout<<scientific<<setprecision(2);
+    //    Ham_.print();
 
     char jobz='V';
     char uplo='L'; //WHY ONLY 'L' WORKS?
@@ -1147,6 +1306,7 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_1_doub & vecG){
     //  for(int i=0;i<eigs_.size();i++){
     //    cout<<eigs_[i]<<endl;
     //}
+
 
 
     EVALS.resize(eigs_.size());
@@ -1179,23 +1339,19 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_2_doub & vecs){
     Matrix< complex<double> > Ham_;
     Ham_.resize(X.nrows,X.ncols);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(shared)
-#endif
     for(int i=0;i<X.nrows;i++){
-        for(int j=i;j<X.ncols;j++){
+        for(int j=0;j<X.ncols;j++){
             Ham_(i,j) = complex<double>(0.0,0.0);
         }
     }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(shared)
-#endif
     for(int i=0;i<X.value.size();i++){
         int r=X.rows[i];
         int c=X.columns[i];
-        Ham_(r,c) = X.value[i];
-        Ham_(c,r) = conj(X.value[i]);
+        Ham_(r,c) += X.value[i];
+        if(r!=c){
+            assert(c>r);
+            Ham_(c,r) += conjugate(X.value[i]);}
     }
 
     char jobz='V';

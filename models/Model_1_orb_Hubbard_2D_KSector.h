@@ -42,9 +42,15 @@ public:
     Mat_1_real Momentum_values;
     Mat_2_doub overlap_matrix_for_Anzatz_basis;
 
+
+    Mat_1_string three_point_oprs;
+    Mat_3_int three_point_oprs_sites_set;
+
     Mat_2_doub State_Szq_on_GS;
     string file_read_basis_Kminusq;
 
+    bool Saving_Hamil;
+     int NProcessors_;
 
 
     void Read_parameters(BASIS_1_orb_Hubb_2D_KSector &basis, string filename);
@@ -56,13 +62,20 @@ public:
     //void Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2D_KSector &basis);
     void Initialize_Opr_for_Dynamics(BASIS_1_orb_Hubb_2D_KSector &basis ,BASIS_1_orb_Hubb_2D_KSector & basis_Kminusq);
     void Initialize_Opr_for_Structure_factor(BASIS_1_orb_Hubb_2D_KSector &basis);
+
+    double_type Measure_Opr_for_Structure_factor(BASIS_1_orb_Hubb_2D_KSector &basis, Mat_1_doub &EigVec_);
+    double_type Measure_Opr_for_LocalNupNdn(BASIS_1_orb_Hubb_2D_KSector &basis, Mat_1_doub &EigVec_);
+
     void Initialize_Oprs_for_meausurement(BASIS_1_orb_Hubb_2D_KSector &basis);
     void Calculate_two_point_observables(Mat_1_doub &Vec_);
     void Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR_ , int site_x, int site_y, BASIS_1_orb_Hubb_2D_KSector &basis);
+    double_type Measure_two_point_operator_sites_specific(string opr_type , Mat_1_doub &EigVec_ , int site_x, int site_y, BASIS_1_orb_Hubb_2D_KSector &basis);
     void Initialize_three_point_operator_sites_specific(string opr_type  , Matrix_COO &OPR_, int sitejx, int sitejy, int sitelx, int sitely, BASIS_1_orb_Hubb_2D_KSector &basis);
     void Initialize_chiral_corr_operator_sites_specific(string opr_type, Matrix_COO &OPR_, int lx_rel, int ly_rel , BASIS_1_orb_Hubb_2D_KSector &basis);
     void Act_Hamil(BASIS_1_orb_Hubb_2D_KSector &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
 
+    void Act_diagonal_terms(BASIS_1_orb_Hubb_2D_KSector &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+    void Act_connections(BASIS_1_orb_Hubb_2D_KSector &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
 
 
 };

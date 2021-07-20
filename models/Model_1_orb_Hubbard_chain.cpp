@@ -148,7 +148,7 @@ void MODEL_1_orb_Hubb_chain::Add_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
 
                             //assert(m_new<m);
                             if(m_new<m){
-                                if(abs(value)>0.0000000001){
+                                if(abs(value)>0.000000000){
                                     Hamil.value.push_back(value*one);
                                     Hamil.rows.push_back((m_new));
                                     Hamil.columns.push_back((m));
@@ -623,7 +623,7 @@ void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
                                                    bit_value(basis.D_dn_basis[j_new], site1) ))*three_point_intrs_vals[type_ind][sites_set];
 
                             //assert(m_new<m);
-                            if(abs(value)>0.0000000001){
+                            if(abs(value)>0.00000000){
 
 #ifdef _OPENMP
                                 //Vec_out_temp[mytid][m_new] += Vec_in[m]*value*one;
@@ -851,9 +851,8 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     Length_X_int=atoi(length_x.c_str());
     Length_Y_int=atoi(length_y.c_str());
 
-
-
-    basis.Length=Length_X_int*Length_Y_int;
+    Total_Sites_int = atoi(total_sites_.c_str());
+    basis.Length=Total_Sites_int;
     basis.Ndn=atoi(ndn.c_str());
     basis.Nup=atoi(nup.c_str());
 
@@ -961,6 +960,10 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     stringstream _sstring_hmag_(hmag);
     //h=atof(hmag.c_str());
     _sstring_hmag_>> temp_Tsites;
+    if(temp_Tsites!=basis.Length){
+        cout<<"temp_Tsites = "<<temp_Tsites<<endl;
+        cout<<"basis.Length = "<<basis.Length<<endl;
+    }
     assert(temp_Tsites==basis.Length);
     H_field.resize(basis.Length);
     for(int i=0;i<basis.Length;i++){
@@ -1668,8 +1671,11 @@ void MODEL_1_orb_Hubb_chain::Initialize_two_point_operator_sites_specific(string
                     D_dn = (int) (basis.D_dn_basis[j] + pow(2, site2)
                                   - pow(2, site) );
 
-                    i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
-                    j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+//                    i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+//                    j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+
+                    i_new = basis.inverse_Dup[D_up - basis.DupMin_];
+                   j_new = basis.inverse_Ddn[D_dn - basis.DdnMin_];
 
                     m_new = basis.D_dn_basis.size()*i_new + j_new;
 
