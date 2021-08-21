@@ -76,6 +76,7 @@ public:
     void Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site, int site_p);
     void Get_ExcitonCoherence_Length(Mat_1_doub &vector_used);
     void Act_Hamil(Basis_type &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+    void Act_translational_opr(Mat_1_doub &Vec_in, Mat_1_doub &Vec_out);
 
 
 private:

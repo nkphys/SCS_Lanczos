@@ -23,7 +23,7 @@ void Sort_vector_in_decreasing_order_in_file(Mat_1_doub vec, Mat_1_doub &Vec_new
     Index_old.resize(Vec_temp.size());
 
     int count=0;
-    complex<double> max_temp=0.0;
+    double_type max_temp=0.0;
     int index_max;
 
     while(count<Vec_temp.size()){
@@ -36,6 +36,76 @@ void Sort_vector_in_decreasing_order_in_file(Mat_1_doub vec, Mat_1_doub &Vec_new
 
         }
         //outfile<<index_max<<"   "<<Vec_temp[index_max]<<endl;
+        Vec_new[count]=Vec_temp[index_max];
+        Index_old[count]=index_max;
+        count++;
+        Vec_temp[index_max]=0.0;
+    }
+
+
+}
+
+
+void Sort_vector_in_decreasing_order(Mat_1_doub vec, Mat_1_doub &Vec_new, Mat_1_int &Index_old, Mat_1_int &Index_new, int n_basis){
+
+
+    Mat_1_doub Vec_temp;
+    Vec_temp=vec;
+    Vec_new.clear();
+    Index_new.clear();
+    Vec_new.resize(n_basis);
+    Index_new.resize(n_basis);
+
+    int count=0;
+    double_type max_temp=0.0;
+    int index_max;
+
+    while(count<n_basis){
+        max_temp=0.0;
+
+        for(int j=0;j<Vec_temp.size();j++){
+            if(abs(Vec_temp[j])>=abs(max_temp)){
+                max_temp=Vec_temp[j];
+                index_max = j;
+            }
+        }
+
+        Vec_new[count]=Vec_temp[index_max];
+        Index_new[count]=Index_old[index_max];
+        count++;
+        Vec_temp[index_max]=0.0;
+    }
+
+
+
+
+}
+
+
+void Sort_vector_in_decreasing_order(Mat_1_doub vec, Mat_1_doub &Vec_new, Mat_1_int &Index_old, int n_basis){
+
+
+    Mat_1_doub Vec_temp;
+    Vec_temp=vec;
+    Vec_new.clear();
+    Index_old.clear();
+    Vec_new.resize(n_basis);
+    Index_old.resize(n_basis);
+
+    int count=0;
+    double_type max_temp=0.0;
+    int index_max;
+
+    while(count<n_basis){
+        max_temp=0.0;
+
+        for(int j=0;j<Vec_temp.size();j++){
+            if(abs(Vec_temp[j])>=abs(max_temp)){
+                max_temp=Vec_temp[j];
+                index_max = j;
+            }
+        }
+
         Vec_new[count]=Vec_temp[index_max];
         Index_old[count]=index_max;
         count++;

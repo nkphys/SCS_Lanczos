@@ -112,7 +112,7 @@ public:
                                                 string file_Loc_obs_in_basis_of_states,
                                                 int no_basis_to_check,
                                                 Mat_2_pair_realint &Overlaps,
-                                                BASIS_3_orb_Hubb_chain & basis);
+                                                BASIS_2_orb_Hubb_chain & basis);
     void Get_Variational_State(BASIS_2_orb_Hubb_chain &basis, int no_of_pairs);
     void Read_Mat_2_trio(Mat_2_trio_int &MAT_TEMP, Mat_1_doub &VALUES_TEMP,int pair_no);
     void Act_Hamil(BASIS_2_orb_Hubb_chain &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);

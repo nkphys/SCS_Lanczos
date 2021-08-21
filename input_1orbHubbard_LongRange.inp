@@ -5,12 +5,12 @@ PBC = true
 Length_X = 4
 Length_Y = 4
 Total_Sites = 16
-Ndown = 3
-Nup = 3
+Ndown = 4
+Nup = 4
  
 Hopping = 1.0
 Hopping_NN = 0.0
-U = 40.0
+U = 12.0
 H_mag = 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 File_Onsite_Energies = false pinning_ener.txt
 File_Hopping_Connections = Hoppings.txt
@@ -24,7 +24,7 @@ Saving_Hamiltonian_and_Oprs = true
 Random_seed_generator = 564
 ---------------------------------------------
 Lanc_Error = -10e-12
-max_steps = 100
+max_steps = 150
 file_eval_spectrum = out0.txt
 save_all_Krylov_space_vecs = true
 get_overlap_bw_eigstates_and_K_vecs = true
@@ -43,7 +43,7 @@ file_out_local_obs_for_states_to_look = local_obs_for_state_no
 --------------------------------------
 
 ----------------------------------
-Perform_Dynamics = false
+Perform_Dynamics = true
 eta = 0.2
 check_omega = 0.05
 omega_max = 20.0
@@ -53,7 +53,7 @@ Opr_for_Dynamics = J
 Momentum_resolved = false
 k = 0.4
 file_dynamics_out = orb0_up_site1
-Dynamics_dos_operators = 1 1.0 0 1 1
+Dynamics_dos_operators = 1 1.0 0.0 0 1 1
 ---------------------------------
 
 ---------------------------------------------------

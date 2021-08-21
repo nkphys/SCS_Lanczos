@@ -6195,7 +6195,7 @@ void MODEL_2_orb_Hubb_chain::Calculate_Local_Obs_for_States_to_Look(bool calcula
                                                                                    string file_Loc_obs_in_basis_of_states,
                                                                                    int no_basis_to_check,
                                                                                    Mat_2_pair_realint &Overlaps,
-                                                                                   BASIS_3_orb_Hubb_chain & basis){
+                                                                                   BASIS_2_orb_Hubb_chain & basis){
 
     bool grouping_by_orb2 =true;
 

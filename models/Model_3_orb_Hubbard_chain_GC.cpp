@@ -19,7 +19,7 @@ using namespace std;
 template <typename Basis_type>
 void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Act_Hamil(Basis_type &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
 
- cout<<"NOT WORKING AT PRESENT"<<endl;
+    cout<<"NOT WORKING AT PRESENT"<<endl;
 
 }
 
@@ -1259,6 +1259,73 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Add_Spin_Orbit_Coupling(){
 
 
 #endif
+}
+
+
+template <typename Basis_type>
+void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Act_translational_opr(Mat_1_doub &Vec_in, Mat_1_doub &Vec_out){
+
+
+    Vec_out.resize(basis.D_up_basis.size());
+    assert(Vec_in.size()==basis.D_up_basis.size());
+    int site_new, D_up, D_dn, i_new, j_new, m_new;
+    int n_up, n_dn;
+    int sign_pow_dn;
+    double sign_FM_dn;
+    int sign_pow_up;
+    double sign_FM_up;
+
+    for (int i=0;i<basis.D_up_basis.size();i++){
+
+        //D_up = basis.D_up_basis[i];
+        //D_dn = basis.D_dn_basis[i];
+
+        sign_FM_dn=1.0;
+        sign_FM_up=1.0;
+
+        D_up=0;
+        D_dn=0;
+        for(int gamma=0;gamma<3;gamma++){
+            for(int site=0;site<basis.Length;site++){
+                site_new = (site +1)%basis.Length;
+
+                n_up = bit_value(basis.D_up_basis[i],gamma*basis.Length + site);
+                n_dn = bit_value(basis.D_dn_basis[i],gamma*basis.Length + site);
+                D_up += (int) (n_up*(pow(2,gamma*basis.Length + site_new) ));
+                D_dn += (int) (n_dn*(pow(2,gamma*basis.Length + site_new) ));
+
+
+                if(site == basis.Length -1){
+                    sign_pow_dn = one_bits_in_bw( gamma*basis.Length, gamma*basis.Length + basis.Length -1,
+                                                  basis.D_dn_basis[i]) +
+                            bit_value(basis.D_dn_basis[i],gamma*basis.Length);
+                    if(n_dn==1){
+                        sign_FM_dn = sign_FM_dn*pow(-1.0, sign_pow_dn);
+                    }
+                }
+
+                if(site == basis.Length -1){
+                    sign_pow_up = one_bits_in_bw( gamma*basis.Length, gamma*basis.Length + basis.Length -1,
+                                                  basis.D_up_basis[i]) +
+                            bit_value(basis.D_up_basis[i],gamma*basis.Length);
+                    if(n_up==1){
+                        sign_FM_up = sign_FM_up*pow(-1.0, sign_pow_up);
+                    }
+                }
+
+            }
+        }
+
+        i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+        j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+        m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                basis.Nup_offsets[__builtin_popcount(D_up)].first;
+
+
+        Vec_out[m_new] = sign_FM_up*sign_FM_dn*Vec_in[i];
+    }
+
 }
 
 template <typename Basis_type>

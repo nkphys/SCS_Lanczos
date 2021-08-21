@@ -652,6 +652,8 @@ int main(int argc, char** argv){
 
             if(Cheaper_SpinSpincorr){
 
+                Mat_1_doub Vec_translated;
+                complex<double> phase_trnsl;
                 for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
 
 
@@ -673,26 +675,44 @@ int main(int argc, char** argv){
                         sum_=0.0;
                         cout<<opr_type_[type]<<": "<<endl;
 
+                        Mat_1_intpair Sites_pair;
+                        Sites_pair.clear();
+                        for(int site1=0;site1<_BASIS.Length;site1++){
+                            for(int site2=site1;site2<_BASIS.Length;site2++){
+                                pair_int sites_;
+                                sites_.first=site1;
+                                sites_.second=site2;
+                                Sites_pair.push_back(sites_);
+                            }
+                        }
+
 #ifdef _OPENMP
 #pragma omp parallel for default(shared)
 #endif
-                        for(int site1=0;site1<_BASIS.Length;site1++){
-                            for(int site2=site1;site2<_BASIS.Length;site2++){
+                        for(int sites_=0;sites_<Sites_pair.size();sites_++){
+                            int thread_id=0;
+#ifdef _OPENMP
+                            thread_id = omp_get_thread_num();
+#endif
+                            int site1_, site2_;
+                            site1_=Sites_pair[sites_].first;
+                            site2_=Sites_pair[sites_].second;
+                            Matrix_COO OPR_;
+                            OPR_.columns.clear();
+                            OPR_.rows.clear();
+                            OPR_.value.clear();
+                            _MODEL.Initialize_two_point_operator_sites_specific(opr_type_[type] , OPR_, site1_, site2_, _BASIS);
 
-                                Matrix_COO OPR_;
-                                OPR_.columns.clear();
-                                OPR_.rows.clear();
-                                OPR_.value.clear();
-                                _MODEL.Initialize_two_point_operator_sites_specific(opr_type_[type] , OPR_, site1, site2, _BASIS);
+                            Corr_[site1_][site2_]=_LANCZOS.Measure_observable(OPR_, state_);
+                            //                                if(site1 != site2){
+                            //                                    Corr_[site2][site1]=Corr_[site1][site2];
+                            //                                }
+                            vector< int >().swap( OPR_.columns );
+                            vector< int >().swap( OPR_.rows );
+                            vector< double_type >().swap( OPR_.value );
 
-                                Corr_[site1][site2]=_LANCZOS.Measure_observable(OPR_, state_);
-                                //                                if(site1 != site2){
-                                //                                    Corr_[site2][site1]=Corr_[site1][site2];
-                                //                                }
-                                vector< int >().swap( OPR_.columns );
-                                vector< int >().swap( OPR_.rows );
-                                vector< double_type >().swap( OPR_.value );
-                            }
+                            cout <<"<Si.Sj> for sites = "<<site1_<<", "<<site2_<<" done by thread ="<<thread_id<<endl;
+
                         }
                         for(int site1=0;site1<_BASIS.Length;site1++){
                             for(int site2=site1+1;site2<_BASIS.Length;site2++){
@@ -793,7 +813,16 @@ int main(int argc, char** argv){
 
 
 
-                    //here
+                    //--------------------------------
+                    //---------------------------------------------------------
+                    _MODEL.Act_translational_opr(_BASIS,_LANCZOS.Eig_vecs[state_], Vec_translated);
+                    phase_trnsl = dot_product( _LANCZOS.Eig_vecs[state_], Vec_translated);
+                    cout<< "phase after Translating state "<<state_<<" = "<<phase_trnsl<<"   "<<acos(phase_trnsl.real()/(1.00000000001))<< endl;
+                    //assert( abs(abs(phase_trnsl) - 1.0)<0.00000001);
+
+                    //-------------------------------------------------------------------
+                    //--------------------------------
+
 
                     string fileED2_name_state = "Lanczos_State"+ to_string(state_) + "_in_JJzBasis_.txt";
                     ofstream file2_state_out(fileED2_name_state.c_str());
@@ -819,7 +848,7 @@ int main(int argc, char** argv){
 
             Mat_1_real Eigen_ED;
             Mat_2_doub vecs;
-            DO_FULL_DIAGONALIZATION=false;
+            DO_FULL_DIAGONALIZATION=true;
             if(_MODEL.Hamil.nrows>1200){
                 DO_FULL_DIAGONALIZATION=false;
             }
@@ -1565,7 +1594,7 @@ int main(int argc, char** argv){
             _LANCZOS.Measure_macro_observables(_MODEL.macro_obs, _MODEL.Macro_oprts ,i);
         }
 
-        _MODEL.Calculate_Local_Obs_for_States_to_Look(_LANCZOS,_BASIS);
+        //_MODEL.Calculate_Local_Obs_for_States_to_Look(_LANCZOS,_BASIS);
 
 
 
@@ -2651,12 +2680,104 @@ int main(int argc, char** argv){
 
 
 
+        //States in Basis ----XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        if(true){
+
+            string file_basis = "BASIS.txt";
+            ofstream file_basis_out(file_basis.c_str());
+            int val_comp, val_comp_up, val_comp_dn;
+            Mat_1_doub Vec_new;
+            Mat_1_doub Vec_translated;
+            complex<double> phase_trnsl;
+
+            for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
+
+
+                //---------------------------------------------------------
+                _MODEL.Act_translational_opr(_LANCZOS.Eig_vecs[state_], Vec_translated);
+                phase_trnsl = dot_product(_LANCZOS.Eig_vecs[state_], Vec_translated);
+                cout<< "phase after Translating state "<<state_<<" = "<<phase_trnsl<<"   "<<acos(phase_trnsl.real()/(1.00000000001))<< endl;
+                assert( abs(abs(phase_trnsl) - 1.0)<0.00000001);
+
+                //-------------------------------------------------------------------
+                string file_name_state = "Lanczos_State"+ to_string(state_) + ".txt";
+                ofstream file_state_out(file_name_state.c_str());
+                Mat_1_doub Vec_new;
+                Mat_1_int index_old;
+
+                int size_temp = _LANCZOS.Eig_vecs[state_].size();
+                int basis_used=min(500,size_temp);
+                Sort_vector_in_decreasing_order(_LANCZOS.Eig_vecs[state_], Vec_new, index_old, basis_used);
+
+                double_type phase_offset;
+                phase_offset = Vec_new[0]/(abs(Vec_new[0]));
+
+                for(int i_=0;i_<basis_used;i_++){
+                    int m_b=index_old[i_];
+
+                    //int j_b = m_b%_BASIS.D_dn_basis.size();
+                    //int i_b = (m_b - j_b)/(_BASIS.D_dn_basis.size());
+#ifdef USE_COMPLEX
+                    file_state_out<<i_<< "    <"<<m_b<<"|GS> = "<<conjugate(phase_offset)*Vec_new[i_]*(1.0/abs(Vec_new[i_]))<<"  "<<abs(Vec_new[i_])<<"  "<<acos((conjugate(phase_offset)*Vec_new[i_]*(1.0/abs(Vec_new[i_]))).real())<<endl;
+#endif
+                    file_state_out<<"----------------------------------------------"<<endl;
+
+                    for(int orb=2;orb>=0;orb--){
+                        for(int site=0;site<_BASIS.Length;site++){
+                            val_comp_up = bit_value(_BASIS.D_up_basis[m_b],orb*_BASIS.Length + site);
+                            val_comp_dn = bit_value(_BASIS.D_dn_basis[m_b],orb*_BASIS.Length + site);
+                            if(val_comp_up==1 && val_comp_dn==0){
+                                file_state_out<<"u"<<"  ";
+                            }
+                            else if(val_comp_up==0 && val_comp_dn==1){
+                                file_state_out<<"d"<<"  ";
+                            }
+                            else if(val_comp_up==1 && val_comp_dn==1){
+                                file_state_out<<"ud"<<" ";
+                            }
+                            else if(val_comp_up==0 && val_comp_dn==0){
+                                file_state_out<<"0"<<"  ";
+                            }
+                            else{
+                                cout<<"This basis is not possible"<<endl;
+                                assert(false);
+                            }
+                        }
+                        file_state_out<<endl;
+                    }
+                    file_state_out<<endl;
+
+
+                    file_state_out<<"----------------------------------------------"<<endl;
+                    file_state_out<<endl;
+
+                }
+
+
+                //------------------------------
+
+                //--------------------------------------------------------------------
+
+            }
+        }
+
+
+        //-----------------------------------------------------------
+
+
+
+
+
+
+
+
         //------------EXACT DIAGONALIZATION---------------------//
 
 
 
         Mat_1_real Eigen_ED;
         Mat_2_doub vecs;
+        DO_FULL_DIAGONALIZATION=false;
         if(_MODEL.Hamil.nrows>800){
             DO_FULL_DIAGONALIZATION=false;
         }
@@ -3043,7 +3164,7 @@ int main(int argc, char** argv){
         Null_int_vec.resize(1);
 
 
-        bool Dynamics_SPDOS = false;
+        bool Dynamics_SPDOS = true;
         bool Above_mu = true;
         bool Below_mu= true;
         bool Cheaper_observables=true;
@@ -3125,7 +3246,7 @@ int main(int argc, char** argv){
                     string file_basis = "BASIS.txt";
                     ofstream file_basis_out(file_basis.c_str());
 
-                   // file_basis_out<<_BASIS.D_up_basis.size()<<"  "<<_BASIS.D_dn_basis.size()<<endl;
+                    // file_basis_out<<_BASIS.D_up_basis.size()<<"  "<<_BASIS.D_dn_basis.size()<<endl;
                     int val_comp;
                     for(int i_b=0;i_b<_BASIS.D_up_basis.size();i_b++){
                         for(int j_b=0;j_b<_BASIS.D_dn_basis.size();j_b++){
@@ -3164,34 +3285,35 @@ int main(int argc, char** argv){
                         Mat_1_int index_old;
                         Sort_vector_in_decreasing_order_in_file(_LANCZOS.Eig_vecs[state_], Vec_new, index_old);
 
-                        complex<double> phase_offset;
+                        double_type phase_offset;
                         phase_offset = Vec_new[0]/(abs(Vec_new[0]));
 
                         for(int i_=0;i_<index_old.size();i_++){
-                                int m_b=index_old[i_];
-                                int j_b = m_b%_BASIS.D_dn_basis.size();
-                                int i_b = (m_b - j_b)/(_BASIS.D_dn_basis.size());
+                            int m_b=index_old[i_];
+                            int j_b = m_b%_BASIS.D_dn_basis.size();
+                            int i_b = (m_b - j_b)/(_BASIS.D_dn_basis.size());
 
-                                file_state_out<<i_<< "    <"<<m_b<<"|GS> = "<<conjugate(phase_offset)*Vec_new[i_]*(1.0/abs(Vec_new[i_]))<<"  "<<abs(Vec_new[i_])<<"  "<<acos((conjugate(phase_offset)*Vec_new[i_]*(1.0/abs(Vec_new[i_]))).real())<<endl;
+#ifdef USE_COMPLEX
+                            file_state_out<<i_<< "    <"<<m_b<<"|GS> = "<<conjugate(phase_offset)*Vec_new[i_]*(1.0/abs(Vec_new[i_]))<<"  "<<abs(Vec_new[i_])<<"  "<<acos((conjugate(phase_offset)*Vec_new[i_]*(1.0/abs(Vec_new[i_]))).real())<<endl;
+#endif
+                            //                                file_state_out<<"<"<<m_b<<"|GS> = "<<Vec_new[i_]<<endl;
+                            file_state_out<<"----------------------------------------------"<<endl;
 
-//                                file_state_out<<"<"<<m_b<<"|GS> = "<<Vec_new[i_]<<endl;
-                                file_state_out<<"----------------------------------------------"<<endl;
+                            file_state_out<<"UP   :";
+                            for(int site=0;site<_BASIS.Length;site++){
+                                val_comp = bit_value(_BASIS.D_up_basis[i_b], site);
+                                file_state_out<<val_comp<<" ";
+                            }
+                            file_state_out<<endl;
 
-                                file_state_out<<"UP   :";
-                                for(int site=0;site<_BASIS.Length;site++){
-                                    val_comp = bit_value(_BASIS.D_up_basis[i_b], site);
-                                    file_state_out<<val_comp<<" ";
-                                }
-                                file_state_out<<endl;
-
-                                file_state_out<<"DOWN :";
-                                for(int site=0;site<_BASIS.Length;site++){
-                                    val_comp = bit_value(_BASIS.D_dn_basis[j_b], site);
-                                    file_state_out<<val_comp<<" ";
-                                }
-                                file_state_out<<endl;
-                                file_state_out<<"----------------------------------------------"<<endl;
-                                file_state_out<<endl;
+                            file_state_out<<"DOWN :";
+                            for(int site=0;site<_BASIS.Length;site++){
+                                val_comp = bit_value(_BASIS.D_dn_basis[j_b], site);
+                                file_state_out<<val_comp<<" ";
+                            }
+                            file_state_out<<endl;
+                            file_state_out<<"----------------------------------------------"<<endl;
+                            file_state_out<<endl;
 
                         }
 
@@ -3216,28 +3338,28 @@ int main(int argc, char** argv){
         Print_vector_in_file(_LANCZOS.Eig_vec,"GS_vec.txt");
 
         if(true){
-//            Mat_2_doub Dummy_Eig_vecs;
-//            Dummy_Eig_vecs = _LANCZOS.Eig_vecs;
+            //            Mat_2_doub Dummy_Eig_vecs;
+            //            Dummy_Eig_vecs = _LANCZOS.Eig_vecs;
 
-//            for(int s_=0;s_<_LANCZOS.Eig_vecs.size();s_++){
-//                _LANCZOS.Eig_vecs[s_].clear();
-//            }
-//            _LANCZOS.Eig_vecs.clear();
+            //            for(int s_=0;s_<_LANCZOS.Eig_vecs.size();s_++){
+            //                _LANCZOS.Eig_vecs[s_].clear();
+            //            }
+            //            _LANCZOS.Eig_vecs.clear();
 
-//            _LANCZOS.Eig_vecs.resize(_MODEL.Hamil.nrows);
-//            for(int s_=0;s_<_MODEL.Hamil.nrows;s_++){
-//                _LANCZOS.Eig_vecs[s_].resize(vecs[s_].size());
-//                for(int comp=0;comp<_LANCZOS.Eig_vecs[s_].size();comp++){
-//                    _LANCZOS.Eig_vecs[s_][comp] = vecs[s_][comp];
-//                }
-//            }
+            //            _LANCZOS.Eig_vecs.resize(_MODEL.Hamil.nrows);
+            //            for(int s_=0;s_<_MODEL.Hamil.nrows;s_++){
+            //                _LANCZOS.Eig_vecs[s_].resize(vecs[s_].size());
+            //                for(int comp=0;comp<_LANCZOS.Eig_vecs[s_].size();comp++){
+            //                    _LANCZOS.Eig_vecs[s_][comp] = vecs[s_][comp];
+            //                }
+            //            }
 
             string file_basis = "BASIS.txt";
             ofstream file_basis_out(file_basis.c_str());
 
-           // file_basis_out<<_BASIS.D_up_basis.size()<<"  "<<_BASIS.D_dn_basis.size()<<endl;
+            // file_basis_out<<_BASIS.D_up_basis.size()<<"  "<<_BASIS.D_dn_basis.size()<<endl;
             int val_comp;
-          /*  for(int i_b=0;i_b<_BASIS.D_up_basis.size();i_b++){
+            /*  for(int i_b=0;i_b<_BASIS.D_up_basis.size();i_b++){
                 for(int j_b=0;j_b<_BASIS.D_dn_basis.size();j_b++){
                     int m_b=_BASIS.D_dn_basis.size()*i_b + j_b;
                     file_basis_out<<"|"<<m_b<<">"<<endl;
@@ -3278,32 +3400,34 @@ int main(int argc, char** argv){
                 int basis_used=min(500,size_temp);
                 Sort_vector_in_decreasing_order(_LANCZOS.Eig_vecs[state_], Vec_new, index_old, basis_used);
 
-                complex<double> phase_offset;
+                double_type  phase_offset;
                 phase_offset = Vec_new[0]/(abs(Vec_new[0]));
 
                 for(int i_=0;i_<basis_used;i_++){
-                        int m_b=index_old[i_];
-                        int j_b = m_b%_BASIS.D_dn_basis.size();
-                        int i_b = (m_b - j_b)/(_BASIS.D_dn_basis.size());
+                    int m_b=index_old[i_];
+                    int j_b = m_b%_BASIS.D_dn_basis.size();
+                    int i_b = (m_b - j_b)/(_BASIS.D_dn_basis.size());
 
-                        file_state_out<<i_<< "    <"<<m_b<<"|GS> = "<<conjugate(phase_offset)*Vec_new[i_]*(1.0/abs(Vec_new[i_]))<<"  "<<abs(Vec_new[i_])<<"  "<<acos((conjugate(phase_offset)*Vec_new[i_]*(1.0/abs(Vec_new[i_]))).real())<<endl;
-                        file_state_out<<"----------------------------------------------"<<endl;
+#ifdef USE_COMPLEX
+                    file_state_out<<i_<< "    <"<<m_b<<"|GS> = "<<conjugate(phase_offset)*Vec_new[i_]*(1.0/abs(Vec_new[i_]))<<"  "<<abs(Vec_new[i_])<<"  "<<acos((conjugate(phase_offset)*Vec_new[i_]*(1.0/abs(Vec_new[i_]))).real())<<endl;
+#endif
+                    file_state_out<<"----------------------------------------------"<<endl;
 
-                        file_state_out<<"UP   :";
-                        for(int site=0;site<_BASIS.Length;site++){
-                            val_comp = bit_value(_BASIS.D_up_basis[i_b], site);
-                            file_state_out<<val_comp<<" ";
-                        }
-                        file_state_out<<endl;
+                    file_state_out<<"UP   :";
+                    for(int site=0;site<_BASIS.Length;site++){
+                        val_comp = bit_value(_BASIS.D_up_basis[i_b], site);
+                        file_state_out<<val_comp<<" ";
+                    }
+                    file_state_out<<endl;
 
-                        file_state_out<<"DOWN :";
-                        for(int site=0;site<_BASIS.Length;site++){
-                            val_comp = bit_value(_BASIS.D_dn_basis[j_b], site);
-                            file_state_out<<val_comp<<" ";
-                        }
-                        file_state_out<<endl;
-                        file_state_out<<"----------------------------------------------"<<endl;
-                        file_state_out<<endl;
+                    file_state_out<<"DOWN :";
+                    for(int site=0;site<_BASIS.Length;site++){
+                        val_comp = bit_value(_BASIS.D_dn_basis[j_b], site);
+                        file_state_out<<val_comp<<" ";
+                    }
+                    file_state_out<<endl;
+                    file_state_out<<"----------------------------------------------"<<endl;
+                    file_state_out<<endl;
 
                 }
 
@@ -3312,7 +3436,7 @@ int main(int argc, char** argv){
 
 
                 //--Constrained basis-------------
-                 Mat_1_int Occupied_Site1, Occupied_Site2, Occupied_Site3;
+                Mat_1_int Occupied_Site1, Occupied_Site2, Occupied_Site3;
                 Occupied_Site1.push_back(0);Occupied_Site2.push_back(1);Occupied_Site3.push_back(6);
                 Occupied_Site1.push_back(0);Occupied_Site2.push_back(6);Occupied_Site3.push_back(7);
                 Occupied_Site1.push_back(6);Occupied_Site2.push_back(5);Occupied_Site3.push_back(9);
@@ -3322,9 +3446,9 @@ int main(int argc, char** argv){
 
 
                     string file_name_state = "ConstrainedSites_" + to_string(Occupied_Site1[basis_type]) + "_" +
-                                                to_string(Occupied_Site2[basis_type]) +  "_" +
-                                                to_string(Occupied_Site3[basis_type]) +  "_" +
-                                                "Lanczos_State"+ to_string(state_) + ".txt";
+                            to_string(Occupied_Site2[basis_type]) +  "_" +
+                            to_string(Occupied_Site3[basis_type]) +  "_" +
+                            "Lanczos_State"+ to_string(state_) + ".txt";
                     ofstream file_state_out(file_name_state.c_str());
 
                     Mat_1_doub Red_EigVec;
@@ -3338,23 +3462,23 @@ int main(int argc, char** argv){
                         int i_b = (m_ - j_b)/(_BASIS.D_dn_basis.size());
 
                         site1_val=bit_value(_BASIS.D_up_basis[i_b], Occupied_Site1[basis_type])+
-                                  bit_value(_BASIS.D_dn_basis[j_b], Occupied_Site1[basis_type]);
+                                bit_value(_BASIS.D_dn_basis[j_b], Occupied_Site1[basis_type]);
 
                         site2_val=bit_value(_BASIS.D_up_basis[i_b], Occupied_Site2[basis_type])+
-                                  bit_value(_BASIS.D_dn_basis[j_b], Occupied_Site2[basis_type]);
+                                bit_value(_BASIS.D_dn_basis[j_b], Occupied_Site2[basis_type]);
 
                         site3_val=bit_value(_BASIS.D_up_basis[i_b], Occupied_Site3[basis_type])+
-                                  bit_value(_BASIS.D_dn_basis[j_b], Occupied_Site3[basis_type]);
+                                bit_value(_BASIS.D_dn_basis[j_b], Occupied_Site3[basis_type]);
 
                         total_sz_val = bit_value(_BASIS.D_up_basis[i_b], Occupied_Site1[basis_type])-
-                                       bit_value(_BASIS.D_dn_basis[j_b], Occupied_Site1[basis_type])+
-                                       bit_value(_BASIS.D_up_basis[i_b], Occupied_Site2[basis_type])-
-                                       bit_value(_BASIS.D_dn_basis[j_b], Occupied_Site2[basis_type])+
-                                       bit_value(_BASIS.D_up_basis[i_b], Occupied_Site3[basis_type])-
-                                       bit_value(_BASIS.D_dn_basis[j_b], Occupied_Site3[basis_type]);
+                                bit_value(_BASIS.D_dn_basis[j_b], Occupied_Site1[basis_type])+
+                                bit_value(_BASIS.D_up_basis[i_b], Occupied_Site2[basis_type])-
+                                bit_value(_BASIS.D_dn_basis[j_b], Occupied_Site2[basis_type])+
+                                bit_value(_BASIS.D_up_basis[i_b], Occupied_Site3[basis_type])-
+                                bit_value(_BASIS.D_dn_basis[j_b], Occupied_Site3[basis_type]);
 
                         if((site1_val==1) && (site2_val==1) && (site3_val==1) &&
-                           (abs(total_sz_val)==1)){
+                                (abs(total_sz_val)==1)){
                             ConstrainedSatisfied=true;
                         }
                         else{
@@ -3376,35 +3500,36 @@ int main(int argc, char** argv){
                     int basis_used=min(500,size_temp);
                     Sort_vector_in_decreasing_order(Red_EigVec, Vec_new, Red_EigVec_basis, index_old, basis_used);
 
-                    complex<double> phase_offset;
+                    double_type  phase_offset;
                     phase_offset = Vec_new[0]/(abs(Vec_new[0]));
 
                     double net_weight=0.0;
                     for(int i_=0;i_<basis_used;i_++){
-                            int m_b=index_old[i_];
-                            int j_b = m_b%_BASIS.D_dn_basis.size();
-                            int i_b = (m_b - j_b)/(_BASIS.D_dn_basis.size());
+                        int m_b=index_old[i_];
+                        int j_b = m_b%_BASIS.D_dn_basis.size();
+                        int i_b = (m_b - j_b)/(_BASIS.D_dn_basis.size());
+#ifdef USE_COMPLEX
+                        file_state_out<<i_<< "    <"<<m_b<<"|GS> = "<<conjugate(phase_offset)*Vec_new[i_]*(1.0/abs(Vec_new[i_]))<<"  "<<abs(Vec_new[i_])<<"  "<<acos((conjugate(phase_offset)*Vec_new[i_]*(1.0/abs(Vec_new[i_]))).real())<<endl;
+#endif
+                        file_state_out<<"----------------------------------------------"<<endl;
 
-                            file_state_out<<i_<< "    <"<<m_b<<"|GS> = "<<conjugate(phase_offset)*Vec_new[i_]*(1.0/abs(Vec_new[i_]))<<"  "<<abs(Vec_new[i_])<<"  "<<acos((conjugate(phase_offset)*Vec_new[i_]*(1.0/abs(Vec_new[i_]))).real())<<endl;
-                            file_state_out<<"----------------------------------------------"<<endl;
+                        net_weight += abs(Vec_new[i_])*abs(Vec_new[i_]);
 
-                            net_weight += abs(Vec_new[i_])*abs(Vec_new[i_]);
+                        file_state_out<<"UP   :";
+                        for(int site=0;site<_BASIS.Length;site++){
+                            val_comp = bit_value(_BASIS.D_up_basis[i_b], site);
+                            file_state_out<<val_comp<<" ";
+                        }
+                        file_state_out<<endl;
 
-                            file_state_out<<"UP   :";
-                            for(int site=0;site<_BASIS.Length;site++){
-                                val_comp = bit_value(_BASIS.D_up_basis[i_b], site);
-                                file_state_out<<val_comp<<" ";
-                            }
-                            file_state_out<<endl;
-
-                            file_state_out<<"DOWN :";
-                            for(int site=0;site<_BASIS.Length;site++){
-                                val_comp = bit_value(_BASIS.D_dn_basis[j_b], site);
-                                file_state_out<<val_comp<<" ";
-                            }
-                            file_state_out<<endl;
-                            file_state_out<<"----------------------------------------------"<<endl;
-                            file_state_out<<endl;
+                        file_state_out<<"DOWN :";
+                        for(int site=0;site<_BASIS.Length;site++){
+                            val_comp = bit_value(_BASIS.D_dn_basis[j_b], site);
+                            file_state_out<<val_comp<<" ";
+                        }
+                        file_state_out<<endl;
+                        file_state_out<<"----------------------------------------------"<<endl;
+                        file_state_out<<endl;
 
                     }
 
@@ -3667,6 +3792,10 @@ int main(int argc, char** argv){
                 _MODEL_Nm1.Add_diagonal_terms(_BASIS_Nm1);
                 cout<<"Diagonal part done"<<endl;
 
+                cout <<"Non diagonal started"<<endl;
+                _MODEL_Nm1.Add_non_diagonal_terms(_BASIS_Nm1);
+                cout<<"Non diagonal done"<<endl;
+
                 cout<<"Connections started"<<endl;
                 _MODEL_Nm1.Add_connections(_BASIS_Nm1);
                 cout<<"Connections done"<<endl;
@@ -3729,6 +3858,10 @@ int main(int argc, char** argv){
                 cout<<"Diagonal part started"<<endl;
                 _MODEL_Np1.Add_diagonal_terms(_BASIS_Np1);
                 cout<<"Diagonal part done"<<endl;
+
+                cout <<"Non diagonal started"<<endl;
+                _MODEL_Np1.Add_non_diagonal_terms(_BASIS_Np1);
+                cout<<"Non diagonal done"<<endl;
 
                 cout<<"Connections started"<<endl;
                 _MODEL_Np1.Add_connections(_BASIS_Np1);

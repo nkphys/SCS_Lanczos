@@ -257,7 +257,7 @@ void MODEL_1_orb_Hubb_chain::Add_connections(BASIS_1_orb_Hubb_chain &basis){
                             sign_FM = pow(-1.0, sign_pow_dn);
 
                             assert(m_new<m);
-                            Hamil.value.push_back(-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one);
+                            Hamil.value.push_back(-1.0*sign_FM*conjugate(Hopping_mat_NN[site_p][site])*one);
                             Hamil.rows.push_back((m_new));
                             Hamil.columns.push_back((m));
 
@@ -465,10 +465,10 @@ void MODEL_1_orb_Hubb_chain::Act_connections(BASIS_1_orb_Hubb_chain &basis, Mat_
 #ifdef _OPENMP
                             // Vec_out_temp[mytid][m_new] += Vec_in[m]*-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one;
                             //Vec_out_temp[mytid][m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(Hopping_Mat[site_p][site])*one);
-                            Vec_out[m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(Hopping_Mat[site_p][site])*one);
+                            Vec_out[m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(conjugate(Hopping_Mat[site_p][site]))*one);
 #else
                             //Vec_out[m_new] += Vec_in[m]*-1.0*sign_FM*(Hopping_mat_NN[site_p][site])*one;
-                            Vec_out[m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(Hopping_Mat[site_p][site])*one);
+                            Vec_out[m] += Vec_in[m_new]*conjugate(-1.0*sign_FM*(conjugate(Hopping_Mat[site_p][site]))*one);
 #endif
 
 
