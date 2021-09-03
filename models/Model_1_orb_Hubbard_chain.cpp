@@ -314,7 +314,7 @@ void MODEL_1_orb_Hubb_chain::Act_connections(BASIS_1_orb_Hubb_chain &basis, Mat_
                 Hopping_Mat[sitei][sitej] = Hopping_mat_NN[sitei][sitej];
             }
             else{
-                Hopping_Mat[sitei][sitej] = conj(Hopping_mat_NN[sitej][sitei]);
+                Hopping_Mat[sitei][sitej] = conjugate(Hopping_mat_NN[sitej][sitei]);
             }
         }
     }

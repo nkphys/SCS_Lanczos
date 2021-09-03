@@ -1454,7 +1454,7 @@ void MODEL_Spins_Target_Sz::Overlap_of_JJzBasis_with_State(Mat_1_doub &Vec_ , Ma
 
         double_type temp_doub =0.0;
         for(int i_=0;i_<m_basis[ansatz_basis].size();i_++){
-            temp_doub += conj(Coefficients[ansatz_basis][i_])*Vec_[m_basis[ansatz_basis][i_]];
+            temp_doub += conjugate(Coefficients[ansatz_basis][i_])*Vec_[m_basis[ansatz_basis][i_]];
         }
 
         Overlaps_old[ansatz_basis]=temp_doub;
