@@ -736,7 +736,7 @@ int main(int argc, char** argv){
                     double_type Energy_temp;
                     Energy_temp=0.0;
                     //J1 connectionsXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-                    cout<<"J1 Type connections----------------------------"<<endl;
+                   /* cout<<"J1 Type connections----------------------------"<<endl;
                     double_type value_;
                     for(int site_k=0;site_k<_BASIS.Length;site_k++){
                         for(int site_l=0;site_l<_BASIS.Length;site_l++){
@@ -757,12 +757,12 @@ int main(int argc, char** argv){
                                 vector< double_type >().swap( OPR_.value );
                             }
                         }
-                    }
+                    }*/
                     //J1 connections done-------------------------------------------
 
 
 
-
+                    /*
                     Mat_1_string opr_type_4point;
                     opr_type_4point.push_back("J2_type");
                     opr_type_4point.push_back("J3_type");
@@ -811,19 +811,20 @@ int main(int argc, char** argv){
 
                     cout<< "Energy Calculated using above observables = "<<Energy_temp<<endl;
 
-
+                    */
 
                     //--------------------------------
                     //---------------------------------------------------------
-                    _MODEL.Act_translational_opr(_BASIS,_LANCZOS.Eig_vecs[state_], Vec_translated);
+                  /*  _MODEL.Act_translational_opr(_BASIS,_LANCZOS.Eig_vecs[state_], Vec_translated);
                     phase_trnsl = dot_product( _LANCZOS.Eig_vecs[state_], Vec_translated);
                     cout<< "phase after Translating state "<<state_<<" = "<<phase_trnsl<<"   "<<acos(phase_trnsl.real()/(1.00000000001))<< endl;
                     //assert( abs(abs(phase_trnsl) - 1.0)<0.00000001);
-
+                    */
                     //-------------------------------------------------------------------
                     //--------------------------------
 
 
+                    /*
                     string fileED2_name_state = "Lanczos_State"+ to_string(state_) + "_in_JJzBasis_.txt";
                     ofstream file2_state_out(fileED2_name_state.c_str());
                     Mat_1_doub Overlaps;
@@ -843,12 +844,14 @@ int main(int argc, char** argv){
                         file2_state_out<<endl;
                     }
 
+                    */
+
                 }
             }
 
             Mat_1_real Eigen_ED;
             Mat_2_doub vecs;
-            DO_FULL_DIAGONALIZATION=true;
+            DO_FULL_DIAGONALIZATION=false;
             if(_MODEL.Hamil.nrows>1200){
                 DO_FULL_DIAGONALIZATION=false;
             }
@@ -4158,7 +4161,7 @@ int main(int argc, char** argv){
 
 
 
-        bool Dynamics_SPDOS = false;
+        bool Dynamics_SPDOS = true;
         bool Above_mu = true;
         bool Below_mu= true;
 
