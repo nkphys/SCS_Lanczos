@@ -226,6 +226,7 @@ void LANCZOS<Basis_type, Model_type>::Perform_LANCZOS(Matrix_COO &Hamil){
         tmpnrm_type_double=Norm(Kvector_np1);
         tmpnrm=sqrt(tmpnrm_type_double);
 
+        if((tmpnrm)>0.000001){
 #ifdef _OPENMP
 #pragma omp parallel for default(shared)
 #endif
@@ -233,6 +234,7 @@ void LANCZOS<Basis_type, Model_type>::Perform_LANCZOS(Matrix_COO &Hamil){
             Kvector_np1[i] = (Kvector_np1[i]/(tmpnrm));//*1.0e-10;
         }
 
+    }
         if(save_all_Krylov_space_vecs==true){
             cout<<"Overlap b/w 0th and Normalized Kvector_np1 : "<<dot_product(Krylov_space_vecs[0],Kvector_np1)<<endl;
         }
