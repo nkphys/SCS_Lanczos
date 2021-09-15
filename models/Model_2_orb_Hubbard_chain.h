@@ -18,7 +18,7 @@ public:
     double U_p;
     double J_H;
     double Dz_Anisotropy;
-    Mat_2_real Hopping_mat_NN;//Nearest neighbour hopping matrix
+    Mat_2_doub Hopping_mat_NN;//Nearest neighbour hopping matrix
     Mat_1_real CFS;
     Mat_1_real H_field;
 
@@ -64,6 +64,8 @@ public:
     Mat_2_doub OVERLAP_MATRIX_2holes_Basis;
     Matrix_COO Pair_Annihilation;
 
+    Mat_1_doub State_c_on_GS;
+    Mat_1_doub State_cdagger_on_GS;
 
 
     void Create_STATES_OS_TS_DIAGONAL_HOLES(BASIS_2_orb_Hubb_chain &basis,
@@ -117,6 +119,10 @@ public:
     void Read_Mat_2_trio(Mat_2_trio_int &MAT_TEMP, Mat_1_doub &VALUES_TEMP,int pair_no);
     void Act_Hamil(BASIS_2_orb_Hubb_chain &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
 
+    void Get_c_on_GS(Mat_1_doub & EigVec_, BASIS_2_orb_Hubb_chain & basis_Nm1, BASIS_2_orb_Hubb_chain & basis,
+                                             Mat_1_trio_int TRIO_VEC, Mat_1_doub values);
+    void Get_cdagger_on_GS(Mat_1_doub & EigVec_, BASIS_2_orb_Hubb_chain & basis_Np1, BASIS_2_orb_Hubb_chain & basis,
+                                                   Mat_1_trio_int TRIO_VEC, Mat_1_doub values);
 
 };
 
