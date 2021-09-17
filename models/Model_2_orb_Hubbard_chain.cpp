@@ -4357,7 +4357,7 @@ void MODEL_2_orb_Hubb_chain::Get_c_on_GS(Mat_1_doub & EigVec_, BASIS_2_orb_Hubb_
 
                         m_new = basis_Nm1.D_dn_basis.size()*i_up + i_dn;
 
-                        max_up = basis.Length -1;
+                        max_up = 2*basis.Length -1;
                         min_up =0 ;
                         sign_pow_up = one_bits_in_bw(min_up ,l, basis.D_up_basis[i]) ;
                         if(l != min_up){
@@ -4398,7 +4398,7 @@ void MODEL_2_orb_Hubb_chain::Get_c_on_GS(Mat_1_doub & EigVec_, BASIS_2_orb_Hubb_
 
                         m_new = basis_Nm1.D_dn_basis.size()*i_up + i_dn;
 
-                        max_dn = basis.Length -1;
+                        max_dn = 2*basis.Length -1;
                         min_dn=0;
                         sign_pow_dn = one_bits_in_bw(min_dn ,l, basis.D_dn_basis[j]) ;
                         if(l != min_dn){
@@ -4474,7 +4474,7 @@ void MODEL_2_orb_Hubb_chain::Get_cdagger_on_GS(Mat_1_doub & EigVec_, BASIS_2_orb
 
                         m_new = basis_Np1.D_dn_basis.size()*i_up + i_dn;
 
-                        max_up = basis.Length -1;
+                        max_up = 2*basis.Length -1;
                         min_up=0;
                         sign_pow_up = one_bits_in_bw(min_up ,l, basis.D_up_basis[i]) ;
                         if(l != min_up){
@@ -4483,7 +4483,7 @@ void MODEL_2_orb_Hubb_chain::Get_cdagger_on_GS(Mat_1_doub & EigVec_, BASIS_2_orb
 
                         sign_FM = pow(-1.0, sign_pow_up);
 
-                        value = sign_FM*EigVec_[m]*(value_in);
+                        value = sign_FM*EigVec_[m]*(conjugate(value_in));
 
                         State_cdagger_on_GS[m_new] += value;
 
@@ -4515,7 +4515,7 @@ void MODEL_2_orb_Hubb_chain::Get_cdagger_on_GS(Mat_1_doub & EigVec_, BASIS_2_orb
 
                         m_new = basis_Np1.D_dn_basis.size()*i_up + i_dn;
 
-                        max_dn = basis.Length -1;
+                        max_dn = 2*basis.Length -1;
                         min_dn=0;
                         sign_pow_dn = one_bits_in_bw(min_dn ,l, basis.D_dn_basis[j]) ;
                         if(l != min_dn){

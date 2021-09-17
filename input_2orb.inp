@@ -2,12 +2,12 @@ Model = 2_orb_Hubbard_chain
 ------------------------------------------
 PBC = true
 Length = 6
-Ndown = 2
-Nup = 2
+Ndown = 1
+Nup = 1
 CFS = 0.0 0.0
 
-Hopping_mat[0][orb] = (0.7071072,0.7071072) (0.0,0)
-Hopping_mat[1][orb] = (0.0,0) (0.7071072,0.7071072)
+Hopping_mat[0][orb] = (1,0.) (0.0,0)
+Hopping_mat[1][orb] = (0.0,0) (1,0)
 U = 0
 JHund = 0
 Uprime = 0
@@ -66,7 +66,7 @@ Variational_state_contruction = AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S N
 
 
 ----------------------------------
-Perform_Dynamics = true
+Perform_Dynamics = false
 eta = 0.2
 check_omega = 0.05
 omega_max = 20.0

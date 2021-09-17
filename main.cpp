@@ -1466,6 +1466,7 @@ int main(int argc, char** argv){
     if (model_name=="2_orb_Hubbard_chain") {
 
 
+        bool Hole_Quasiparticle_weight=true;
         bool Dynamics_SPDOS = true;
         bool Above_mu = true;
         bool Below_mu= true;
@@ -1605,6 +1606,67 @@ int main(int argc, char** argv){
         }
 
         //_MODEL.Calculate_Local_Obs_for_States_to_Look(_LANCZOS,_BASIS);
+
+
+
+        if(Hole_Quasiparticle_weight){
+            Mat_1_trio_int TRIO_VEC; Mat_1_doub values_;
+            reading_input_dos_trio(inp_filename, TRIO_VEC, values_ );
+            BASIS_2_orb_Hubb_chain _BASIS_Nm1;
+            MODEL_2_orb_Hubb_chain _MODEL_Nm1;
+
+            _MODEL_Nm1.Read_parameters(_BASIS_Nm1, inp_filename);
+            if(TRIO_VEC[0].spin_==0){
+             _BASIS_Nm1.Ndn = _BASIS.Ndn;
+             _BASIS_Nm1.Nup = _BASIS.Nup -1;
+            }
+            else{
+             _BASIS_Nm1.Ndn = _BASIS.Ndn-1;
+             _BASIS_Nm1.Nup = _BASIS.Nup;
+            }
+
+            _BASIS_Nm1.Construct_basis();
+
+            cout<<"Diagonal part started"<<endl;
+            _MODEL_Nm1.Add_diagonal_terms(_BASIS_Nm1);
+            cout<<"Diagonal part done"<<endl;
+
+            cout<<"Non Diagonal part started"<<endl;
+            _MODEL_Nm1.Add_non_diagonal_terms(_BASIS_Nm1);
+            cout<<"Non Diagonal part done"<<endl;
+
+            cout<<"Connections started"<<endl;
+            _MODEL_Nm1.Add_connections(_BASIS_Nm1);
+            cout<<"Connections done"<<endl;
+
+
+            cout<<"Size of Hilbert space = "<<_MODEL_Nm1.Hamil.nrows<<endl;
+            cout<<scientific<<setprecision(1);
+            // Print_Matrix_COO(_MODEL.Hamil);
+            cout<<scientific<<setprecision(6);
+
+            //_MODEL_Nm1.Read_parameters_for_dynamics(inp_filename);
+
+            LANCZOS<BASIS_2_orb_Hubb_chain, MODEL_2_orb_Hubb_chain> _LANCZOS_Nm1(_BASIS_Nm1, _MODEL_Nm1);
+            _LANCZOS_Nm1.Dynamics_performed=false;
+            _LANCZOS_Nm1.Read_Lanczos_parameters(inp_filename);
+
+            _LANCZOS_Nm1.Perform_LANCZOS(_MODEL_Nm1.Hamil);
+            _LANCZOS_Nm1.Write_full_spectrum();
+
+             _MODEL.Get_c_on_GS(_LANCZOS.Eig_vec, _BASIS_Nm1,_BASIS, TRIO_VEC, values_ );
+
+            double norm_;
+            norm_ = Norm(_MODEL.State_c_on_GS);
+
+            cout<<"_MODEL.State_c_on_GS.size() = "<<_MODEL.State_c_on_GS.size()<<endl;
+            cout<<"_LANCZOS_Nm1.Eig_vec.size() = "<<_LANCZOS_Nm1.Eig_vec.size()<<endl;
+            double_type overlap_;
+            overlap_=dot_product(_MODEL.State_c_on_GS, _LANCZOS_Nm1.Eig_vec);
+
+            cout<<"Quasiparticle Weight (hole) = "<<abs(overlap_)/sqrt(norm_)<<endl;
+
+        }
 
 
 
