@@ -1532,12 +1532,24 @@ int main(int argc, char** argv){
         _LANCZOS.Write_full_spectrum();
         Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS.txt");
 
+
+        vector< int >().swap(_MODEL.Hamil.columns );
+        vector< int >().swap(_MODEL.Hamil.rows );
+        vector< double_type >().swap(_MODEL.Hamil.value );
+
+
         //assert(false);
         cout<<"Orbital symmetry of Ground state for without doping:"<<endl;
         _MODEL.Check_orbital_symmetry(_BASIS, _LANCZOS.Eig_vec);
-
         _MODEL.Initialize_one_point_to_calculate(_BASIS);
         _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, 0);
+        for(int opr_no=0;opr_no<_MODEL.One_point_oprts.size();opr_no++){
+            for(int site=0;site<_BASIS.Length;site++){
+            vector< int >().swap(_MODEL.One_point_oprts[opr_no][site].columns);
+            vector< int >().swap(_MODEL.One_point_oprts[opr_no][site].rows);
+            vector< double_type >().swap(_MODEL.One_point_oprts[opr_no][site].value);
+            }
+        }
 
 
         if(Cheaper_SpinSpincorr==true){
@@ -1600,9 +1612,11 @@ int main(int argc, char** argv){
             }
         }
 
+        if(false){
         _MODEL.Initialize_macro_oprs_to_calculate(_BASIS);
         for(int i=0;i<_LANCZOS.states_to_look.size();i++){
             _LANCZOS.Measure_macro_observables(_MODEL.macro_obs, _MODEL.Macro_oprts ,i);
+        }
         }
 
         //_MODEL.Calculate_Local_Obs_for_States_to_Look(_LANCZOS,_BASIS);
@@ -1654,7 +1668,12 @@ int main(int argc, char** argv){
             _LANCZOS_Nm1.Perform_LANCZOS(_MODEL_Nm1.Hamil);
             _LANCZOS_Nm1.Write_full_spectrum();
 
-             _MODEL.Get_c_on_GS(_LANCZOS.Eig_vec, _BASIS_Nm1,_BASIS, TRIO_VEC, values_ );
+            vector< int >().swap(_MODEL_Nm1.Hamil.columns );
+            vector< int >().swap(_MODEL_Nm1.Hamil.rows );
+            vector< double_type >().swap(_MODEL_Nm1.Hamil.value );
+
+
+            _MODEL.Get_c_on_GS(_LANCZOS.Eig_vec, _BASIS_Nm1,_BASIS, TRIO_VEC, values_ );
 
             double norm_;
             norm_ = Norm(_MODEL.State_c_on_GS);
@@ -1665,6 +1684,10 @@ int main(int argc, char** argv){
             overlap_=dot_product(_MODEL.State_c_on_GS, _LANCZOS_Nm1.Eig_vec);
 
             cout<<"Quasiparticle Weight (hole) = "<<abs(overlap_)/sqrt(norm_)<<endl;
+
+
+            vector< double_type >().swap(_LANCZOS_Nm1.Eig_vec);
+            vector< double_type >().swap(_MODEL.State_c_on_GS);
 
         }
 
@@ -1742,6 +1765,12 @@ int main(int argc, char** argv){
                 _LANCZOS_Dynamics_DOS.file_dynamics_out = _LANCZOS_Dynamics_DOS.file_dynamics_out + "_below_mu.txt";
                 _LANCZOS_Dynamics_DOS.Perform_LANCZOS(_MODEL_Nm1.Hamil);
                 //-----------------------
+
+
+
+                vector< int >().swap(_MODEL_Nm1.Hamil.columns );
+                vector< int >().swap(_MODEL_Nm1.Hamil.rows );
+                vector< double_type >().swap(_MODEL_Nm1.Hamil.value );
             }
 
             if(Above_mu){
@@ -1793,6 +1822,10 @@ int main(int argc, char** argv){
                 _LANCZOS_Dynamics_DOS2.file_dynamics_out = _LANCZOS_Dynamics_DOS2.file_dynamics_out + "_above_mu.txt";
                 _LANCZOS_Dynamics_DOS2.Perform_LANCZOS(_MODEL_Np1.Hamil);
                 //----------------------------------------
+
+                vector< int >().swap(_MODEL_Np1.Hamil.columns );
+                vector< int >().swap(_MODEL_Np1.Hamil.rows );
+                vector< double_type >().swap(_MODEL_Np1.Hamil.value );
             }
 
         }

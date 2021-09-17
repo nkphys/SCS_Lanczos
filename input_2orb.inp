@@ -1,9 +1,9 @@
 Model = 2_orb_Hubbard_chain
 ------------------------------------------
 PBC = true
-Length = 6
-Ndown = 1
-Nup = 1
+Length = 8
+Ndown = 8
+Nup = 8
 CFS = 0.0 0.0
 
 Hopping_mat[0][orb] = (1,0.) (0.0,0)
@@ -20,11 +20,11 @@ Random_seed_generator = 564
 Lanc_Error = -10e-10
 max_steps = 100
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = true
-get_overlap_bw_eigstates_and_K_vecs = true
-lanczos_reorthogonalization = true
-Get_Full_Spectrum = true
-need_few_eig_vecs = true
+save_all_Krylov_space_vecs = false
+get_overlap_bw_eigstates_and_K_vecs = false
+lanczos_reorthogonalization = false
+Get_Full_Spectrum = false
+need_few_eig_vecs = false
 few = 6
 ----------------------------------------
 Get_overlap_with_basis = false
