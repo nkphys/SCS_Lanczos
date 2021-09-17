@@ -4525,7 +4525,7 @@ void MODEL_2_orb_Hubb_chain::Get_cdagger_on_GS(Mat_1_doub & EigVec_, BASIS_2_orb
 
                         sign_FM = pow(-1.0, sign_pow_dn);
 
-                        value = sign_FM*EigVec_[m]*(value_in);
+                        value = sign_FM*EigVec_[m]*(conjugate(value_in));
 
                         State_cdagger_on_GS[m_new] += value;
                     }
