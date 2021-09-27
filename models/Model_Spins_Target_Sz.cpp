@@ -26,10 +26,10 @@ void MODEL_Spins_Target_Sz::Add_diagonal_terms(BASIS_Spins_Target_Sz &basis){
 
     //    //Remember H[l][m]=<l|H|m>
 
-    //    double_type value;
-    //    for (int i=basis.D_min;i<basis.D_max + 1;i++){
+        double_type value;
+      for (int i=basis.D_min;i<basis.D_max + 1;i++){
 
-    //        value=zero;
+            value=zero;
 
     //        //magnetic Field in Z-direction
     //        for(int site=0;site<basis.Length;site++){
@@ -38,23 +38,23 @@ void MODEL_Spins_Target_Sz::Add_diagonal_terms(BASIS_Spins_Target_Sz &basis){
     //        }
 
 
-    //        //(Sz_local)^2 exchange
-    //        for(int site_i=0;site_i<basis.Length;site_i++){
-    //            if(D_anisotropy[2]!=zero){
-    //                value+=  D_anisotropy[2]*
-    //                        ( ( (1.0*value_at_pos(i, site_i, basis.BASE)) - (0.5*basis.TwoTimesSpin))*
-    //                          ( (1.0*value_at_pos(i, site_i, basis.BASE)) - (0.5*basis.TwoTimesSpin))
-    //                          );
-    //            }
-    //        }
+            //(Sz_local)^2 exchange
+            for(int site_i=0;site_i<basis.Length;site_i++){
+                if(abs(Dz_anisotropy[site_i])>0.0000001){
+                    value+=  Dz_anisotropy[site_i]*
+                            ( ( (1.0*value_at_pos(i, site_i, basis.BASE)) - (0.5*basis.TwoTimesSpin))*
+                              ( (1.0*value_at_pos(i, site_i, basis.BASE)) - (0.5*basis.TwoTimesSpin))
+                              );
+                }
+            }
 
-    //        if(value!=zero){
-    //            Hamil.value.push_back(value*one);
-    //            Hamil.rows.push_back(i);
-    //            Hamil.columns.push_back(i);
-    //        }
+            if(abs(value)>0.000001){
+                Hamil.value.push_back(value*one);
+                Hamil.rows.push_back(i);
+                Hamil.columns.push_back(i);
+            }
 
-    //    }
+       }
 
 
 }
@@ -797,7 +797,7 @@ void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string
     string twotimestotalsztarget, TwoTimesTotalSzTarget = "TwoTimesTotalSzTarget = ";
 
     string hmag, Hmag = "H_mag = ";
-    string d_anisotropy_, D_Anisotropy_ = "D_anisotropy = ";
+    string d_anisotropy_, D_Anisotropy_ = "Dz_anisotropy = ";
 
     string LongRangeJ1file_ = "LongRangeJ1_file = ";
 
@@ -918,11 +918,14 @@ void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string
     double temp_anis;
     stringstream anis_stream;
     anis_stream<<d_anisotropy_;
-    D_anisotropy.clear();
-    D_anisotropy.resize(3); //Dx, Dy, Dz
-    for(int i=0;i<3;i++){
-        anis_stream >> temp_anis;
-        D_anisotropy[i]=temp_anis;
+    int terms_anis, site_temp;
+    double value_temp_;
+    anis_stream>>terms_anis;
+    Dz_anisotropy.clear();
+    Dz_anisotropy.resize(basis.Length); //Dz
+    for(int i=0;i<terms_anis;i++){
+        anis_stream >> site_temp>>value_temp_;
+        Dz_anisotropy[site_temp]=value_temp_;
     }
 
 

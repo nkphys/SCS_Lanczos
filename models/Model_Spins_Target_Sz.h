@@ -16,7 +16,7 @@ class MODEL_Spins_Target_Sz{
 public:
 
     Mat_1_real H_field;
-    Mat_1_real D_anisotropy;
+    Mat_1_real Dz_anisotropy;
     bool PBC;
     Matrix_COO Hamil;
     int no_of_proc;

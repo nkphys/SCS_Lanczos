@@ -3552,7 +3552,7 @@ int main(int argc, char** argv){
         _LANCZOS.Write_full_spectrum();
         Print_vector_in_file(_LANCZOS.Eig_vec,"GS_vec.txt");
 
-        if(true){
+        if(false){
             //            Mat_2_doub Dummy_Eig_vecs;
             //            Dummy_Eig_vecs = _LANCZOS.Eig_vecs;
 
@@ -3895,7 +3895,7 @@ int main(int argc, char** argv){
                 cout<<"Three point observables :"<<endl;
 
                 double_type Sum_temp;
-                for(int type=0;type<_MODEL.three_point_oprs.size();type++){
+                for(int type=0;type<0;type++){ //_MODEL.three_point_oprs.size()
                     cout<<"________________________________"<<endl;
                     cout<<_MODEL.three_point_oprs[type]<<":"<<endl;
                     cout<<"````````````````````````````````"<<endl;
