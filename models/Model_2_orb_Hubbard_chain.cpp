@@ -3828,8 +3828,9 @@ void MODEL_2_orb_Hubb_chain::Read_Anzatz_basis(BASIS_2_orb_Hubb_chain &basis, Ma
 
 double MODEL_2_orb_Hubb_chain::Get_Holes_Projected_state_probability(BASIS_2_orb_Hubb_chain &basis, Mat_1_trio_int Hole_positions, Mat_1_doub &vec){
 
-    //    double prob_num, prob_den, prob_conditional;
+        double prob_num, prob_den, prob_conditional;
 
+        prob_conditional=0.0;
     //    Mat_1_doub vec1, vec2;
     //    int bit_VALUE_up, bit_VALUE_dn;
     //    int index_no;
@@ -3901,7 +3902,7 @@ double MODEL_2_orb_Hubb_chain::Get_Holes_Projected_state_probability(BASIS_2_orb
 
 
 
-    //    return prob_conditional;
+        return prob_conditional;
 
 }
 

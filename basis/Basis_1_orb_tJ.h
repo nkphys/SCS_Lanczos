@@ -3,6 +3,7 @@ This class includes the Basis used for Model for which Lanczos is being done
 */
 #include "../tensor_type.h"
 #include "../binary_decimal.h"
+#include "../Base_to_Decimal.h"
 
 using namespace std;
 

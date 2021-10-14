@@ -835,7 +835,6 @@ void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string
             if ((offset = line.find(LongRangeJ3file_, 0)) != string::npos) {
                 LongRangeJ3_filepath = line.substr (offset+LongRangeJ3file_.length());  }
 
-
             if ((offset = line.find(PBC_, 0)) != string::npos) {
                 pbc_ = line.substr (offset+PBC_.length());				}
 

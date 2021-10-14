@@ -4157,6 +4157,9 @@ int main(int argc, char** argv){
 
         double EG;
         Mat_1_doub vecG;
+        if(_MODEL.Hamil.ncols>1000){
+            DO_FULL_DIAGONALIZATION=false;
+        }
         if(DO_FULL_DIAGONALIZATION==true){
             Diagonalize(_MODEL.Hamil, EG, vecG);
             cout<<"GS enegry from ED(without Lanczos) = "<<EG<<endl;

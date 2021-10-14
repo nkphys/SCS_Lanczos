@@ -56,6 +56,10 @@ public:
     Mat_1_doub State_Sm_on_GS;
 
 
+    string RingExchange_filepath;
+    Mat_4_doub RingExchange_mat;
+
+
     //--------------Time evolution---------------//
     double Ax, Ay;
 
@@ -75,7 +79,7 @@ void Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &
 void Initialize_Opr_for_Dynamics(BASIS_1_orb_tJ &basis);
 void Get_Sm_on_GS(Mat_1_doub GS_Sz, BASIS_1_orb_tJ & _BASIS_Szm1, BASIS_1_orb_tJ & _BASIS ,int site);
 void Act_Hamil(BASIS_1_orb_tJ &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
-
+void Act_four_spin_opr(BASIS_1_orb_tJ &basis, Mat_1_string &oprs, Mat_1_int & sites, int m, int &m_new, double &sign_FM_, double_type &val_);
 
 };
 

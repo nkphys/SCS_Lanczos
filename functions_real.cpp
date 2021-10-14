@@ -678,7 +678,7 @@ void Remove_repetitions(Mat_1_int & index_array, Mat_1_doub & val_array, Mat_1_i
 
             index_array[i]=-100;
 
-           val_new_array.push_back(val);
+            val_new_array.push_back(val);
         }
     }
 
@@ -750,7 +750,7 @@ void Remove_repetitions(Mat_1_ullint & index_array, Mat_1_doub & val_array, Mat_
 
             check[i]=1;
 
-           val_new_array.push_back(val);
+            val_new_array.push_back(val);
         }
     }
 
@@ -1304,7 +1304,9 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_1_doub & vecG){
         int r=X.rows[i];
         int c=X.columns[i];
         Ham_(r,c) += X.value[i];
-        Ham_(c,r) += X.value[i];
+        if(r!=c){
+            assert(c>r);
+            Ham_(c,r) += conjugate(X.value[i]);}
     }
 
     char jobz='V';
@@ -1366,7 +1368,9 @@ void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_2_doub & vecs){
         int r=X.rows[i];
         int c=X.columns[i];
         Ham_(r,c) += X.value[i];
-        Ham_(c,r) += X.value[i];
+        if(r!=c){
+            assert(c>r);
+            Ham_(c,r) += conjugate(X.value[i]);}
     }
 
     char jobz='V';
@@ -1433,7 +1437,9 @@ void Diagonalize(Matrix_COO &X, double & EG, Mat_1_doub & vecG){
         int r=X.rows[i];
         int c=X.columns[i];
         Ham_(r,c) += X.value[i];
-        Ham_(c,r) += X.value[i];
+        if(r!=c){
+            assert(c>r);
+            Ham_(c,r) += conjugate(X.value[i]);}
     }
 
     char jobz='V';

@@ -43,13 +43,12 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
 
     unsigned long long int d;
 
-
-
     if(Basis_direclty_in_TotalSz){
 
         if(!read_basis){
             cout<<"Basis are constructed directly in the targetted Sz sector"<<endl;
 
+            if(TwoTimesSpin > 1){
             int BASE_new = Length+1;
             int Length_new = BASE;
             int index_max = pow(BASE_new,Length_new) - 1;
@@ -70,8 +69,8 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
 
             /*
      NOTE following conditions must be satisfied:
-     (1) \sum_{i=0}^{Length-1} n_{i}.i = Total_Value
-     (2) \sum_{j=0}^{BASE-1} n_{i} = Length
+     (1) \sum_{i=0}^{BASE-1} n_{i}.i = Total_Value
+     (2) \sum_{i=0}^{BASE-1} n_{i} = Length
      n_{i} is Number of sites with value = "i"
 
     We define:
@@ -155,6 +154,12 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
                     //cout<<"here 1"<<endl;
 
                 }
+            }
+
+            }
+
+            else{ //For spin 1/2, faster basis construction
+
             }
 
 

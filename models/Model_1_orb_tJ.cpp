@@ -24,7 +24,7 @@ using namespace std;
 
 void MODEL_1_orb_tJ::Act_Hamil(BASIS_1_orb_tJ &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
 
- cout<<"NOT WORKING AT PRESENT"<<endl;
+    cout<<"NOT WORKING AT PRESENT"<<endl;
 
 }
 
@@ -36,7 +36,9 @@ void MODEL_1_orb_tJ::Add_diagonal_terms(BASIS_1_orb_tJ &basis, string run_type){
     Hamil.ncols = Hamil.nrows;
 
     //Remember H[l][m]=<l|H|m>
-    int m,j;
+    int m,j, m_new;
+    double sign_FM;
+    double_type val_;
 
     double_type value;
     for (int i=0;i<basis.D_up_basis.size();i++){
@@ -84,9 +86,7 @@ void MODEL_1_orb_tJ::Add_diagonal_terms(BASIS_1_orb_tJ &basis, string run_type){
                                          ));
 
                 }
-
             }
-
         }
 
         //(Sz_local)^2 exchange
@@ -103,13 +103,55 @@ void MODEL_1_orb_tJ::Add_diagonal_terms(BASIS_1_orb_tJ &basis, string run_type){
             }
         }
 
-        if(value!=zero){
+
+
+        Mat_1_string oprs_string;
+        Mat_1_int sites_;
+        oprs_string.resize(4);sites_.resize(4);
+        for(int site_i=0;site_i<basis.Length;site_i++){
+            for(int site_j=0;site_j<basis.Length;site_j++){
+                for(int site_k=0;site_k<basis.Length;site_k++){
+                    for(int site_l=0;site_l<basis.Length;site_l++){
+                        if(abs(RingExchange_mat[site_i][site_j][site_k][site_l])>0.000001){
+
+                            //Sz[i]Sz[j]Sz[k]Sz[l]
+//                            oprs_string[0]="Sz";oprs_string[1]="Sz";
+//                            oprs_string[2]="Sz";oprs_string[3]="Sz";
+//                            sites_[0]=site_i;sites_[1]=site_j;
+//                            sites_[2]=site_k;sites_[3]=site_l;
+//                            Act_four_spin_opr(basis,oprs_string,sites_, m, m_new, sign_FM, val_);
+
+                            val_ =  (0.5*(bit_value(basis.D_up_basis[m],site_i) - bit_value(basis.D_dn_basis[m],site_i)))*
+                                    (0.5*(bit_value(basis.D_up_basis[m],site_j) - bit_value(basis.D_dn_basis[m],site_j)))*
+                                    (0.5*(bit_value(basis.D_up_basis[m],site_k) - bit_value(basis.D_dn_basis[m],site_k)))*
+                                    (0.5*(bit_value(basis.D_up_basis[m],site_l) - bit_value(basis.D_dn_basis[m],site_l)));
+
+                            //assert(m_new==m);
+                            value += val_*RingExchange_mat[site_i][site_j][site_k][site_l];
+                            //cout << m<<"   "<<value<<endl;
+
+
+                        }
+                    }
+                }
+            }
+        }
+
+
+        if(abs(value)>(abs(zero)+0.00000000001)){
             Hamil.value.push_back(value*one);
             Hamil.rows.push_back(m);
             Hamil.columns.push_back(m);
         }
 
+
+        if(m%5000==0){
+            cout<<m<<" done"<<endl;
+        }
+
     }
+
+    cout<<"Diagonal terms done"<<endl;
 
 
 }
@@ -132,6 +174,7 @@ void MODEL_1_orb_tJ::Add_connections(BASIS_1_orb_tJ &basis, string run_type){
     int l,lp;
     int nup_temp, ndn_temp;
     int N1_temp,N2_temp;
+    double_type val_, value_;
     complex<double> iota_(0.0,1.0);
 
     for (int i=0;i<basis.D_up_basis.size();i++){
@@ -173,7 +216,10 @@ void MODEL_1_orb_tJ::Add_connections(BASIS_1_orb_tJ &basis, string run_type){
                         ndn_temp = __builtin_popcount(D_dn);
                         // m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
                         //       basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
-                        m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+                        // m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+                        i_new = Find_int_in_intarray(D_up, basis.Dup_val_at_partitions);
+                        m_new = Find_int_in_part_of_intarray(D_dn, basis.D_dn_basis, basis.partitions_up[i_new],basis.partitions_up[i_new+1]-1);
 
                         N1_temp =0;
                         N2_temp =0;
@@ -219,7 +265,10 @@ void MODEL_1_orb_tJ::Add_connections(BASIS_1_orb_tJ &basis, string run_type){
                         ndn_temp = __builtin_popcount(D_dn);
                         // m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
                         //       basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
-                        m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+                        //m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+                        i_new = Find_int_in_intarray(D_up, basis.Dup_val_at_partitions);
+                        m_new = Find_int_in_part_of_intarray(D_dn, basis.D_dn_basis, basis.partitions_up[i_new],basis.partitions_up[i_new+1]-1);
 
                         N1_temp =0;
                         N2_temp =0;
@@ -273,7 +322,10 @@ void MODEL_1_orb_tJ::Add_connections(BASIS_1_orb_tJ &basis, string run_type){
 
                         nup_temp = __builtin_popcount(D_up);
                         ndn_temp = __builtin_popcount(D_dn);
-                        m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+                        //m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+                        i_new = Find_int_in_intarray(D_up, basis.Dup_val_at_partitions);
+                        m_new = Find_int_in_part_of_intarray(D_dn, basis.D_dn_basis, basis.partitions_up[i_new],basis.partitions_up[i_new+1]-1);
 
                         l=site_p;
                         lp=site;
@@ -294,18 +346,345 @@ void MODEL_1_orb_tJ::Add_connections(BASIS_1_orb_tJ &basis, string run_type){
 
             }//site_p
 
-
-
-
         } // site
 
+
+
+
+        if(m%5000==0){
+            cout<<m<<" done"<<endl;
+        }
     } // "i" i.e up_decimals
+
+    cout<<"Hoppings and SpSm connections done"<<endl;
+
+
+    Mat_1_string oprs_string;
+    Mat_1_int sites_;
+    oprs_string.resize(4);sites_.resize(4);
+    cout<<"Starting Ring-exchange terms [some terms were already done]"<<endl;
+    //Ring exchange Term : (Svec_{site1}.Svec_{site2})(Svec_{site3}.Svec_{site4})
+    for (int i=0;i<basis.D_up_basis.size();i++){
+        m=i;
+        j=i;
+        value=zero;
+
+        for(int site_i=0;site_i<basis.Length;site_i++){
+            for(int site_j=0;site_j<basis.Length;site_j++){
+                for(int site_k=0;site_k<basis.Length;site_k++){
+                    for(int site_l=0;site_l<basis.Length;site_l++){
+                        if(abs(RingExchange_mat[site_i][site_j][site_k][site_l])>0.000001){
+
+                            //0.5*Sz[i]Sz[j]Sp[k]Sm[l]
+                            oprs_string[0]="Sz";oprs_string[1]="Sz";
+                            oprs_string[2]="Sp";oprs_string[3]="Sm";
+                            sites_[0]=site_i;sites_[1]=site_j;
+                            sites_[2]=site_k;sites_[3]=site_l;
+                            Act_four_spin_opr(basis,oprs_string,sites_, m, m_new, sign_FM, val_);
+                            if(m_new>-1){ //above function gives m_new=-100, if not matrix element is 0
+                                value_ = 0.5*val_*RingExchange_mat[site_i][site_j][site_k][site_l]*sign_FM;
+                                if(m_new<m){
+                                    Hamil.value.push_back(value_);
+                                    Hamil.rows.push_back(m_new);
+                                    Hamil.columns.push_back(m);
+                                }
+                                else{
+                                    Hamil.value.push_back(conjugate(value_));
+                                    Hamil.rows.push_back(m);
+                                    Hamil.columns.push_back(m_new);
+                                }
+
+                            }
+
+
+                            //0.5*Sz[k]Sz[l]Sp[i]Sm[j]
+                            oprs_string[0]="Sz";oprs_string[1]="Sz";
+                            oprs_string[2]="Sp";oprs_string[3]="Sm";
+                            sites_[0]=site_k;sites_[1]=site_l;
+                            sites_[2]=site_i;sites_[3]=site_j;
+                            Act_four_spin_opr(basis,oprs_string,sites_, m, m_new, sign_FM, val_);
+                            if(m_new>-1){ //above function gives m_new=-100, if not matrix element is 0
+                                value_ = 0.5*val_*RingExchange_mat[site_i][site_j][site_k][site_l]*sign_FM;
+                                if(m_new<m){
+                                    Hamil.value.push_back(value_);
+                                    Hamil.rows.push_back(m_new);
+                                    Hamil.columns.push_back(m);
+                                }
+                                else{
+                                    Hamil.value.push_back(conjugate(value_));
+                                    Hamil.rows.push_back(m);
+                                    Hamil.columns.push_back(m_new);
+                                }
+
+                            }
+
+
+                            //0.25*Sp[i]Sm[j]Sp[k]Sm[l]
+                            oprs_string[0]="Sp";oprs_string[1]="Sm";
+                            oprs_string[2]="Sp";oprs_string[3]="Sm";
+                            sites_[0]=site_i;sites_[1]=site_j;
+                            sites_[2]=site_k;sites_[3]=site_l;
+                            Act_four_spin_opr(basis,oprs_string,sites_, m, m_new, sign_FM, val_);
+                            if(m_new>-1){ //above function gives m_new=-100, if not matrix element is 0
+                                value_ = 0.25*val_*RingExchange_mat[site_i][site_j][site_k][site_l]*sign_FM;
+                                if(m_new<m){
+                                    Hamil.value.push_back(value_);
+                                    Hamil.rows.push_back(m_new);
+                                    Hamil.columns.push_back(m);
+                                }
+                                else{
+                                    Hamil.value.push_back(conjugate(value_));
+                                    Hamil.rows.push_back(m);
+                                    Hamil.columns.push_back(m_new);
+                                }
+
+                            }
+
+
+                            //0.25*Sp[i]Sm[j]Sp[l]Sm[k]
+                            oprs_string[0]="Sp";oprs_string[1]="Sm";
+                            oprs_string[2]="Sp";oprs_string[3]="Sm";
+                            sites_[0]=site_i;sites_[1]=site_j;
+                            sites_[2]=site_l;sites_[3]=site_k;
+                            Act_four_spin_opr(basis,oprs_string,sites_, m, m_new, sign_FM, val_);
+                            if(m_new>-1){ //above function gives m_new=-100, if not matrix element is 0
+                                value_ = 0.25*val_*RingExchange_mat[site_i][site_j][site_k][site_l]*sign_FM;
+                                if(m_new<m){
+                                    Hamil.value.push_back(value_);
+                                    Hamil.rows.push_back(m_new);
+                                    Hamil.columns.push_back(m);
+                                }
+                                else{
+                                    Hamil.value.push_back(conjugate(value_));
+                                    Hamil.rows.push_back(m);
+                                    Hamil.columns.push_back(m_new);
+                                }
+
+                            }
+
+
+
+                        }
+                    }
+                }
+            }
+        }
+
+        if(m%5000==0){
+            cout<<m<<" done"<<endl;
+        }
+
+
+    }
+
+
+    cout<<"Ring-Exchange connections done"<<endl;
+
+
+
 
 }
 
 
-void MODEL_1_orb_tJ::Read_parameters(BASIS_1_orb_tJ &basis, string filename){
 
+void MODEL_1_orb_tJ::Act_four_spin_opr(BASIS_1_orb_tJ &basis, Mat_1_string &oprs, Mat_1_int & sites, int m, int &m_new, double &sign_FM_, double_type &val_){
+
+    //HERE
+    assert(oprs.size()==4);
+
+    int m_temp, i_new;
+    int sign_pow_up, sign_pow_dn;
+    double sign_FM_temp;
+    int D_up, D_dn, D_up_temp, D_dn_temp;
+    int l, lp;
+
+    int i1_, i2_,i3_,i4_;
+    i1_=sites[0];i2_=sites[1];
+    i3_=sites[2];i4_=sites[3];
+
+
+    //Sz[i1_]Sz[i2_]Sz[i3_]Sz[i4_]
+    if(oprs[0]=="Sz" && oprs[1]=="Sz" && oprs[2]=="Sz" && oprs[3]=="Sz"){
+        if(
+                ((bit_value(basis.D_dn_basis[m],i1_)==1)
+                 ||
+                 (bit_value(basis.D_up_basis[m],i1_)==1)
+                 )
+                &&
+                ((bit_value(basis.D_up_basis[m],i2_)==1)
+                 ||
+                 (bit_value(basis.D_dn_basis[m],i2_)==1)
+                 )
+                &&
+                ((bit_value(basis.D_up_basis[m],i3_)==1)
+                 ||
+                 (bit_value(basis.D_dn_basis[m],i3_)==1)
+                 )
+                &&
+                ((bit_value(basis.D_up_basis[m],i4_)==1)
+                 ||
+                 (bit_value(basis.D_dn_basis[m],i4_)==1)
+                 )
+                )
+        {
+
+
+            //        nup_temp = __builtin_popcount(D_up);
+            //        ndn_temp = __builtin_popcount(D_dn);
+            //m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+            m_new=m;
+            sign_FM_ = 1.0;
+
+            val_ = (0.5*(bit_value(basis.D_up_basis[m],i1_) - bit_value(basis.D_dn_basis[m],i1_)))*
+                    (0.5*(bit_value(basis.D_up_basis[m],i2_) - bit_value(basis.D_dn_basis[m],i2_)))*
+                    (0.5*(bit_value(basis.D_up_basis[m],i3_) - bit_value(basis.D_dn_basis[m],i3_)))*
+                    (0.5*(bit_value(basis.D_up_basis[m],i4_) - bit_value(basis.D_dn_basis[m],i4_)));
+            //cout<<"Here"<<endl;
+
+        }
+        else{
+            m_new=-100;
+        }
+
+    }
+
+
+
+    //Sz[i1_]Sz[i2_]Sp[i3_]Sm[i4_]
+    if(oprs[0]=="Sz" && oprs[1]=="Sz" && oprs[2]=="Sp" && oprs[3]=="Sm"){
+        if(
+                ((bit_value(basis.D_dn_basis[m],i1_)==1)
+                 ||
+                 (bit_value(basis.D_up_basis[m],i1_)==1)
+                 )
+                &&
+                ((bit_value(basis.D_up_basis[m],i2_)==1)
+                 ||
+                 (bit_value(basis.D_dn_basis[m],i2_)==1)
+                 )
+                &&
+                ((bit_value(basis.D_up_basis[m],i3_)==0)
+                 &&
+                 (bit_value(basis.D_dn_basis[m],i3_)==1)
+                 )
+                &&
+                ((bit_value(basis.D_up_basis[m],i4_)==1)
+                 &&
+                 (bit_value(basis.D_dn_basis[m],i4_)==0)
+                 )
+                )
+        {
+
+            D_up = (int) (basis.D_up_basis[m] - pow(2,i4_)
+                          + pow(2,i3_) );
+            D_dn = (int) (basis.D_dn_basis[m] + pow(2,i4_)
+                          - pow(2,i3_) );
+
+            //        nup_temp = __builtin_popcount(D_up);
+            //        ndn_temp = __builtin_popcount(D_dn);
+            //m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+            i_new = Find_int_in_intarray(D_up, basis.Dup_val_at_partitions);
+            m_new = Find_int_in_part_of_intarray(D_dn, basis.D_dn_basis, basis.partitions_up[i_new],basis.partitions_up[i_new+1]-1);
+
+            l=i3_;
+            lp=i4_;
+
+            sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[m]);
+            sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[m]);
+            sign_FM_ = pow(-1.0, sign_pow_up + sign_pow_dn+1);
+
+            val_ = (0.5*(bit_value(basis.D_up_basis[m],i1_) - bit_value(basis.D_dn_basis[m],i1_)))*
+                    (0.5*(bit_value(basis.D_up_basis[m],i2_) - bit_value(basis.D_dn_basis[m],i2_)));
+            //assert(m_new<m);
+
+            //        Hamil.value.push_back(sign_FM*(0.5*(Jpm_Exchange_mat[site_p][site]))*one);
+            //        Hamil.rows.push_back(m_new);
+            //        Hamil.columns.push_back(m);
+
+        }
+        else{
+            m_new=-100;
+        }
+
+    }
+
+
+
+    //Sp[i1_]Sm[i2_]Sp[i3_]Sm[i4_]
+    if(oprs[0]=="Sp" && oprs[1]=="Sm" && oprs[2]=="Sp" && oprs[3]=="Sm"){
+        if(
+                ((bit_value(basis.D_up_basis[m],i1_)==0)
+                 &&
+                 (bit_value(basis.D_dn_basis[m],i1_)==1)
+                 )
+                &&
+                ((bit_value(basis.D_up_basis[m],i2_)==1)
+                 &&
+                 (bit_value(basis.D_dn_basis[m],i2_)==0)
+                 )
+                &&
+                ((bit_value(basis.D_up_basis[m],i3_)==0)
+                 &&
+                 (bit_value(basis.D_dn_basis[m],i3_)==1)
+                 )
+                &&
+                ((bit_value(basis.D_up_basis[m],i4_)==1)
+                 &&
+                 (bit_value(basis.D_dn_basis[m],i4_)==0)
+                 )
+                )
+        {
+
+            D_up = (int) (basis.D_up_basis[m]
+                          - pow(2,i2_) + pow(2,i1_)
+                          - pow(2,i4_) + pow(2,i3_) );
+            D_dn = (int) (basis.D_dn_basis[m]
+                          + pow(2,i2_) - pow(2,i1_)
+                          + pow(2,i4_) - pow(2,i3_) );
+
+            i_new = Find_int_in_intarray(D_up, basis.Dup_val_at_partitions);
+            m_new = Find_int_in_part_of_intarray(D_dn, basis.D_dn_basis, basis.partitions_up[i_new],basis.partitions_up[i_new+1]-1);
+
+
+
+
+            //sign for i3,i4-----------------
+            D_up_temp = (int) (basis.D_up_basis[m]
+                               - pow(2,i4_) + pow(2,i3_) );
+            D_dn_temp = (int) (basis.D_dn_basis[m]
+                               + pow(2,i4_) - pow(2,i3_) );
+            l=i3_;
+            lp=i4_;
+            sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[m]);
+            sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[m]);
+            sign_FM_temp = pow(-1.0, sign_pow_up + sign_pow_dn+1);
+            //-------------------------
+
+
+            //sign for i1,i2----------------
+            l=i1_;
+            lp=i2_;
+            sign_pow_up = one_bits_in_bw(l,lp,D_up_temp);
+            sign_pow_dn = one_bits_in_bw(l,lp,D_dn_temp);
+            sign_FM_ = sign_FM_temp*pow(-1.0, sign_pow_up + sign_pow_dn+1);
+            //-------------------------------
+
+
+            val_ =1.0;
+
+        }
+        else{
+            m_new=-100;
+        }
+
+    }
+
+
+}
+
+void MODEL_1_orb_tJ::Read_parameters(BASIS_1_orb_tJ &basis, string filename){
 
 
     string filepath = filename;
@@ -336,6 +715,9 @@ void MODEL_1_orb_tJ::Read_parameters(BASIS_1_orb_tJ &basis, string filename){
     string fourpointobservablessitesfile_ ,FourPointObservablesSitesFile_ = "FourPointObservablesSites file = ";
 
     string no_of_onepoint_obs_, No_Of_Onepoint_Obs_ = "No_of_onepoint_obs = ";
+
+
+    string RingExchangeFile_ = "RingExchange_file = ";
 
     int offset;
     string line;
@@ -372,6 +754,8 @@ void MODEL_1_orb_tJ::Read_parameters(BASIS_1_orb_tJ &basis, string filename){
             if ((offset = line.find(LongRangeExchangePMfile_, 0)) != string::npos) {
                 LongRangeExchangePMfilepath = line.substr (offset+LongRangeExchangePMfile_.length());  }
 
+            if ((offset = line.find(RingExchangeFile_, 0)) != string::npos) {
+                RingExchange_filepath = line.substr (offset+RingExchangeFile_.length());  }
 
             if ((offset = line.find(LongRangeHopping_, 0)) != string::npos) {
                 longrangehopping_ = line.substr (offset+LongRangeHopping_.length());  }
@@ -599,6 +983,37 @@ void MODEL_1_orb_tJ::Read_parameters(BASIS_1_orb_tJ &basis, string filename){
 
         Four_point_sites_set.push_back(Tetra_int_temp);
         // process pair (a,b)
+    }
+
+
+
+    RingExchange_mat.resize(basis.Length);
+    for(int i =0;i<basis.Length;i++){
+        RingExchange_mat[i].resize(basis.Length);
+        for(int j =0;j<basis.Length;j++){
+            RingExchange_mat[i][j].resize(basis.Length);
+            for(int k =0;k<basis.Length;k++){
+                RingExchange_mat[i][j][k].resize(basis.Length);
+                for(int l =0;l<basis.Length;l++){
+                    RingExchange_mat[i][j][k][l]=0.0;
+                }
+            }
+        }
+    }
+
+
+
+    ifstream input_RingExchange(RingExchange_filepath.c_str());
+
+    string line_temp;
+    int i1, i2, i3, i4;
+    double value_temp;
+
+    while(getline(input_RingExchange, line_temp)){
+        stringstream line_temp_ss(line_temp);
+        line_temp_ss >> i1 >> i2 >> i3 >> i4>>value_temp;
+        //cout<< i1<<"  "<<i2<<"  "<<i3<<"  "<<i4<<"  "<<value_temp<<endl;
+        RingExchange_mat[i1][i2][i3][i4]=value_temp;
     }
 
 
@@ -833,7 +1248,10 @@ void MODEL_1_orb_tJ::Initialize_one_point_to_calculate_from_file(BASIS_1_orb_tJ 
                         ndn_temp = __builtin_popcount(D_dn);
                         // m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
                         //       basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
-                        m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+                        //m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+                        i_new = Find_int_in_intarray(D_up, basis.Dup_val_at_partitions);
+                        m_new = Find_int_in_part_of_intarray(D_dn, basis.D_dn_basis, basis.partitions_up[i_new],basis.partitions_up[i_new+1]-1);
 
                         N1_temp =0;
                         N2_temp =0;
@@ -881,7 +1299,10 @@ void MODEL_1_orb_tJ::Initialize_one_point_to_calculate_from_file(BASIS_1_orb_tJ 
                         ndn_temp = __builtin_popcount(D_dn);
                         // m_new = Find_commont_int(basis.D_up_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]],
                         //       basis.D_dn_reverse[ndn_temp][D_dn-basis.D_dn_min[ndn_temp]]);
-                        m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+                        //m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+                        i_new = Find_int_in_intarray(D_up, basis.Dup_val_at_partitions);
+                        m_new = Find_int_in_part_of_intarray(D_dn, basis.D_dn_basis, basis.partitions_up[i_new],basis.partitions_up[i_new+1]-1);
 
                         N1_temp =0;
                         N2_temp =0;
@@ -1057,7 +1478,10 @@ void MODEL_1_orb_tJ::Initialize_two_point_operator_sites_specific(string opr_typ
 
                 nup_temp = __builtin_popcount(D_up);
                 ndn_temp = __builtin_popcount(D_dn);
-                m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+                //m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+                i_new = Find_int_in_intarray(D_up, basis.Dup_val_at_partitions);
+                m_new = Find_int_in_part_of_intarray(D_dn, basis.D_dn_basis, basis.partitions_up[i_new],basis.partitions_up[i_new+1]-1);
 
                 l= site;
                 lp= site2;
@@ -1120,7 +1544,10 @@ void MODEL_1_orb_tJ::Initialize_two_point_operator_sites_specific(string opr_typ
 
                 nup_temp = __builtin_popcount(D_up);
                 ndn_temp = __builtin_popcount(D_dn);
-                m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+                //m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+
+                i_new = Find_int_in_intarray(D_up, basis.Dup_val_at_partitions);
+                m_new = Find_int_in_part_of_intarray(D_dn, basis.D_dn_basis, basis.partitions_up[i_new],basis.partitions_up[i_new+1]-1);
 
                 l= site2;
                 lp= site;
@@ -1192,7 +1619,7 @@ void MODEL_1_orb_tJ::Get_Sm_on_GS(Mat_1_doub GS_Sz, BASIS_1_orb_tJ & _BASIS_Szm1
 
 
     int D_dn_new, D_up_new;
-    int m_new;
+    int m_new, i_new;
     int nup_temp, ndn_temp;
     int N1_temp;
 
@@ -1208,7 +1635,7 @@ void MODEL_1_orb_tJ::Get_Sm_on_GS(Mat_1_doub GS_Sz, BASIS_1_orb_tJ & _BASIS_Szm1
              &&
              ( (bit_value(_BASIS.D_dn_basis[i], site)) == 0)
 
-                ){
+             ){
 
             D_up_new = (int) (_BASIS.D_up_basis[i] - pow(2, site));
             D_dn_new = (int) (_BASIS.D_dn_basis[i] + pow(2, site));
@@ -1216,12 +1643,14 @@ void MODEL_1_orb_tJ::Get_Sm_on_GS(Mat_1_doub GS_Sz, BASIS_1_orb_tJ & _BASIS_Szm1
             nup_temp = __builtin_popcount(D_up_new);
             ndn_temp = __builtin_popcount(D_dn_new);
 
-            m_new = _BASIS_Szm1.D_updn_reverse[nup_temp][D_up_new-_BASIS_Szm1.D_up_min[nup_temp]][D_dn_new-_BASIS_Szm1.D_dn_min[ndn_temp]];
+            //m_new = _BASIS_Szm1.D_updn_reverse[nup_temp][D_up_new-_BASIS_Szm1.D_up_min[nup_temp]][D_dn_new-_BASIS_Szm1.D_dn_min[ndn_temp]];
+            i_new = Find_int_in_intarray(D_up_new, _BASIS_Szm1.Dup_val_at_partitions);
+            m_new = Find_int_in_part_of_intarray(D_dn_new, _BASIS_Szm1.D_dn_basis, _BASIS_Szm1.partitions_up[i_new], _BASIS_Szm1.partitions_up[i_new+1]-1);
 
             N1_temp = bit_value(D_up_new,site) +
                     bit_value(D_dn_new, site);
 
-//---------------------
+            //---------------------
             assert(N1_temp==1);
 
             assert(m_new<_BASIS_Szm1.D_up_basis.size());
