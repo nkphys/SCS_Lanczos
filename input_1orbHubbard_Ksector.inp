@@ -6,16 +6,16 @@ Lx = 4
 Ly = 4
 Momentum_nx = 0
 Momentum_ny = 0
-Ndown = 2
-Nup = 2
-Hopping_NN = 0.5
+Ndown = 8
+Nup = 8
+Hopping_NN = 0.0
 
 U = 10.0
 H_mag = 0
 
 File_Onsite_Energies = false somefile
-File_Hopping_Connections = Hoppings_Kspace.txt
-File_NonLocal_Int_Connections = Interactions_SNAKE3_6X4_OBCXPBC.txt
+File_Hopping_Connections = Hopping.txt
+File_NonLocal_Int_Connections = Interactions.txt
 
 
 File_Three_Point_Observation = ThreePointOprs.txt

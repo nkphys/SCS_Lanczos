@@ -2,41 +2,34 @@ Geometry = LongRange
 Model = 1_orb_Hubbard_chain
 ------------------------------------------
 PBC = true
-Length_X = 4
-Length_Y = 4
-Total_Sites = 16
-Ndown = 8
-Nup = 8
+Length_X = 2000
+Length_Y = 1000
+Total_Sites = 2
+Ndown = 1
+Nup = 1
  
 Hopping = 1.0
 Hopping_NN = 0.0
-U = 12.0
-H_mag = 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-File_Onsite_Energies = false pinning_ener.txt
-File_Hopping_Connections = Hopping.txt
-File_NonLocal_Int_Connections = Interactions.txt
-
-File_Three_Point_Observation = ThreePointOprs.txt
-File_Three_Point_Interaction = ThreePointIntrs.txt
+U = 10.0
+H_mag = 0
+File_Onsite_Energies = false onsite_ener.txt
+File_Hopping_Connections = Hoppings_L2.txt
+File_NonLocal_Int_Connections = Interactions_L2.txt
 ----------------------------------------
 -------------------------------------
-Saving_Hamiltonian_and_Oprs = true
-Random_seed_generator = 564
----------------------------------------------
-Lanc_Error = -10e-12
-max_steps = 150
+Lanc_Error = 10e-10
+max_steps = 200
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = true
-get_overlap_bw_eigstates_and_K_vecs = true
-lanczos_reorthogonalization = true
+save_all_Krylov_space_vecs = tru
+get_overlap_bw_eigstates_and_K_vecs = false
+lanczos_reorthogonalization = false
 Get_Full_Spectrum = true
 need_few_eig_vecs = true
-few = 2
+few = 6
 ----------------------------------------
 Get_overlap_with_basis = false
-States_to_look = 2 0 1
-# 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
-overlap_out_file = out1.txt
+States_to_look = 1 0
+overlap_out_file = out0.txt
 calculate_local_obs_for_states_to_look = false
 calculate_local_obs_for_states_to_look_for_first_n_basis = 100
 file_out_local_obs_for_states_to_look = local_obs_for_state_no
@@ -53,7 +46,7 @@ Opr_for_Dynamics = J
 Momentum_resolved = false
 k = 0.4
 file_dynamics_out = orb0_up_site1
-Dynamics_dos_operators = 1 1.0 0.0 0 1 1
+Dynamics_dos_operators = 1 1.0 0 1 1
 ---------------------------------
 
 ---------------------------------------------------
@@ -69,4 +62,5 @@ Number_of_LowKrylov_States_used = 100
 Temperature = 0.2
 
 
-Processors = 1
+Processors = 8
+

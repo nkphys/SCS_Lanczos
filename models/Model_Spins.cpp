@@ -45,7 +45,7 @@ void MODEL_Spins::Add_diagonal_terms(BASIS_Spins &basis){
 
         //magnetic Field in Z-direction
         for(int site=0;site<basis.Length;site++){
-            value+=one*(H_field[2])*
+            value+=one*(H_field[site])*
                     ( ( (1.0*value_at_pos(i, site, basis.BASE)) - (0.5*basis.TwoTimesSpin)) );
         }
 
@@ -242,15 +242,18 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
 
 
 
+    cout<<"Magnetic field :"<<endl;
     double temp_h;
     stringstream hmag_stream;
     hmag_stream<<hmag;
     H_field.clear();
-    H_field.resize(3); //Hx, Hy, Hz
-    for(int i=0;i<3;i++){
+    H_field.resize(basis.Length); //Hz
+    for(int i=0;i<basis.Length;i++){
         hmag_stream >> temp_h;
         H_field[i]=temp_h;
+        cout<<H_field[i]<<" ";
     }
+    cout<<endl;
 
 
     double temp_anis;

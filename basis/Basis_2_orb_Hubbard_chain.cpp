@@ -38,25 +38,37 @@ void BASIS_2_orb_Hubb_chain::Construct_basis(){
     }
 
 
+
+    DdnMax_ = d_dn_max;
+    DdnMin_ = d_dn_min;
+    DupMax_ = d_up_max;
+    DupMin_ = d_up_min;
+
     //putting correct D_'s in the D arrays
     int num;
     D_up_basis.clear();
+    inverse_Dup.resize(d_up_max-d_up_min+1);
+    int temp_i=0;
     for(int d=d_up_min;d<=d_up_max;d++){
         num= __builtin_popcount (d);
         if(num == Nup){
+            inverse_Dup[d-d_up_min]=temp_i;
             D_up_basis.push_back(d);
+            temp_i++;
         }
-
     }
 
 
     D_dn_basis.clear();
+    inverse_Ddn.resize(d_dn_max-d_dn_min+1);
+    temp_i=0;
     for(int d=d_dn_min;d<=d_dn_max;d++){
         num= __builtin_popcount (d);
         if(num== Ndn){
+            inverse_Ddn[d-d_dn_min]=temp_i;
             D_dn_basis.push_back(d);
+            temp_i++;
         }
-
     }
 
 

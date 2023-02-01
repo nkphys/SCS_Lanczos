@@ -1,9 +1,9 @@
 Model = 1_orb_tJ
 ------------------------------------------
 PBC = false
-Length = 16
-Ndown = 8
-Nup = 8
+Length = 4
+Ndown = 2
+Nup = 2
 
 Hopping NN = -1.0
 U = 0
@@ -12,11 +12,11 @@ LongRangeHopping = true
 LongRangeInteraction = true
 LongRangeExchangeZZ = true
 LongRangeExchangePM = true
-LongRangeHopping file = hopping.txt
-LongRangeInteraction file = denden.txt
-LongRangeExchangeZZ file = Jzz.txt
-LongRangeExchangePM file = Jpm.txt
-RingExchange_file = Ring_Exchange.txt
+LongRangeHopping file = hopping_longrange_4x4_YCn_PBC.txt
+LongRangeInteraction file = denden_longrange_4x4_YCn_PBC.txt
+LongRangeExchangeZZ file = Jzz_longrange_4x4_YCn_PBC.txt
+LongRangeExchangePM file = Jpm_longrange_4x4_YCn_PBC.txt
+RingExchange_file = Ring_Exchange_4x4_YCn_PBC.txt
 ----------------------------------------
 Saving_Hamiltonian_and_Oprs = true
 Random_seed_generator = 31

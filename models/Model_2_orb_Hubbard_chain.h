@@ -67,6 +67,11 @@ public:
     Mat_1_doub State_c_on_GS;
     Mat_1_doub State_cdagger_on_GS;
 
+    bool LongRange;
+
+    Mat_2_doub Tmat;
+    Mat_2_real DenDenInt;
+    Mat_2_real HundsInt;
 
     void Create_STATES_OS_TS_DIAGONAL_HOLES(BASIS_2_orb_Hubb_chain &basis,
                                             BASIS_2_orb_Hubb_chain &basis_nm2,
@@ -101,7 +106,11 @@ public:
     void Read_parameters_for_dynamics(string filename);
     void Add_diagonal_terms(BASIS_2_orb_Hubb_chain &basis);
     void Add_non_diagonal_terms(BASIS_2_orb_Hubb_chain &basis);
+    void Add_non_diagonal_termsLongRange(BASIS_2_orb_Hubb_chain &basis);
     void Add_connections(BASIS_2_orb_Hubb_chain &basis);
+    void Choose_connectionsType(BASIS_2_orb_Hubb_chain &basis);
+    void Choose_non_diagonal_Int_Type(BASIS_2_orb_Hubb_chain &basis);
+    void Add_connectionsLongRange(BASIS_2_orb_Hubb_chain &basis);
 
 
     void Initialize_macro_oprs_to_calculate(BASIS_2_orb_Hubb_chain &basis);

@@ -19,7 +19,11 @@ public:
     Mat_1_int D_up_basis;
     Mat_1_int D_dn_basis;
 
+    int DupMax_, DupMin_;
+    int DdnMax_, DdnMin_;
 
+    Mat_1_int inverse_Dup;
+    Mat_1_int inverse_Ddn;
 
 void Construct_basis();
 void clear();

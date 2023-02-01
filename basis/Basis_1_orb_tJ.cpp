@@ -19,6 +19,7 @@ void BASIS_1_orb_tJ::Construct_basis(){
     //Calculating min and max decimal_{up,dn}
 
 
+    cout<<"here"<<endl;
 
     //putting correct D_'s in the D arrays
     int numup, numdn;

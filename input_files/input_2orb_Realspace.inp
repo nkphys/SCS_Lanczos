@@ -1,31 +1,24 @@
 Model = 2_orb_Hubbard_chain
-Geometry = LongRange
 ------------------------------------------
 PBC = true
 Length = 8
-Ndown = 3
-Nup = 3
+Ndown = 8
+Nup = 8
 CFS = 0.0 0.0
 
-LongRangeHopping_matrix_file = Hopp_file.txt
-LongRangeDenDenInt_matrix_file = DenDenInt_file.txt
-LongRangeHundsInt_matrix_file = HundsInt_file.txt
-
-
-Hopping_mat[0][orb] = 1.0 0.0
-Hopping_mat[1][orb] = 0.0 1.0
-#Remember if comlex, the hoppings should be written with (x,y) format
-U = 755.238
-JHund = 2.5
-Uprime = 5.0
+Hopping_mat[0][orb] = (1,0.) (0.0,0)
+Hopping_mat[1][orb] = (0.0,0) (1,0)
+U = 0
+JHund = 0
+Uprime = 0
 Dz_Anisotropy = 0.0
 H_mag = 0
 ----------------------------------------
 Saving_Hamiltonian_and_Oprs = true
 Random_seed_generator = 564
 --------------------------------------
-Lanc_Error = 10e-10
-max_steps = 200
+Lanc_Error = -10e-10
+max_steps = 100
 file_eval_spectrum = out0.txt
 save_all_Krylov_space_vecs = false
 get_overlap_bw_eigstates_and_K_vecs = false
@@ -53,13 +46,24 @@ file_out_local_obs_for_states_to_look = local_obs_for_state_no
 
 -------------------------
 Variational_state_contruction = AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0
+
+
 #AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 0
-#AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0 #AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0
+
+
+#AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0 
+
+
+
+#AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0
+
 #AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0 
 #AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 0
 #AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0
 #AC S NOS1 6 7 AC S NOS2 7 0
 -------------------------
+
+
 
 ----------------------------------
 Perform_Dynamics = false

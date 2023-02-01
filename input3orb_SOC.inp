@@ -2,28 +2,28 @@ Model = 3_orb_Hubbard_chain_GC
 Restricted_Basis = false
 Restriction_on_local_occupations = 3 3 4 5
 ------------------------------------------
-PBC = true
-Length = 4
-N_Total = 16
-CFS = 0.0 0.0 0.0
+PBC = false
+Length = 2
+N_Total = 8
+CFS = 0.0 0.0 -0.721
 
-USE_LONG_RANGE_HOPPINGS = false
-LongRangeHopping_file = 2_site.dat
+USE_LONG_RANGE_HOPPINGS = true
+LongRangeHopping_file = 2_site_hopp_3orb_OsCl4.txt
 
-Hopping_mat[0][orb] = -1.0 0.0 0.0
-Hopping_mat[1][orb] = 0.0 -1.0 0.0
-Hopping_mat[2][orb] = 0.0 0.0 -1.0
-U = 40.0
-JHund = 10.0
-Uprime = 20.0
+Hopping_mat[0][orb] = 1 0 0 
+Hopping_mat[1][orb] = 0 1 0
+Hopping_mat[2][orb] = 0 0 1
+U = 2
+JHund = 0.4
+Uprime = 1.2
 H_mag = 0
-lambda_SOC = 0.46
+lambda_SOC = 0.0
 ----------------------------------------
 Saving_Hamiltonian_and_Oprs = true
 Random_seed_generator = 321
 --------------------------------------
 Lanc_Error = 10e-10
-max_steps = 1000
+max_steps = 300
 file_eval_spectrum = Tri_evals_OBC_GC.txt
 save_all_Krylov_space_vecs = false
 get_overlap_bw_eigstates_and_K_vecs = false

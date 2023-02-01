@@ -28,9 +28,6 @@
 
 
 
-
-
-
 int main(int argc, char** argv){
 
 
@@ -532,7 +529,7 @@ int main(int argc, char** argv){
         _MODEL.Add_non_diagonal_terms(_BASIS);
         _MODEL.Add_connections(_BASIS);
 
-        Print_Matrix_COO(_MODEL.Hamil);
+        //Print_Matrix_COO(_MODEL.Hamil);
 
         LANCZOS<BASIS_Spins, MODEL_Spins> _LANCZOS(_BASIS, _MODEL);
         _LANCZOS.Dynamics_performed=false;
@@ -551,28 +548,46 @@ int main(int argc, char** argv){
         cout<<"Dynamics startedXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
 
         if(Do_Dynamics){
+            MODEL_Spins _MODEL2;
+            BASIS_Spins _BASIS2;
+
+            _MODEL2.Read_parameters(_BASIS2, inp_filename);
+            _BASIS2.Construct_basis();
+
+            for(int i=0;i<_BASIS2.Length;i++){
+                _MODEL2.H_field[i]=0.0;
+            }
+
+            _MODEL2.Add_diagonal_terms(_BASIS2);
+            _MODEL2.Add_non_diagonal_terms(_BASIS2);
+            _MODEL2.Add_connections(_BASIS2);
+
 
             int site_=0;
-            _MODEL.Read_parameters_for_dynamics(inp_filename);
+            _MODEL2.Read_parameters_for_dynamics(inp_filename);
 
-            LANCZOS<BASIS_Spins, MODEL_Spins> _LANCZOS_Dynamics(_BASIS, _MODEL);
+            LANCZOS<BASIS_Spins, MODEL_Spins> _LANCZOS_Dynamics(_BASIS2, _MODEL2);
             _LANCZOS_Dynamics.Dynamics_performed=true;
             _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
             _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
             _LANCZOS_Dynamics.GS_energy=_LANCZOS.GS_energy;
-
-            if(!_MODEL.Dyn_Momentum_Resolved){
-                _MODEL.Initialize_Opr_for_Dynamics(_BASIS, site_);}
-            else{
-                _MODEL.Initialize_Opr_for_Dynamics(_BASIS);
+            for(int i=0;i<_BASIS2.Length;i++){
+                _LANCZOS_Dynamics.GS_energy += abs(_MODEL.H_field[i])*0.5;
             }
 
-            _LANCZOS_Dynamics.Get_Dynamics_seed(_MODEL.Dyn_opr);
+
+            if(!_MODEL2.Dyn_Momentum_Resolved){
+                _MODEL2.Initialize_Opr_for_Dynamics(_BASIS2, site_);}
+            else{
+                _MODEL2.Initialize_Opr_for_Dynamics(_BASIS2);
+            }
+
+            _LANCZOS_Dynamics.Get_Dynamics_seed(_MODEL2.Dyn_opr);
 
             cout<<"size of seed = "<<_LANCZOS_Dynamics.Dynamics_seed.size()<<endl;
             _LANCZOS_Dynamics.omega_sign=1.0;
             _LANCZOS_Dynamics.file_dynamics_out = _LANCZOS_Dynamics.file_dynamics_out +".txt";
-            _LANCZOS_Dynamics.Perform_LANCZOS(_MODEL.Hamil);
+            _LANCZOS_Dynamics.Perform_LANCZOS(_MODEL2.Hamil);
 
             //-----------------------
 
@@ -1357,6 +1372,8 @@ int main(int argc, char** argv){
 
         //---------------------------------------
 
+        DO_FULL_DIAGONALIZATION=false;
+
         _MODEL.Read_parameters(_BASIS, inp_filename);
         _BASIS.Construct_basis();
         _MODEL.Add_diagonal_terms(_BASIS);
@@ -1466,8 +1483,8 @@ int main(int argc, char** argv){
     if (model_name=="2_orb_Hubbard_chain") {
 
 
-        bool Hole_Quasiparticle_weight=true;
-        bool Dynamics_SPDOS = true;
+        bool Hole_Quasiparticle_weight=false;
+        bool Dynamics_SPDOS = false;
         bool Above_mu = true;
         bool Below_mu= true;
 
@@ -1490,7 +1507,8 @@ int main(int argc, char** argv){
 
         _MODEL.Add_diagonal_terms(_BASIS);
         _MODEL.Add_non_diagonal_terms(_BASIS);
-        _MODEL.Add_connections(_BASIS);
+        _MODEL.Choose_non_diagonal_Int_Type(_BASIS);
+        _MODEL.Choose_connectionsType(_BASIS);
 
 
 
@@ -1564,6 +1582,7 @@ int main(int argc, char** argv){
                 opr_type_.push_back("SzSz");
                 opr_type_.push_back("SpSm");
                 opr_type_.push_back("SmSp");
+                opr_type_.push_back("nn");
 
                 Mat_2_doub Corr_;
                 Corr_.resize(_BASIS.Length);
@@ -1571,7 +1590,7 @@ int main(int argc, char** argv){
                     Corr_[site1].resize(_BASIS.Length);
                 }
 
-                for(int type=0;type<3;type++){
+                for(int type=0;type<opr_type_.size();type++){
                     sum_=0.0;
                     cout<<opr_type_[type]<<": "<<endl;
 

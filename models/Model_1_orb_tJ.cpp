@@ -115,11 +115,11 @@ void MODEL_1_orb_tJ::Add_diagonal_terms(BASIS_1_orb_tJ &basis, string run_type){
                         if(abs(RingExchange_mat[site_i][site_j][site_k][site_l])>0.000001){
 
                             //Sz[i]Sz[j]Sz[k]Sz[l]
-//                            oprs_string[0]="Sz";oprs_string[1]="Sz";
-//                            oprs_string[2]="Sz";oprs_string[3]="Sz";
-//                            sites_[0]=site_i;sites_[1]=site_j;
-//                            sites_[2]=site_k;sites_[3]=site_l;
-//                            Act_four_spin_opr(basis,oprs_string,sites_, m, m_new, sign_FM, val_);
+                            //                            oprs_string[0]="Sz";oprs_string[1]="Sz";
+                            //                            oprs_string[2]="Sz";oprs_string[3]="Sz";
+                            //                            sites_[0]=site_i;sites_[1]=site_j;
+                            //                            sites_[2]=site_k;sites_[3]=site_l;
+                            //                            Act_four_spin_opr(basis,oprs_string,sites_, m, m_new, sign_FM, val_);
 
                             val_ =  (0.5*(bit_value(basis.D_up_basis[m],site_i) - bit_value(basis.D_dn_basis[m],site_i)))*
                                     (0.5*(bit_value(basis.D_up_basis[m],site_j) - bit_value(basis.D_dn_basis[m],site_j)))*
@@ -162,6 +162,8 @@ void MODEL_1_orb_tJ::Add_non_diagonal_terms(BASIS_1_orb_tJ &basis){
 
 void MODEL_1_orb_tJ::Add_connections(BASIS_1_orb_tJ &basis, string run_type){
 
+
+    bool Ring_Exchange_transverse_terms = true;
     string time_evolution_type= "pump_probe_tJ_Ladder";
     double_type phase;
     double_type value;
@@ -336,6 +338,8 @@ void MODEL_1_orb_tJ::Add_connections(BASIS_1_orb_tJ &basis, string run_type){
 
                         assert(m_new<m);
 
+
+                        //sign_FM=1.0;
                         Hamil.value.push_back(sign_FM*(0.5*(Jpm_Exchange_mat[site_p][site]))*one);
                         Hamil.rows.push_back(m_new);
                         Hamil.columns.push_back(m);
@@ -359,128 +363,142 @@ void MODEL_1_orb_tJ::Add_connections(BASIS_1_orb_tJ &basis, string run_type){
     cout<<"Hoppings and SpSm connections done"<<endl;
 
 
-    Mat_1_string oprs_string;
-    Mat_1_int sites_;
-    oprs_string.resize(4);sites_.resize(4);
-    cout<<"Starting Ring-exchange terms [some terms were already done]"<<endl;
-    //Ring exchange Term : (Svec_{site1}.Svec_{site2})(Svec_{site3}.Svec_{site4})
-    for (int i=0;i<basis.D_up_basis.size();i++){
-        m=i;
-        j=i;
-        value=zero;
 
-        for(int site_i=0;site_i<basis.Length;site_i++){
-            for(int site_j=0;site_j<basis.Length;site_j++){
-                for(int site_k=0;site_k<basis.Length;site_k++){
-                    for(int site_l=0;site_l<basis.Length;site_l++){
-                        if(abs(RingExchange_mat[site_i][site_j][site_k][site_l])>0.000001){
 
-                            //0.5*Sz[i]Sz[j]Sp[k]Sm[l]
-                            oprs_string[0]="Sz";oprs_string[1]="Sz";
-                            oprs_string[2]="Sp";oprs_string[3]="Sm";
-                            sites_[0]=site_i;sites_[1]=site_j;
-                            sites_[2]=site_k;sites_[3]=site_l;
-                            Act_four_spin_opr(basis,oprs_string,sites_, m, m_new, sign_FM, val_);
-                            if(m_new>-1){ //above function gives m_new=-100, if not matrix element is 0
-                                value_ = 0.5*val_*RingExchange_mat[site_i][site_j][site_k][site_l]*sign_FM;
-                                if(m_new<m){
-                                    Hamil.value.push_back(value_);
-                                    Hamil.rows.push_back(m_new);
-                                    Hamil.columns.push_back(m);
+    if(Ring_Exchange_transverse_terms){
+        Mat_1_string oprs_string;
+        Mat_1_int sites_;
+        oprs_string.resize(4);sites_.resize(4);
+        cout<<"Starting Ring-exchange terms [SzSzSzSZ terms were already done]"<<endl;
+        //Ring exchange Term : (Svec_{site1}.Svec_{site2})(Svec_{site3}.Svec_{site4})
+        for (int i=0;i<basis.D_up_basis.size();i++){
+            m=i;
+            j=i;
+            value=zero;
+
+            for(int site_i=0;site_i<basis.Length;site_i++){
+                for(int site_j=0;site_j<basis.Length;site_j++){
+                    for(int site_k=0;site_k<basis.Length;site_k++){
+                        for(int site_l=0;site_l<basis.Length;site_l++){
+                            if(abs(RingExchange_mat[site_i][site_j][site_k][site_l])>0.000001){
+
+                                //0.5*Sz[i]Sz[j]Sp[k]Sm[l]
+                                oprs_string[0]="Sz";oprs_string[1]="Sz";
+                                oprs_string[2]="Sp";oprs_string[3]="Sm";
+                                sites_[0]=site_i;sites_[1]=site_j;
+                                sites_[2]=site_k;sites_[3]=site_l;
+                                Act_four_spin_opr(basis,oprs_string,sites_, m, m_new, sign_FM, val_);
+                                 //sign_FM=1.0;
+                                if(m_new>-1){ //above function gives m_new=-100, if not matrix element is 0
+                                    value_ = 0.5*val_*RingExchange_mat[site_i][site_j][site_k][site_l]*sign_FM;
+
+//                                    if(abs(sign_FM+1.0)>0.00001){
+//                                        cout<<"sign_FM : "<<sign_FM<<endl;
+//                                        assert(abs(sign_FM+1.0)<0.00001);
+//                                    }
+
+                                    if(m_new<m){
+                                        Hamil.value.push_back(value_);
+                                        Hamil.rows.push_back(m_new);
+                                        Hamil.columns.push_back(m);
+                                    }
+                                    else{
+                                        Hamil.value.push_back(conjugate(value_));
+                                        Hamil.rows.push_back(m);
+                                        Hamil.columns.push_back(m_new);
+                                    }
+
                                 }
-                                else{
-                                    Hamil.value.push_back(conjugate(value_));
-                                    Hamil.rows.push_back(m);
-                                    Hamil.columns.push_back(m_new);
+
+
+                                //0.5*Sz[k]Sz[l]Sp[i]Sm[j]
+                                oprs_string[0]="Sz";oprs_string[1]="Sz";
+                                oprs_string[2]="Sp";oprs_string[3]="Sm";
+                                sites_[0]=site_k;sites_[1]=site_l;
+                                sites_[2]=site_i;sites_[3]=site_j;
+                                Act_four_spin_opr(basis,oprs_string,sites_, m, m_new, sign_FM, val_);
+                                 //sign_FM=1.0;
+                                if(m_new>-1){ //above function gives m_new=-100, if not matrix element is 0
+                                    value_ = 0.5*val_*RingExchange_mat[site_i][site_j][site_k][site_l]*sign_FM;
+                                    if(m_new<m){
+                                        Hamil.value.push_back(value_);
+                                        Hamil.rows.push_back(m_new);
+                                        Hamil.columns.push_back(m);
+                                    }
+                                    else{
+                                        Hamil.value.push_back(conjugate(value_));
+                                        Hamil.rows.push_back(m);
+                                        Hamil.columns.push_back(m_new);
+                                    }
+
                                 }
+
+
+                                //0.25*Sp[i]Sm[j]Sp[k]Sm[l]
+                                oprs_string[0]="Sp";oprs_string[1]="Sm";
+                                oprs_string[2]="Sp";oprs_string[3]="Sm";
+                                sites_[0]=site_i;sites_[1]=site_j;
+                                sites_[2]=site_k;sites_[3]=site_l;
+                                Act_four_spin_opr(basis,oprs_string,sites_, m, m_new, sign_FM, val_);
+                                 //sign_FM=1.0;
+                                if(m_new>-1){ //above function gives m_new=-100, if not matrix element is 0
+                                    value_ = 0.25*val_*RingExchange_mat[site_i][site_j][site_k][site_l]*sign_FM;
+                                    if(m_new<m){
+                                        Hamil.value.push_back(value_);
+                                        Hamil.rows.push_back(m_new);
+                                        Hamil.columns.push_back(m);
+                                    }
+                                    else{
+                                        Hamil.value.push_back(conjugate(value_));
+                                        Hamil.rows.push_back(m);
+                                        Hamil.columns.push_back(m_new);
+                                    }
+
+                                }
+
+
+                                //0.25*Sp[i]Sm[j]Sp[l]Sm[k]
+                                oprs_string[0]="Sp";oprs_string[1]="Sm";
+                                oprs_string[2]="Sp";oprs_string[3]="Sm";
+                                sites_[0]=site_i;sites_[1]=site_j;
+                                sites_[2]=site_l;sites_[3]=site_k;
+                                Act_four_spin_opr(basis,oprs_string,sites_, m, m_new, sign_FM, val_);
+                                 //sign_FM=1.0;
+                                if(m_new>-1){ //above function gives m_new=-100, if not matrix element is 0
+                                    value_ = 0.25*val_*RingExchange_mat[site_i][site_j][site_k][site_l]*sign_FM;
+                                    if(m_new<m){
+                                        Hamil.value.push_back(value_);
+                                        Hamil.rows.push_back(m_new);
+                                        Hamil.columns.push_back(m);
+                                    }
+                                    else{
+                                        Hamil.value.push_back(conjugate(value_));
+                                        Hamil.rows.push_back(m);
+                                        Hamil.columns.push_back(m_new);
+                                    }
+
+                                }
+
+
 
                             }
-
-
-                            //0.5*Sz[k]Sz[l]Sp[i]Sm[j]
-                            oprs_string[0]="Sz";oprs_string[1]="Sz";
-                            oprs_string[2]="Sp";oprs_string[3]="Sm";
-                            sites_[0]=site_k;sites_[1]=site_l;
-                            sites_[2]=site_i;sites_[3]=site_j;
-                            Act_four_spin_opr(basis,oprs_string,sites_, m, m_new, sign_FM, val_);
-                            if(m_new>-1){ //above function gives m_new=-100, if not matrix element is 0
-                                value_ = 0.5*val_*RingExchange_mat[site_i][site_j][site_k][site_l]*sign_FM;
-                                if(m_new<m){
-                                    Hamil.value.push_back(value_);
-                                    Hamil.rows.push_back(m_new);
-                                    Hamil.columns.push_back(m);
-                                }
-                                else{
-                                    Hamil.value.push_back(conjugate(value_));
-                                    Hamil.rows.push_back(m);
-                                    Hamil.columns.push_back(m_new);
-                                }
-
-                            }
-
-
-                            //0.25*Sp[i]Sm[j]Sp[k]Sm[l]
-                            oprs_string[0]="Sp";oprs_string[1]="Sm";
-                            oprs_string[2]="Sp";oprs_string[3]="Sm";
-                            sites_[0]=site_i;sites_[1]=site_j;
-                            sites_[2]=site_k;sites_[3]=site_l;
-                            Act_four_spin_opr(basis,oprs_string,sites_, m, m_new, sign_FM, val_);
-                            if(m_new>-1){ //above function gives m_new=-100, if not matrix element is 0
-                                value_ = 0.25*val_*RingExchange_mat[site_i][site_j][site_k][site_l]*sign_FM;
-                                if(m_new<m){
-                                    Hamil.value.push_back(value_);
-                                    Hamil.rows.push_back(m_new);
-                                    Hamil.columns.push_back(m);
-                                }
-                                else{
-                                    Hamil.value.push_back(conjugate(value_));
-                                    Hamil.rows.push_back(m);
-                                    Hamil.columns.push_back(m_new);
-                                }
-
-                            }
-
-
-                            //0.25*Sp[i]Sm[j]Sp[l]Sm[k]
-                            oprs_string[0]="Sp";oprs_string[1]="Sm";
-                            oprs_string[2]="Sp";oprs_string[3]="Sm";
-                            sites_[0]=site_i;sites_[1]=site_j;
-                            sites_[2]=site_l;sites_[3]=site_k;
-                            Act_four_spin_opr(basis,oprs_string,sites_, m, m_new, sign_FM, val_);
-                            if(m_new>-1){ //above function gives m_new=-100, if not matrix element is 0
-                                value_ = 0.25*val_*RingExchange_mat[site_i][site_j][site_k][site_l]*sign_FM;
-                                if(m_new<m){
-                                    Hamil.value.push_back(value_);
-                                    Hamil.rows.push_back(m_new);
-                                    Hamil.columns.push_back(m);
-                                }
-                                else{
-                                    Hamil.value.push_back(conjugate(value_));
-                                    Hamil.rows.push_back(m);
-                                    Hamil.columns.push_back(m_new);
-                                }
-
-                            }
-
-
-
                         }
                     }
                 }
             }
+
+            if(m%5000==0){
+                cout<<m<<" done"<<endl;
+            }
+
+
         }
 
-        if(m%5000==0){
-            cout<<m<<" done"<<endl;
-        }
+
+        cout<<"Ring-Exchange connections done"<<endl;
 
 
     }
-
-
-    cout<<"Ring-Exchange connections done"<<endl;
-
-
 
 
 }
@@ -1491,6 +1509,8 @@ void MODEL_1_orb_tJ::Initialize_two_point_operator_sites_specific(string opr_typ
                 sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn+1);
 
                 //assert(m_new<m);
+
+                //sign_FM =1.0;
                 OPR.value.push_back(sign_FM);
                 OPR.rows.push_back(m_new);
                 OPR.columns.push_back(m);
@@ -1557,6 +1577,7 @@ void MODEL_1_orb_tJ::Initialize_two_point_operator_sites_specific(string opr_typ
                 sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn+1);
 
                 //assert(m_new<m);
+                //sign_FM=1.0;
                 OPR.value.push_back(sign_FM);
                 OPR.rows.push_back(m_new);
                 OPR.columns.push_back(m);
