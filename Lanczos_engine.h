@@ -32,6 +32,8 @@
 #include "models/Model_1_orb_Hubbard_GC.h"
 #include "basis/Basis_3_orb_Hubbard_chain_GC.h"
 #include "basis/Basis_3_orb_Hubbard_chain_GC_restricted.h"
+#include "basis/Basis_SpinlessFermionsFockSpace.h"
+#include "models/Model_SpinlessFermionsFockSpace.h"
 
 //Remember "cpp" files for templated class over basis need to be included in this code
 #include "models/Model_3_orb_Hubbard_chain_GC.cpp"

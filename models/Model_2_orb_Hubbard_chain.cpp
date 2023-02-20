@@ -101,7 +101,7 @@ void MODEL_2_orb_Hubb_chain::Add_diagonal_terms(BASIS_2_orb_Hubb_chain &basis){
                 for(int dof2=dof1+1;dof2<basis.Length*2;dof2++){
 
                         if(abs(HundsInt[dof1][dof2])>0.00000001){
-                        value+=(0.25*(HundsInt[dof1][dof2]*2.0))*
+                        value+=(-0.25*(HundsInt[dof1][dof2]*2.0))*
                                 ( ( bit_value(basis.D_up_basis[i],dof1) -
                                     bit_value(basis.D_dn_basis[j],dof1) )*
                                   ( bit_value(basis.D_up_basis[i],dof2) -

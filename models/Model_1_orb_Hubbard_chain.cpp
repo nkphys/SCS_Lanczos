@@ -73,6 +73,21 @@ void MODEL_1_orb_Hubb_chain::Add_diagonal_terms(BASIS_1_orb_Hubb_chain &basis){
                 }
             }
 
+             //LongRange Direct Exchange Szi X Szj
+            for(int site_i=0;site_i<basis.Length;site_i++){
+                for(int site_j=0;site_j<basis.Length;site_j++){
+
+                    if(DirectExchange_mat[site_i][site_j]!=0.0){
+
+                        value+=0.25*DirectExchange_mat[site_i][site_j]*(
+                                    ( bit_value(basis.D_up_basis[i],site_i) - bit_value(basis.D_dn_basis[j],site_i))*
+                                    ( bit_value(basis.D_up_basis[i],site_j) - bit_value(basis.D_dn_basis[j],site_j))
+                                    );
+
+                    }
+                }
+            }
+
 
 
 
@@ -86,6 +101,376 @@ void MODEL_1_orb_Hubb_chain::Add_diagonal_terms(BASIS_1_orb_Hubb_chain &basis){
 
 }
 void MODEL_1_orb_Hubb_chain::Add_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basis){
+
+
+    bool DirectExchange_term=true;
+    bool PairHopping_term=true;
+    bool InteractionAssistedHopping_term=true;
+
+    if(DirectExchange_term){
+        int m;
+        double_type value;
+        
+            int D_up, D_dn,i_new,j_new,m_new, l, lp, sign_pow_up , sign_pow_dn;
+            double sign_FM;
+            
+
+                for(int site2=0;site2<basis.Length;site2++){
+                for(int site3=0;site3<basis.Length;site3++){
+
+                    if(DirectExchange_mat[site2][site3]!=0.0){
+
+                for (int i=0;i<basis.D_up_basis.size();i++){
+                    for (int j=0;j<basis.D_dn_basis.size();j++){
+                        m=basis.D_dn_basis.size()*i + j;
+
+                        //Sp[site2]*Sm[site3]:
+
+                        assert(site2!=site3);
+
+                        if(((bit_value(basis.D_dn_basis[j], site2)==1)
+                            &&
+                            (bit_value(basis.D_up_basis[i], site2)==0)
+                            )
+                                &&
+                                ((bit_value(basis.D_up_basis[i], site3)==1)
+                                 &&
+                                 (bit_value(basis.D_dn_basis[j], site3)==0)
+                                 ))
+                        {
+
+                            D_up = (int) (basis.D_up_basis[i] - pow(2, site3)
+                                          + pow(2, site2) );
+                            D_dn = (int) (basis.D_dn_basis[j] + pow(2, site3)
+                                          - pow(2, site2) );
+
+                            i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                            j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+
+                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                            l= site3;
+                            lp= site2;
+
+                            sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+                            sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+                            sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn+1);
+
+
+                            value = sign_FM*0.5*DirectExchange_mat[site2][site3];
+
+                            //assert(m_new<m);
+                            if(m_new<m){
+                                if(abs(value)>0.000000000){
+                                    Hamil.value.push_back(value*one);
+                                    Hamil.rows.push_back((m_new));
+                                    Hamil.columns.push_back((m));
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+    }
+    }
+        
+    }
+
+
+       if(PairHopping_term){
+        int m;
+        double_type value;
+        
+            int D_up, D_dn,i_new,j_new,m_new, l, lp, sign_pow_up , sign_pow_dn;
+            double sign_FM;
+            
+
+                for(int site2=0;site2<basis.Length;site2++){
+                for(int site3=0;site3<basis.Length;site3++){
+
+                    if(PairHopping_mat[site2][site3]!=0.0){
+
+                for (int i=0;i<basis.D_up_basis.size();i++){
+                    for (int j=0;j<basis.D_dn_basis.size();j++){
+                        m=basis.D_dn_basis.size()*i + j;
+
+                        //P*[site2]*P[site3]:
+
+                        assert(site2!=site3);
+
+                        if(((bit_value(basis.D_dn_basis[j], site2)==0)
+                            &&
+                            (bit_value(basis.D_up_basis[i], site2)==0)
+                            )
+                                &&
+                                ((bit_value(basis.D_up_basis[i], site3)==1)
+                                 &&
+                                 (bit_value(basis.D_dn_basis[j], site3)==1)
+                                 ))
+                        {
+
+                            D_up = (int) (basis.D_up_basis[i] - pow(2, site3)
+                                          + pow(2, site2) );
+                            D_dn = (int) (basis.D_dn_basis[j] - pow(2, site3)
+                                          + pow(2, site2) );
+
+                            i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                            j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+
+                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                            l= site3;
+                            lp= site2;
+
+                            sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+                            sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+                            sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn);
+
+
+                            value = sign_FM*PairHopping_mat[site2][site3];
+
+                            assert(m_new<m);
+                            if(m_new<m){
+                                if(abs(value)>0.000000000){
+                                    Hamil.value.push_back(value*one);
+                                    Hamil.rows.push_back((m_new));
+                                    Hamil.columns.push_back((m));
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+    }
+    }
+        
+    }
+
+
+       if(InteractionAssistedHopping_term){
+        int m;
+        double_type value;
+        
+            int D_up, D_dn,i_new,j_new,m_new, l, lp, sign_pow_up , sign_pow_dn;
+            double sign_FM;
+            
+
+                for(int site2=0;site2<basis.Length;site2++){
+                for(int site3=0;site3<basis.Length;site3++){
+
+                    if(InteractionAssistedHopping_mat[site2][site3]!=0.0){
+
+
+//---------------------s=up term1---------------------------------//
+                for (int i=0;i<basis.D_up_basis.size();i++){
+                    for (int j=0;j<basis.D_dn_basis.size();j++){
+                        m=basis.D_dn_basis.size()*i + j;
+
+                        //n_{site2,up}c_{site2,dn}* c_{site3,dn}:
+
+                        assert(site2!=site3);
+
+                        if(((bit_value(basis.D_dn_basis[j], site2)==0)
+                            &&
+                            (bit_value(basis.D_up_basis[i], site2)==1)
+                            )
+                                &&
+                            ((bit_value(basis.D_dn_basis[j], site3)==1)
+                                 ))
+                        {
+
+                            D_up = basis.D_up_basis[i];
+                            D_dn = (int) (basis.D_dn_basis[j] - pow(2, site3)
+                                          + pow(2, site2) );
+
+                            i_new = i;
+                            j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+
+                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                            l= site3;
+                            lp= site2;
+
+                            sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+                            sign_FM = pow(-1.0, sign_pow_dn);
+
+
+                            value = sign_FM*InteractionAssistedHopping_mat[site2][site3];
+
+                            assert(m_new<m);
+                            if(m_new<m){
+                                if(abs(value)>0.000000000){
+                                    Hamil.value.push_back(value*one);
+                                    Hamil.rows.push_back((m_new));
+                                    Hamil.columns.push_back((m));
+                                }
+                            }
+                        }
+                    }
+                }
+//--------------s=up term 1 done----------------------//
+
+
+//---------------------s=up term2---------------------------------//
+                for (int i=0;i<basis.D_up_basis.size();i++){
+                    for (int j=0;j<basis.D_dn_basis.size();j++){
+                        m=basis.D_dn_basis.size()*i + j;
+
+                        //n_{site3,up}c_{site2,dn}* c_{site3,dn}:
+
+                        assert(site2!=site3);
+
+                        if(((bit_value(basis.D_dn_basis[j], site2)==0)
+                            )
+                                &&
+                            ((bit_value(basis.D_dn_basis[j], site3)==1) &&
+                             (bit_value(basis.D_up_basis[i], site3)==1)
+                                 ))
+                        {
+
+                            D_up = basis.D_up_basis[i];
+                            D_dn = (int) (basis.D_dn_basis[j] - pow(2, site3)
+                                          + pow(2, site2) );
+
+                            i_new = i;
+                            j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+
+                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                            l= site3;
+                            lp= site2;
+
+                            sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+                            sign_FM = pow(-1.0, sign_pow_dn);
+
+
+                            value = sign_FM*InteractionAssistedHopping_mat[site2][site3];
+
+                            assert(m_new<m);
+                            if(m_new<m){
+                                if(abs(value)>0.000000000){
+                                    Hamil.value.push_back(value*one);
+                                    Hamil.rows.push_back((m_new));
+                                    Hamil.columns.push_back((m));
+                                }
+                            }
+                        }
+                    }
+                }
+//--------------s=up term 2 done----------------------//
+
+
+//--------------s=dn term 1-----------------------//
+                for (int i=0;i<basis.D_up_basis.size();i++){
+                    for (int j=0;j<basis.D_dn_basis.size();j++){
+                        m=basis.D_dn_basis.size()*i + j;
+
+                        //n_{site2,dn}c_{site2,up}* c_{site3,up}:
+
+                        assert(site2!=site3);
+
+                        if(((bit_value(basis.D_dn_basis[j], site2)==1)
+                            &&
+                            (bit_value(basis.D_up_basis[i], site2)==0)
+                            )
+                                &&
+                            ((bit_value(basis.D_up_basis[i], site3)==1)
+                                 ))
+                        {
+
+                            D_up = (int) (basis.D_up_basis[i] - pow(2, site3)
+                                          + pow(2, site2) );
+                            D_dn = basis.D_dn_basis[j];
+
+                            i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                            j_new = j;
+
+                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                            l= site3;
+                            lp= site2;
+
+                            sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+
+                            sign_FM = pow(-1.0, sign_pow_up);
+
+                            value = sign_FM*InteractionAssistedHopping_mat[site2][site3];
+
+                            assert(m_new<m);
+                            if(m_new<m){
+                                if(abs(value)>0.000000000){
+                                    Hamil.value.push_back(value*one);
+                                    Hamil.rows.push_back((m_new));
+                                    Hamil.columns.push_back((m));
+                                }
+                            }
+                        }
+                    }
+                }
+
+//---------------s=dn term 1 done-----------------//
+
+
+//--------------s=dn term 2-----------------------//
+                for (int i=0;i<basis.D_up_basis.size();i++){
+                    for (int j=0;j<basis.D_dn_basis.size();j++){
+                        m=basis.D_dn_basis.size()*i + j;
+
+                        //n_{site3,dn}c_{site2,up}* c_{site3,up}:
+
+                        assert(site2!=site3);
+
+                        if(((bit_value(basis.D_up_basis[i], site2)==0)
+                            )
+                                &&
+                            ((bit_value(basis.D_up_basis[i], site3)==1) &&
+                             (bit_value(basis.D_dn_basis[j], site3)==1)
+                                 ))
+                        {
+
+                            D_up = (int) (basis.D_up_basis[i] - pow(2, site3)
+                                          + pow(2, site2) );
+                            D_dn = basis.D_dn_basis[j];
+
+                            i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                            j_new = j;
+
+                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                            l= site3;
+                            lp= site2;
+
+                            sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+
+                            sign_FM = pow(-1.0, sign_pow_up);
+
+                            value = sign_FM*InteractionAssistedHopping_mat[site2][site3];
+
+                            //assert(m_new<m);
+                            if(m_new<m){
+                                if(abs(value)>0.000000000){
+                                    Hamil.value.push_back(value*one);
+                                    Hamil.rows.push_back((m_new));
+                                    Hamil.columns.push_back((m));
+                                }
+                            }
+                        }
+                    }
+                }
+
+//---------------s=dn term 2 done-----------------//
+
+
+
+            }
+    }
+    }
+        
+    }
+
+
 
 
     for(int type_ind=0;type_ind<three_point_intrs.size();type_ind++){
@@ -756,6 +1141,13 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     string file_onsite_energies_, File_Onsite_Energies_ = "File_Onsite_Energies = ";
     string file_hopping_connections_, File_Hopping_Connections_ = "File_Hopping_Connections = ";
     string file_nonlocal_int_connections_, File_NonLocal_Int_Connections_ = "File_NonLocal_Int_Connections = ";
+    string file_directexchange_int_connections_, File_DirectExchange_Int_Connections_ = "File_Direct_Exchange_Connections = ";
+    
+    //Interaction_Assisted_Hopping, _Pair_Hopping
+    string file_interactionassistedhopping_connections_, File_InteractionAssistedHopping_Connections_ = "File_Interaction_Assisted_Hopping_Connections = ";
+    string file_pairhopping_connections_, File_PairHopping_Connections_ = "File_Pair_Hopping_Connections = ";
+
+
     string file_three_point_observation_, File_Three_Point_Observation_ = "File_Three_Point_Observation = ";
     string file_three_point_interaction_, File_Three_Point_Interaction_ = "File_Three_Point_Interaction = ";
 
@@ -823,6 +1215,15 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
 
             if ((offset = line.find(File_NonLocal_Int_Connections_, 0)) != string::npos) {
                 file_nonlocal_int_connections_ = line.substr (offset+File_NonLocal_Int_Connections_.length());				}
+
+            if ((offset = line.find(File_DirectExchange_Int_Connections_, 0)) != string::npos) {
+                file_directexchange_int_connections_ = line.substr (offset+File_DirectExchange_Int_Connections_.length());          }
+
+             if ((offset = line.find(File_InteractionAssistedHopping_Connections_, 0)) != string::npos) {
+                file_interactionassistedhopping_connections_ = line.substr (offset+File_InteractionAssistedHopping_Connections_.length());          }
+
+            if ((offset = line.find(File_PairHopping_Connections_, 0)) != string::npos) {
+                file_pairhopping_connections_ = line.substr (offset+File_PairHopping_Connections_.length());          }
 
             if ((offset = line.find(Processors_ , 0)) != string::npos) {
                 processors_ = line.substr (offset+Processors_ .length());	}
@@ -1344,6 +1745,50 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
             for(int site_j=0;site_j<Total_Sites_int;site_j++){
                 inputfile_nonlocal_int_connections>>NonLocalInteractions_mat[site_i][site_j];
             }
+        }
+
+        //Direct Exchanges  Mat(i,j)Si.Sj
+        DirectExchange_mat.resize(Total_Sites_int);
+        for(int site_=0;site_<Total_Sites_int;site_++){
+            DirectExchange_mat[site_].resize(Total_Sites_int);
+        }
+
+        ifstream inputfile_directexchange_int_connections(file_directexchange_int_connections_.c_str());
+        for(int site_i=0;site_i<Total_Sites_int;site_i++){
+            for(int site_j=0;site_j<Total_Sites_int;site_j++){
+                inputfile_directexchange_int_connections>>DirectExchange_mat[site_i][site_j];
+            }
+        }
+
+
+        //PairHopping  Mat(i,j) Pi* X Pj +h.c
+        PairHopping_mat.resize(Total_Sites_int);
+        for(int site_=0;site_<Total_Sites_int;site_++){
+            PairHopping_mat[site_].resize(Total_Sites_int);
+        }
+
+        ifstream inputfile_pairhopping_connections(file_pairhopping_connections_.c_str());
+        for(int site_i=0;site_i<Total_Sites_int;site_i++){
+            for(int site_j=0;site_j<Total_Sites_int;site_j++){
+                inputfile_pairhopping_connections>>PairHopping_mat[site_i][site_j];
+            }
+        }
+
+
+        //InteractionAssistedHopping  Mat(i,j) [n(i,s) X c(i,sbar)* X c(j,sbar)] + h.c.
+        //                                     [n(j,s) X c(j,sbar)* X c(i,sbar)] + h.c.
+        InteractionAssistedHopping_mat.resize(Total_Sites_int);
+        for(int site_=0;site_<Total_Sites_int;site_++){
+            InteractionAssistedHopping_mat[site_].resize(Total_Sites_int);
+        }
+
+        ifstream inputfile_interactionassistedhopping_connections(file_interactionassistedhopping_connections_.c_str());
+        for(int site_i=0;site_i<Total_Sites_int;site_i++){
+            for(int site_j=0;site_j<Total_Sites_int;site_j++){
+                inputfile_interactionassistedhopping_connections>>InteractionAssistedHopping_mat[site_i][site_j];
+                cout<<InteractionAssistedHopping_mat[site_i][site_j]<<"  ";
+            }
+            cout<<endl;
         }
 
 

@@ -21,6 +21,9 @@ public:
 
     Mat_2_doub Hopping_mat_NN;//LongRange hopping matrix(_NN is misnomer)
     Mat_2_real NonLocalInteractions_mat;//LongRange interactions
+    Mat_2_real DirectExchange_mat;
+    Mat_2_real PairHopping_mat;
+    Mat_2_real InteractionAssistedHopping_mat;
 
     Mat_1_real H_field;
     Mat_1_real Onsite_Energy;

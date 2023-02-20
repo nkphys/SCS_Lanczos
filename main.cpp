@@ -46,7 +46,7 @@ int main(int argc, char** argv){
     cout<<"Do_Dynamics ="<<Do_Dynamics<<endl;
 
 
-    bool DO_FULL_DIAGONALIZATION=true;
+    bool DO_FULL_DIAGONALIZATION=false;
 
 #ifdef _OPENMP
     double begin_time, end_time;
@@ -58,6 +58,68 @@ int main(int argc, char** argv){
     cout<<"Max threads which can be used parallely = "<<N_p<<endl;
     cout<<"No. of threads used parallely = "<<no_of_processors<<endl;
 #endif
+
+
+
+    if(model_name=="SpinlessFermionsFockSpace"){
+
+        bool Hamil_construct=true; //false also stops GS Lanczos Run and reads the GS vec
+        MODEL_SpinlessFermionsFockSpace _MODEL;
+        BASIS_SpinlessFermionsFockSpace _BASIS;
+
+        
+        _MODEL.Read_parameters(_BASIS, inp_filename);
+        _BASIS.Construct_basis();
+        _MODEL.Saving_Hamil=true;
+
+        if(Hamil_construct){
+            if(_MODEL.Saving_Hamil){
+                _MODEL.Add_diagonal_terms(_BASIS);
+                _MODEL.Add_non_diagonal_terms(_BASIS);
+                _MODEL.Add_connections(_BASIS);
+                // cout<<"---PRINTING HAMIL-----"<<endl;
+                // Print_Matrix_COO(_MODEL.Hamil);
+            }
+            else{
+                _MODEL.Hamil.nrows = _BASIS.basis_size;
+                _MODEL.Hamil.ncols = _MODEL.Hamil.nrows;
+                cout<<"Hamiltonian is acted in-situ [NOT SAVED]"<<endl;
+            }
+        }
+
+
+        if(_MODEL.Hamil.nrows<700){
+                    DO_FULL_DIAGONALIZATION=true;
+                }
+                else{
+                    DO_FULL_DIAGONALIZATION=false;
+                }
+                if((DO_FULL_DIAGONALIZATION==true) && (_MODEL.Saving_Hamil)){
+                    double EG;
+                    Mat_1_real Evals_temp;
+                    Mat_1_doub vecG;
+                    Diagonalize(_MODEL.Hamil, Evals_temp, vecG);
+                    cout<<"GS energy from ED(without Lanczos) = "<<Evals_temp[0]<<endl;
+                    cout<<"All eigenvalues using ED------------------------------"<<endl;
+                    cout<<"-------------------------------------------------------"<<endl;
+                    for(int i=0;i<Evals_temp.size();i++){
+                        cout<<i<<"  "<<Evals_temp[i]<<endl;
+                    }
+                    cout<<"-------------------------------------------------------"<<endl;
+                    cout<<"-------------------------------------------------------"<<endl;
+                }
+
+
+                //assert(false);
+
+            LANCZOS<BASIS_SpinlessFermionsFockSpace, MODEL_SpinlessFermionsFockSpace> _LANCZOS(_BASIS, _MODEL);
+            _LANCZOS.Dynamics_performed=false;
+            _LANCZOS.Read_Lanczos_parameters(inp_filename);
+            _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
+            Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS.txt");
+
+
+    }
 
 
 
@@ -1209,11 +1271,32 @@ int main(int argc, char** argv){
         //Print_Matrix_COO(_MODEL.Hamil);
         cout<<scientific<<setprecision(8);
 
+        DO_FULL_DIAGONALIZATION=false;
+        if(_MODEL.Hamil.nrows<400){
+            DO_FULL_DIAGONALIZATION=true;
+        }
+        if(DO_FULL_DIAGONALIZATION==true){
+            double EG;
+            Mat_1_real Evals_temp;
+            Mat_1_doub vecG;
+            Diagonalize(_MODEL.Hamil, Evals_temp, vecG);
+            cout<<"GS energy from ED(without Lanczos) = "<<Evals_temp[0]<<endl;
+            cout<<"All eigenvalues using EG------------------------------"<<endl;
+            cout<<"-------------------------------------------------------"<<endl;
+            for(int i=0;i<Evals_temp.size();i++){
+                cout<<i<<"  "<<Evals_temp[i]<<endl;
+            }
+            cout<<"-------------------------------------------------------"<<endl;
+            cout<<"-------------------------------------------------------"<<endl;
+
+        }
+
+
         LANCZOS<BASIS_2_orb_Hubb_chain_KSector, MODEL_2_orb_Hubb_chain_KSector> _LANCZOS(_BASIS, _MODEL);
         _LANCZOS.Dynamics_performed=false;
         _LANCZOS.Read_Lanczos_parameters(inp_filename);
 
-
+        cout<<"HERE 1"<<endl;
         _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
         _LANCZOS.Write_full_spectrum();
         Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS.txt");
@@ -1506,7 +1589,7 @@ int main(int argc, char** argv){
         // _MODEL.Read_parameters_for_variational_state(_BASIS, inp_filename);
 
         _MODEL.Add_diagonal_terms(_BASIS);
-        _MODEL.Add_non_diagonal_terms(_BASIS);
+        //_MODEL.Add_non_diagonal_terms(_BASIS);
         _MODEL.Choose_non_diagonal_Int_Type(_BASIS);
         _MODEL.Choose_connectionsType(_BASIS);
 
@@ -3431,7 +3514,7 @@ int main(int argc, char** argv){
             cout<<"Sparsity = "<<(1.0*_MODEL.Hamil.value.size())/(1.0*_MODEL.Hamil.nrows*_MODEL.Hamil.nrows)<<endl;
 
 
-            //  Print_Matrix_COO(_MODEL.Hamil);
+              Print_Matrix_COO(_MODEL.Hamil);
             //Print_Matrix_COO_in_file(_MODEL.Hamil, "Hamil_byConstruction.txt");
 
 

@@ -1,28 +1,13 @@
 Geometry = LongRange
-Model = 1_orb_Hubbard_chain
+Model = SpinlessFermionsFockSpace
 ------------------------------------------
-PBC = false
-Length_X = 2
-Length_Y = 1
-Total_Sites = 2
-Ndown = 1
-Nup = 1
+Total_Sites = 16
  
-Hopping = 0.0
-Hopping_NN = 0.0
-U = 0.0
-H_mag = 2 0 0 
 File_Onsite_Energies = false pinning_ener.txt
-File_Hopping_Connections = Hopping.txt
-File_NonLocal_Int_Connections = Interactions.txt
-File_Direct_Exchange_Connections = DirectExchange.txt
+File_Hopping_Connections = Hopping_Tshape_16site.txt
+File_NonLocal_Int_Connections = Interactions_Tshape_16site.txt
+File_Pairing_Connections = PairingField_Tshape_16site.txt
 
-File_Pair_Hopping_Connections = PairHopping.txt
-File_Interaction_Assisted_Hopping_Connections = InteractionAssistedHopping.txt
-
-
-File_Three_Point_Observation = ThreePointOprs.txt
-File_Three_Point_Interaction = ThreePointIntrs.txt
 ----------------------------------------
 -------------------------------------
 Saving_Hamiltonian_and_Oprs = true

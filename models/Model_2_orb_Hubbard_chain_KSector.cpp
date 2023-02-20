@@ -3234,7 +3234,7 @@ void MODEL_2_orb_Hubb_chain_KSector::Get_overlap_matrix_for_Anzatz_basis(BASIS_2
     Degenerate_states.resize(Distinct_overlaps.size());
     int check_total_states=0;
     for(int i=0;i<Distinct_overlaps.size();i++){
-        cout<<"Overlap = "<< Distinct_overlaps[i]<<", for VB states :";
+        cout<<"Overlap = "<< Distinct_overlaps[i]<<"    "<< abs(Distinct_overlaps[i])<<", for VB states :";
         for(int j=0;j<Ansatz_Basis_Overlap_with_GS.size();j++){
             if(abs(Ansatz_Basis_Overlap_with_GS[j] - Distinct_overlaps[i])<eps_){
                 Degenerate_states[i].push_back(j);
@@ -3286,6 +3286,103 @@ void MODEL_2_orb_Hubb_chain_KSector::Get_overlap_matrix_for_Anzatz_basis(BASIS_2
     //----------------------------
 
 
+}
+
+
+void MODEL_2_orb_Hubb_chain_KSector::Optimize_ORVB(vector<double_type> alpha_min, vector<double_type> alpha_max, vector<double_type> & alpha_final, Mat_2_doub overlap_matrix_for_Combined_basis){
+
+
+#ifdef USE_COMPLEX
+
+ double dp=0.0025;
+ double eps_= 0.000001;
+    double_type VALUE_CHECK, VALUE_CHECK_OLD;
+    double_type overlap_with_GS;
+    double_type Norm_Ansatz=0.0;
+    double_type Norm_Ansatz_temp;
+vector<double> alpha_real;
+vector<double> alpha_imag;
+alpha_real.resize(Distinct_overlaps.size());
+alpha_imag.resize(Distinct_overlaps.size());
+
+int count=0;
+
+alpha_real[0]=alpha_min[0].real();
+  while(alpha_real[0]<=alpha_max[0].real()){
+  alpha_imag[0]=alpha_min[0].imag();
+  while(alpha_imag[0]<=alpha_max[0].imag()){
+  
+  alpha_real[1]=alpha_min[1].real();
+  while(alpha_real[1]<=alpha_max[1].real()){
+  alpha_imag[1]=alpha_min[1].imag();
+  while(alpha_imag[1]<=alpha_max[1].imag()){
+
+   alpha_real[2]=alpha_min[2].real();
+  while(alpha_real[2]<=alpha_max[2].real()){
+  alpha_imag[2]=alpha_min[2].imag();
+  while(alpha_imag[2]<=alpha_max[2].imag()){
+
+   alpha_real[3]=alpha_min[3].real();
+  while(alpha_real[3]<=alpha_max[3].real()){
+  alpha_imag[3]=alpha_min[3].imag();
+  while(alpha_imag[3]<=alpha_max[3].imag()){
+
+ for(int i_=0;i_<Distinct_overlaps.size();i_++){
+ for(int j_=0;j_<Distinct_overlaps.size();j_++){
+  Norm_Ansatz +=(one_comp*alpha_real[i_] - iota_comp*alpha_imag[i_])
+                *(one_comp*alpha_real[j_] + iota_comp*alpha_imag[j_])
+                *overlap_matrix_for_Combined_basis[i_][j_];
+ }
+ }
+ //cout<<"Norm_Ansatz = "<<Norm_Ansatz<<endl;
+ assert(Norm_Ansatz.imag() <= eps_);
+
+ if(abs(Norm_Ansatz) <= eps_){
+ VALUE_CHECK=0.0;
+ }
+ else{
+ overlap_with_GS=0.0;
+  for(int i_=0;i_<Distinct_overlaps.size();i_++){
+ overlap_with_GS +=  (one_comp*alpha_real[i_] + iota_comp*alpha_imag[i_])
+                     *Distinct_overlaps[i_]*(1.0*Degenerate_states[i_].size());
+  }
+  VALUE_CHECK=(conj(overlap_with_GS)*overlap_with_GS)*(1.0/abs(Norm_Ansatz));
+  }
+
+
+    if( abs(VALUE_CHECK) > abs(VALUE_CHECK_OLD)){
+      VALUE_CHECK_OLD=VALUE_CHECK;
+        for(int c_=0;c_<alpha_final.size();c_++){ 
+       alpha_final[c_]=(one_comp*alpha_real[c_] + iota_comp*alpha_imag[c_]);
+    }
+    }
+
+
+
+    if(count%1000==0){
+        cout<<"count = "<<count;
+     for(int n=0;n<Distinct_overlaps.size();n++){
+     cout<<" : alpha["<<n<<"] = "<<(one_comp*alpha_real[n] + iota_comp*alpha_imag[n])<<"    ";
+     }
+    cout<< "is done with "<< VALUE_CHECK<<endl;
+  }
+
+
+    count +=1;
+    alpha_imag[3]+=dp*1; }
+    alpha_real[3]+=dp*1; }
+
+    alpha_imag[2]+=dp*1;}
+    alpha_real[2]+=dp*1; }
+
+    alpha_imag[1]+=dp*1;}
+    alpha_real[1]+=dp*1; }
+    
+    alpha_imag[0]+=dp*1;}
+    alpha_real[0]+=dp*1;}
+
+
+#endif
 }
 
 void MODEL_2_orb_Hubb_chain_KSector::Variational_state_optimization(BASIS_2_orb_Hubb_chain_KSector &basis, Mat_1_doub GS_){
@@ -3368,17 +3465,30 @@ alpha[7] = -2.3112538210e-02
 overlap with GS = 6.1985191582e-01
          */
 
+#ifdef USE_COMPLEX
         for(int i=0;i<Distinct_overlaps.size();i++){
-            alpha_min[i] = Distinct_overlaps[i]- (one*0.0);
-            alpha_max[i] = Distinct_overlaps[i]+ (one*0.0);
+            alpha_min[i] = Distinct_overlaps[i]- (one*0.02) -(iota_comp*0.02);
+            alpha_max[i] = Distinct_overlaps[i]+ (one*0.02) + (iota_comp*0.02);
             alpha_final[i] = Distinct_overlaps[i];
         }
+#endif
+
+#ifndef USE_COMPLEX
+for(int i=0;i<Distinct_overlaps.size();i++){
+            alpha_min[i] = Distinct_overlaps[i]- (one*0.02);
+            alpha_max[i] = Distinct_overlaps[i]+ (one*0.02);
+            alpha_final[i] = Distinct_overlaps[i];
+        }
+#endif
         //  alpha_min[0] = Distinct_overlaps[0]-0.1;alpha_max[0] = Distinct_overlaps[0]+0.1;
         //  alpha_min[1] = Distinct_overlaps[1]-0.1;alpha_max[1] = Distinct_overlaps[1]+0.1;
         //  alpha_min[2] = Distinct_overlaps[2]-0.1;alpha_max[2] = Distinct_overlaps[2]+0.1;
         //  alpha_min[3] = Distinct_overlaps[3]-0.1;alpha_max[3] = Distinct_overlaps[3]+0.1;
         //  alpha_min[4] = Distinct_overlaps[4]-0.1;alpha_max[4] = Distinct_overlaps[4]+0.1;
 
+
+
+        Optimize_ORVB(alpha_min, alpha_max, alpha_final, overlap_matrix_for_Combined_basis);
 
         //cout<<"here 1"<<endl;
 
@@ -3585,7 +3695,7 @@ overlap with GS = 6.1985191582e-01
         for(int n=0;n<Distinct_overlaps.size();n++){
             cout<<"alpha["<<n<<"] = "<<alpha_final[n]/sqrt(Norm_Ansatz)<<endl;
         }
-        cout<<"(overlap_with_GS)/sqrt(Norm_Ansatz) = "<<overlap_with_GS*sqrt(1.0/Norm_Ansatz)<<endl;
+        cout<<"(overlap_with_GS)/sqrt(Norm_Ansatz) = "<<overlap_with_GS*sqrt(1.0/Norm_Ansatz)<<"   "<<abs(overlap_with_GS*sqrt(1.0/Norm_Ansatz))<<endl;
         cout<<"Norm_Ansatz = "<<Norm_Ansatz<<endl;
         cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
 
@@ -4738,8 +4848,8 @@ void MODEL_2_orb_Hubb_chain_KSector::Get_State_by_acting_creation_operators(BASI
             sign_up_trans=pow(-1.0,sign_pow_up*1.0);
             sign_dn_trans=pow(-1.0,sign_pow_dn*1.0);
             State_temp[m_new]=FM_sign_up_down*FM_sign_up*FM_sign_down*sign_up_trans*
-                    sign_dn_trans*
-                    sqrt(basis.D_Period[m_new]/(1.0*basis.Length*basis.Length))*
+                    sign_dn_trans
+                    *sqrt(basis.D_Period[m_new]/(1.0*basis.Length*basis.Length))*
                     ((1.0*basis.Length)/(1.0*basis.D_Period[m_new]));
         }
 

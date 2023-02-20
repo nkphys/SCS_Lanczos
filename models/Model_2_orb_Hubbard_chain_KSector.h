@@ -101,6 +101,7 @@ public:
     void Variational_state_optimization(BASIS_2_orb_Hubb_chain_KSector &basis, Mat_1_doub GS_);
     void Variational_state_optimization_old(BASIS_2_orb_Hubb_chain_KSector &basis, Mat_1_doub GS_);
     void Act_Hamil(BASIS_2_orb_Hubb_chain_KSector &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+    void Optimize_ORVB(vector<double_type> alpha_min, vector<double_type> alpha_max, vector<double_type> & alpha_final, Mat_2_doub overlap_matrix_for_Combined_basis);
 
 
 };
