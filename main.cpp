@@ -3514,7 +3514,7 @@ int main(int argc, char** argv){
             cout<<"Sparsity = "<<(1.0*_MODEL.Hamil.value.size())/(1.0*_MODEL.Hamil.nrows*_MODEL.Hamil.nrows)<<endl;
 
 
-              Print_Matrix_COO(_MODEL.Hamil);
+             //Print_Matrix_COO(_MODEL.Hamil);
             //Print_Matrix_COO_in_file(_MODEL.Hamil, "Hamil_byConstruction.txt");
 
 

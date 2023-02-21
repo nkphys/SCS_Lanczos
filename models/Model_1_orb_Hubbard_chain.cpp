@@ -908,6 +908,493 @@ void MODEL_1_orb_Hubb_chain::Act_connections(BASIS_1_orb_Hubb_chain &basis, Mat_
 void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basis,  Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
 
 
+
+
+    bool DirectExchange_term=true;
+    bool PairHopping_term=true;
+    bool InteractionAssistedHopping_term=true;
+
+    if(DirectExchange_term){
+        Mat_2_doub Vec_out_temp;
+        int no_of_proc;
+        no_of_proc=1;
+        int temp_int;
+#ifdef _OPENMP
+            no_of_proc=NProcessors_;
+            omp_set_num_threads(no_of_proc);
+            cout<<"Non diagonal acting: "<<no_of_proc<<" processors"<<endl;
+#endif
+
+
+#ifdef _OPENMP
+#pragma omp parallel
+            {
+#endif
+
+
+#ifdef _OPENMP
+#pragma omp for nowait
+#endif
+        for(int m=0;m<basis.D_up_basis.size()*basis.D_dn_basis.size();m++){
+            int mytid;
+            
+#ifdef _OPENMP
+                    mytid = omp_get_thread_num();
+#endif
+
+                    int i,j;
+                    j = m%basis.D_dn_basis.size();
+                    i = int (m/basis.D_dn_basis.size());
+
+        for(int site2=0;site2<basis.Length;site2++){
+                for(int site3=0;site3<basis.Length;site3++){
+
+                    if( (DirectExchange_mat[site2][site3] + DirectExchange_mat[site3][site2]  )!=0.0){
+
+        
+            double_type value;
+            int D_up, D_dn,i_new,j_new,m_new, l, lp, sign_pow_up , sign_pow_dn;
+            double sign_FM;
+            
+
+                        //Sp[site2]*Sm[site3]:
+
+                        assert(site2!=site3);
+
+                        if(((bit_value(basis.D_dn_basis[j], site2)==1)
+                            &&
+                            (bit_value(basis.D_up_basis[i], site2)==0)
+                            )
+                                &&
+                                ((bit_value(basis.D_up_basis[i], site3)==1)
+                                 &&
+                                 (bit_value(basis.D_dn_basis[j], site3)==0)
+                                 ))
+                        {
+
+                            D_up = (int) (basis.D_up_basis[i] - pow(2, site3)
+                                          + pow(2, site2) );
+                            D_dn = (int) (basis.D_dn_basis[j] + pow(2, site3)
+                                          - pow(2, site2) );
+
+                            i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                            j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+
+                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                            l= site3;
+                            lp= site2;
+
+                            sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+                            sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+                            sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn+1);
+
+
+                            value = sign_FM*0.5*(1.0*(DirectExchange_mat[site2][site3] +  DirectExchange_mat[site3][site2] )  );
+
+                            //assert(m_new<m);
+                            //if(m_new<m){
+                                if(abs(value)>0.0000000001){
+#ifdef _OPENMP
+                                Vec_out[m] += Vec_in[m_new]*conjugate(value)*one;
+                                //Above is needed instead of eqn below, because while parallely running 
+                                //different "m" running prallely can lead to same m_new and overwriting + operation
+                                //Vec_out[m_new] += Vec_in[m]*value*one;
+#else
+                                Vec_out[m_new] += Vec_in[m]*value*one;
+#endif
+
+                                }
+                          
+                        }
+            }
+    }
+    }
+
+                }
+    #ifdef _OPENMP
+            }
+#endif
+        
+    }
+
+//---------------------------------------------------------------------
+
+
+
+       if(PairHopping_term){
+        Mat_2_doub Vec_out_temp;
+        int no_of_proc;
+        no_of_proc=1;
+        int temp_int;
+#ifdef _OPENMP
+            no_of_proc=NProcessors_;
+            omp_set_num_threads(no_of_proc);
+            cout<<"Non diagonal acting: "<<no_of_proc<<" processors"<<endl;
+#endif
+
+
+#ifdef _OPENMP
+#pragma omp parallel
+            {
+#endif
+
+
+#ifdef _OPENMP
+#pragma omp for nowait
+#endif
+        for(int m=0;m<basis.D_up_basis.size()*basis.D_dn_basis.size();m++){
+            int mytid;
+
+#ifdef _OPENMP
+                    mytid = omp_get_thread_num();
+#endif
+
+                    int i,j;
+                    j = m%basis.D_dn_basis.size();
+                    i = int (m/basis.D_dn_basis.size());
+
+
+                for(int site2=0;site2<basis.Length;site2++){
+                for(int site3=0;site3<basis.Length;site3++){
+
+                    if( (PairHopping_mat[site2][site3] +  PairHopping_mat[site3][site2])!=0.0){
+                        double_type value;
+                        int D_up, D_dn,i_new,j_new,m_new, l, lp, sign_pow_up , sign_pow_dn;
+                        double sign_FM;
+                        
+
+                        //P*[site2]*P[site3]:
+
+                        assert(site2!=site3);
+
+                        if(((bit_value(basis.D_dn_basis[j], site2)==0)
+                            &&
+                            (bit_value(basis.D_up_basis[i], site2)==0)
+                            )
+                                &&
+                                ((bit_value(basis.D_up_basis[i], site3)==1)
+                                 &&
+                                 (bit_value(basis.D_dn_basis[j], site3)==1)
+                                 ))
+                        {
+
+                            D_up = (int) (basis.D_up_basis[i] - pow(2, site3)
+                                          + pow(2, site2) );
+                            D_dn = (int) (basis.D_dn_basis[j] - pow(2, site3)
+                                          + pow(2, site2) );
+
+                            i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                            j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+
+                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                            l= site3;
+                            lp= site2;
+
+                            sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+                            sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+                            sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn);
+
+
+                            value = sign_FM*(PairHopping_mat[site2][site3]+PairHopping_mat[site3][site2]);
+
+                            //assert(m_new<m);
+                            //if(m_new<m){
+                                if(abs(value)>0.0000000001){
+#ifdef _OPENMP
+                                Vec_out[m] += Vec_in[m_new]*conjugate(value)*one;
+#else
+                                Vec_out[m_new] += Vec_in[m]*value*one;
+#endif
+                                }
+                            
+                        
+
+
+            }
+    }
+    }
+        }
+       
+    }
+#ifdef _OPENMP
+            }
+#endif
+
+       }
+
+//-------------------------------------------------------------------
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+//-------------------------------------------------------------------
+
+
+       if(InteractionAssistedHopping_term){
+        
+         Mat_2_doub Vec_out_temp;
+        int no_of_proc;
+        no_of_proc=1;
+        int temp_int;
+#ifdef _OPENMP
+            no_of_proc=NProcessors_;
+            omp_set_num_threads(no_of_proc);
+            cout<<"Non diagonal acting: "<<no_of_proc<<" processors"<<endl;
+#endif
+
+
+#ifdef _OPENMP
+#pragma omp parallel
+            {
+#endif
+
+
+#ifdef _OPENMP
+#pragma omp for nowait
+#endif
+        for(int m=0;m<basis.D_up_basis.size()*basis.D_dn_basis.size();m++){
+            int mytid;
+
+#ifdef _OPENMP
+                    mytid = omp_get_thread_num();
+#endif
+
+                    int i,j;
+                    j = m%basis.D_dn_basis.size();
+                    i = int (m/basis.D_dn_basis.size());
+
+
+
+            
+            double_type value;
+            int D_up, D_dn,i_new,j_new,m_new, l, lp, sign_pow_up , sign_pow_dn;
+            double sign_FM;
+
+                for(int site2=0;site2<basis.Length;site2++){
+                for(int site3=0;site3<basis.Length;site3++){
+
+
+            if(  (InteractionAssistedHopping_mat[site3][site2] + InteractionAssistedHopping_mat[site2][site3] )!=0.0 ){
+                        
+
+
+//---------------------s=up term1---------------------------------//
+                
+
+                        //n_{site2,up}c_{site2,dn}* c_{site3,dn}:
+
+                        assert(site2!=site3);
+
+                        if(((bit_value(basis.D_dn_basis[j], site2)==0)
+                            &&
+                            (bit_value(basis.D_up_basis[i], site2)==1)
+                            )
+                                &&
+                            ((bit_value(basis.D_dn_basis[j], site3)==1)
+                                 ))
+                        {
+
+                            D_up = basis.D_up_basis[i];
+                            D_dn = (int) (basis.D_dn_basis[j] - pow(2, site3)
+                                          + pow(2, site2) );
+
+                            i_new = i;
+                            j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+
+                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                            l= site3;
+                            lp= site2;
+
+                            sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+                            sign_FM = pow(-1.0, sign_pow_dn);
+
+
+                            value = sign_FM*(InteractionAssistedHopping_mat[site2][site3] + InteractionAssistedHopping_mat[site3][site2] );
+
+                            //assert(m_new<m);
+                            //if(m_new<m){
+                                if(abs(value)>0.0000000001){
+#ifdef _OPENMP
+                                Vec_out[m] += Vec_in[m_new]*conjugate(value)*one;
+#else
+                                Vec_out[m_new] += Vec_in[m]*value*one;
+#endif
+
+                                }
+                            //}
+                        }
+               
+//--------------s=up term 1 done----------------------//
+
+
+//---------------------s=up term2---------------------------------//
+          
+                        
+                        //n_{site3,up}c_{site2,dn}* c_{site3,dn}:
+
+                        assert(site2!=site3);
+
+                        if(((bit_value(basis.D_dn_basis[j], site2)==0)
+                            )
+                                &&
+                            ((bit_value(basis.D_dn_basis[j], site3)==1) &&
+                             (bit_value(basis.D_up_basis[i], site3)==1)
+                                 ))
+                        {
+
+                            D_up = basis.D_up_basis[i];
+                            D_dn = (int) (basis.D_dn_basis[j] - pow(2, site3)
+                                          + pow(2, site2) );
+
+                            i_new = i;
+                            j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
+
+                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                            l= site3;
+                            lp= site2;
+
+                            sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+                            sign_FM = pow(-1.0, sign_pow_dn);
+
+
+                            value = sign_FM*(InteractionAssistedHopping_mat[site2][site3] + InteractionAssistedHopping_mat[site3][site2] );
+
+                            //assert(m_new<m);
+                            //if(m_new<m){
+                                if(abs(value)>0.0000000001){
+#ifdef _OPENMP
+                                Vec_out[m] += Vec_in[m_new]*conjugate(value)*one;
+#else
+                                Vec_out[m_new] += Vec_in[m]*value*one;
+#endif
+                                }
+                           // }
+                        }
+             
+//--------------s=up term 2 done----------------------//
+
+
+//--------------s=dn term 1-----------------------//
+               
+                        
+
+                        //n_{site2,dn}c_{site2,up}* c_{site3,up}:
+
+                        assert(site2!=site3);
+
+                        if(((bit_value(basis.D_dn_basis[j], site2)==1)
+                            &&
+                            (bit_value(basis.D_up_basis[i], site2)==0)
+                            )
+                                &&
+                            ((bit_value(basis.D_up_basis[i], site3)==1)
+                                 ))
+                        {
+
+                            D_up = (int) (basis.D_up_basis[i] - pow(2, site3)
+                                          + pow(2, site2) );
+                            D_dn = basis.D_dn_basis[j];
+
+                            i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                            j_new = j;
+
+                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                            l= site3;
+                            lp= site2;
+
+                            sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+
+                            sign_FM = pow(-1.0, sign_pow_up);
+
+                            value = sign_FM*(InteractionAssistedHopping_mat[site2][site3] + InteractionAssistedHopping_mat[site3][site2] );
+
+                            //assert(m_new<m);
+                            //if(m_new<m){
+                                if(abs(value)>0.0000000001){
+#ifdef _OPENMP
+                                Vec_out[m] += Vec_in[m_new]*conjugate(value)*one;
+#else
+                                Vec_out[m_new] += Vec_in[m]*value*one;
+#endif
+                                }
+                            //}
+                        }
+ 
+
+//---------------s=dn term 1 done-----------------//
+
+
+//--------------s=dn term 2-----------------------//
+
+
+                        //n_{site3,dn}c_{site2,up}* c_{site3,up}:
+
+                        assert(site2!=site3);
+
+                        if(((bit_value(basis.D_up_basis[i], site2)==0)
+                            )
+                                &&
+                            ((bit_value(basis.D_up_basis[i], site3)==1) &&
+                             (bit_value(basis.D_dn_basis[j], site3)==1)
+                                 ))
+                        {
+
+                            D_up = (int) (basis.D_up_basis[i] - pow(2, site3)
+                                          + pow(2, site2) );
+                            D_dn = basis.D_dn_basis[j];
+
+                            i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
+                            j_new = j;
+
+                            m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                            l= site3;
+                            lp= site2;
+
+                            sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+
+                            sign_FM = pow(-1.0, sign_pow_up);
+
+                            value = sign_FM*(InteractionAssistedHopping_mat[site2][site3] + InteractionAssistedHopping_mat[site3][site2] );
+
+                            //assert(m_new<m);
+                            //if(m_new<m){
+                                if(abs(value)>0.0000000001){
+#ifdef _OPENMP
+                                Vec_out[m] += Vec_in[m_new]*conjugate(value)*one;
+#else
+                                Vec_out[m_new] += Vec_in[m]*value*one;
+#endif
+                                }
+                            //}
+                        }
+
+
+//---------------s=dn term 2 done-----------------//
+
+
+
+            }
+    }
+    }
+        
+    }
+
+#ifdef _OPENMP
+            }
+#endif
+         
+       }
+
+
+
+
+//-------------------------------------------------------------------
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+//--------------------------------------------------------------------
+
     for(int type_ind=0;type_ind<three_point_intrs.size();type_ind++){
 
 
@@ -1100,6 +1587,21 @@ void MODEL_1_orb_Hubb_chain::Act_diagonal_terms(BASIS_1_orb_Hubb_chain &basis, M
                         value+=1.0*NonLocalInteractions_mat[site_i][site_j]*(
                                     ( bit_value(basis.D_up_basis[i],site_i) + bit_value(basis.D_dn_basis[j],site_i))*
                                     ( bit_value(basis.D_up_basis[i],site_j) + bit_value(basis.D_dn_basis[j],site_j))
+                                    );
+
+                    }
+                }
+            }
+
+             //LongRange Direct Exchange Szi X Szj
+            for(int site_i=0;site_i<basis.Length;site_i++){
+                for(int site_j=0;site_j<basis.Length;site_j++){
+
+                    if(DirectExchange_mat[site_i][site_j]!=0.0){
+
+                        value+=0.25*DirectExchange_mat[site_i][site_j]*(
+                                    ( bit_value(basis.D_up_basis[i],site_i) - bit_value(basis.D_dn_basis[j],site_i))*
+                                    ( bit_value(basis.D_up_basis[i],site_j) - bit_value(basis.D_dn_basis[j],site_j))
                                     );
 
                     }
