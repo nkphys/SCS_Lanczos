@@ -1,0 +1,1 @@
+for r in {1..12}; do for c in {1..12}; do val1_=$(awk -v row=${r} -v col=${c} 'NR==row {print $col}' InteractionAssistedHopping.txt) ;val2_=$(awk -v row=${c} -v col=${r} 'NR==row {print $col}' InteractionAssistedHopping.txt); val=$(echo "${val1_}-${val2_}" | bc -l);printf "%1.1f " ${val} ;done;echo "";done

@@ -2,23 +2,23 @@ Geometry = LongRange
 Model = 1_orb_Hubbard_chain
 ------------------------------------------
 PBC = false
-Length_X = 4
+Length_X = 1
 Length_Y = 1
-Total_Sites = 4
+Total_Sites = 12
 Ndown = 2
-Nup = 2
+Nup = 10
  
 Hopping = 0.0
 Hopping_NN = 0.0
-U = 4.0
-H_mag = 4 0 0 0 0 
+U = 0.0
+H_mag = 12 0 0 0 0 0 0 0 0 0 0 0 0
 File_Onsite_Energies = false pinning_ener.txt
 File_Hopping_Connections = Hopping.txt
 File_NonLocal_Int_Connections = Interactions.txt
 File_Direct_Exchange_Connections = DirectExchange.txt
 
 File_Pair_Hopping_Connections = PairHopping.txt
-File_Interaction_Assisted_Hopping_Connections = InteractionAssistedHopping.txt
+File_Interaction_Assisted_Hopping_Connections = InteractionAssistedHopping2.txt
 
 
 File_Three_Point_Observation = ThreePointOprs.txt

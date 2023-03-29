@@ -739,6 +739,8 @@ void LANCZOS<Basis_type, Model_type>::Measure_one_point_observables(Mat_1_string
 
     vector_used.clear();
 
+    cout<<"one point obs done"<<endl;
+
 }
 
 

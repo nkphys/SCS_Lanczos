@@ -1173,7 +1173,7 @@ void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
                 for(int site3=0;site3<basis.Length;site3++){
 
 
-            if(  (InteractionAssistedHopping_mat[site3][site2] + InteractionAssistedHopping_mat[site2][site3] )!=0.0 ){
+            if(  (InteractionAssistedHopping_mat[site2][site3])!=0.0 ){
                         
 
 
@@ -1183,7 +1183,7 @@ void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
                         //n_{site2,up}c_{site2,dn}* c_{site3,dn}:
 
                         assert(site2!=site3);
-
+                        if(true){
                         if(((bit_value(basis.D_dn_basis[j], site2)==0)
                             &&
                             (bit_value(basis.D_up_basis[i], site2)==1)
@@ -1209,7 +1209,7 @@ void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
                             sign_FM = pow(-1.0, sign_pow_dn);
 
 
-                            value = sign_FM*(InteractionAssistedHopping_mat[site2][site3] + InteractionAssistedHopping_mat[site3][site2] );
+                            value = sign_FM*(InteractionAssistedHopping_mat[site2][site3] );
 
                             //assert(m_new<m);
                             //if(m_new<m){
@@ -1223,42 +1223,43 @@ void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
                                 }
                             //}
                         }
-               
+            }
 //--------------s=up term 1 done----------------------//
 
 
 //---------------------s=up term2---------------------------------//
           
                         
-                        //n_{site3,up}c_{site2,dn}* c_{site3,dn}:
+                        //n_{site2,up}c_{site3,dn}* c_{site2,dn}:
 
                         assert(site2!=site3);
 
-                        if(((bit_value(basis.D_dn_basis[j], site2)==0)
+                        if(true){
+                        if(((bit_value(basis.D_dn_basis[j], site3)==0)
                             )
                                 &&
-                            ((bit_value(basis.D_dn_basis[j], site3)==1) &&
-                             (bit_value(basis.D_up_basis[i], site3)==1)
+                            ((bit_value(basis.D_dn_basis[j], site2)==1) &&
+                             (bit_value(basis.D_up_basis[i], site2)==1)
                                  ))
                         {
 
                             D_up = basis.D_up_basis[i];
-                            D_dn = (int) (basis.D_dn_basis[j] - pow(2, site3)
-                                          + pow(2, site2) );
+                            D_dn = (int) (basis.D_dn_basis[j] - pow(2, site2)
+                                          + pow(2, site3) );
 
                             i_new = i;
                             j_new = Find_int_in_intarray_smartly(D_dn,basis.D_dn_basis,basis.partitions_dn,basis.Ddn_val_at_partitions);
 
                             m_new = basis.D_dn_basis.size()*i_new + j_new;
 
-                            l= site3;
-                            lp= site2;
+                            l= site2;
+                            lp= site3;
 
                             sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
                             sign_FM = pow(-1.0, sign_pow_dn);
 
 
-                            value = sign_FM*(InteractionAssistedHopping_mat[site2][site3] + InteractionAssistedHopping_mat[site3][site2] );
+                            value = sign_FM*(InteractionAssistedHopping_mat[site2][site3]  );
 
                             //assert(m_new<m);
                             //if(m_new<m){
@@ -1271,6 +1272,7 @@ void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
                                 }
                            // }
                         }
+            }
              
 //--------------s=up term 2 done----------------------//
 
@@ -1283,6 +1285,7 @@ void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
 
                         assert(site2!=site3);
 
+                        if(true){
                         if(((bit_value(basis.D_dn_basis[j], site2)==1)
                             &&
                             (bit_value(basis.D_up_basis[i], site2)==0)
@@ -1308,7 +1311,7 @@ void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
 
                             sign_FM = pow(-1.0, sign_pow_up);
 
-                            value = sign_FM*(InteractionAssistedHopping_mat[site2][site3] + InteractionAssistedHopping_mat[site3][site2] );
+                            value = sign_FM*(InteractionAssistedHopping_mat[site2][site3] );
 
                             //assert(m_new<m);
                             //if(m_new<m){
@@ -1321,28 +1324,27 @@ void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
                                 }
                             //}
                         }
- 
+                        }
 
 //---------------s=dn term 1 done-----------------//
 
 
 //--------------s=dn term 2-----------------------//
 
-
-                        //n_{site3,dn}c_{site2,up}* c_{site3,up}:
+                        //n_{site2,dn}c_{site3,up}* c_{site2,up}:
 
                         assert(site2!=site3);
-
-                        if(((bit_value(basis.D_up_basis[i], site2)==0)
+if(true){
+                        if(((bit_value(basis.D_up_basis[i], site3)==0)
                             )
                                 &&
-                            ((bit_value(basis.D_up_basis[i], site3)==1) &&
-                             (bit_value(basis.D_dn_basis[j], site3)==1)
+                            ((bit_value(basis.D_up_basis[i], site2)==1) &&
+                             (bit_value(basis.D_dn_basis[j], site2)==1)
                                  ))
                         {
 
-                            D_up = (int) (basis.D_up_basis[i] - pow(2, site3)
-                                          + pow(2, site2) );
+                            D_up = (int) (basis.D_up_basis[i] - pow(2, site2)
+                                          + pow(2, site3) );
                             D_dn = basis.D_dn_basis[j];
 
                             i_new = Find_int_in_intarray_smartly(D_up,basis.D_up_basis,basis.partitions_up,basis.Dup_val_at_partitions);
@@ -1350,14 +1352,14 @@ void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
 
                             m_new = basis.D_dn_basis.size()*i_new + j_new;
 
-                            l= site3;
-                            lp= site2;
+                            l= site2;
+                            lp= site3;
 
                             sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
 
                             sign_FM = pow(-1.0, sign_pow_up);
 
-                            value = sign_FM*(InteractionAssistedHopping_mat[site2][site3] + InteractionAssistedHopping_mat[site3][site2] );
+                            value = sign_FM*(InteractionAssistedHopping_mat[site2][site3] );
 
                             //assert(m_new<m);
                             //if(m_new<m){
@@ -1370,7 +1372,7 @@ void MODEL_1_orb_Hubb_chain::Act_non_diagonal_terms(BASIS_1_orb_Hubb_chain &basi
                                 }
                             //}
                         }
-
+                        }
 
 //---------------s=dn term 2 done-----------------//
 
@@ -2232,6 +2234,14 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
         for(int site_i=0;site_i<Total_Sites_int;site_i++){
             for(int site_j=0;site_j<Total_Sites_int;site_j++){
                 inputfile_hopping_connections>>Hopping_mat_NN[site_i][site_j];
+
+                if(site_i>=site_j){
+                    if(abs(Hopping_mat_NN[site_i][site_j])>0.000000001){
+                        cout<<"ONLY UPPER TRIANGLE IS ALLOWED IN HOPPING"<<endl;
+                        assert(false);
+                    }
+                }
+
             }
         }
 
@@ -2246,6 +2256,12 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
         for(int site_i=0;site_i<Total_Sites_int;site_i++){
             for(int site_j=0;site_j<Total_Sites_int;site_j++){
                 inputfile_nonlocal_int_connections>>NonLocalInteractions_mat[site_i][site_j];
+                if(site_i>=site_j){
+                    if(abs(NonLocalInteractions_mat[site_i][site_j])>0.000000001){
+                        cout<<"ONLY UPPER TRIANGLE IS ALLOWED IN NonLocalInteractions"<<endl;
+                        assert(false);
+                    }
+                }
             }
         }
 
@@ -2259,6 +2275,12 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
         for(int site_i=0;site_i<Total_Sites_int;site_i++){
             for(int site_j=0;site_j<Total_Sites_int;site_j++){
                 inputfile_directexchange_int_connections>>DirectExchange_mat[site_i][site_j];
+                if(site_i>=site_j){
+                    if(abs(DirectExchange_mat[site_i][site_j])>0.000000001){
+                        cout<<"ONLY UPPER TRIANGLE IS ALLOWED IN DirectExchange"<<endl;
+                        assert(false);
+                    }
+                }
             }
         }
 
@@ -2273,12 +2295,19 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
         for(int site_i=0;site_i<Total_Sites_int;site_i++){
             for(int site_j=0;site_j<Total_Sites_int;site_j++){
                 inputfile_pairhopping_connections>>PairHopping_mat[site_i][site_j];
+
+                if(site_i>=site_j){
+                    if(abs(PairHopping_mat[site_i][site_j])>0.000000001){
+                        cout<<"ONLY UPPER TRIANGLE IS ALLOWED IN PairHopping"<<endl;
+                        assert(false);
+                    }
+                }
+
             }
         }
 
 
-        //InteractionAssistedHopping  Mat(i,j) [n(i,s) X c(i,sbar)* X c(j,sbar)] + h.c.
-        //                                     [n(j,s) X c(j,sbar)* X c(i,sbar)] + h.c.
+        //InteractionAssistedHopping  Mat(i,j) { [n(i,s) X c(i,sbar)* X c(j,sbar)] + h.c.}
         InteractionAssistedHopping_mat.resize(Total_Sites_int);
         for(int site_=0;site_<Total_Sites_int;site_++){
             InteractionAssistedHopping_mat[site_].resize(Total_Sites_int);

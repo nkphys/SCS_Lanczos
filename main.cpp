@@ -2856,6 +2856,220 @@ int main(int argc, char** argv){
 
 
 
+   if (model_name=="multi_orb_Hubbard_chain_GC" && Restricted_Basis==false) {
+
+
+        DO_FULL_DIAGONALIZATION=false;
+
+        bool Dynamics_SPDOS = false;
+        bool Above_mu = false;
+        bool Below_mu= false;
+
+        BASIS_multi_orb_Hubb_chain_GC _BASIS;
+        MODEL_multi_orb_Hubb_chain_GC<BASIS_multi_orb_Hubb_chain_GC> _MODEL(_BASIS);
+
+
+        //---------------------------------------
+
+        _MODEL.Read_parameters(inp_filename);
+        cout<<"Parameters done"<<endl;
+
+        //----remove later-----//
+        // BASIS_3_orb_Hubb_chain_GC_Restricted _BASIS_Restricted;
+        //_MODEL.Read_parameters(inp_filename);
+        //_BASIS_Restricted.Construct_basis();
+        //---------------------------//
+
+
+        _BASIS.Construct_basis();
+
+        cout<<"Size of Hilbert space = "<<_BASIS.D_up_basis.size()<<endl;
+        cout<<scientific<<setprecision(6);
+
+        cout<<"Diagonal part started"<<endl;
+        _MODEL.Add_diagonal_terms();
+        cout<<"Diagonal part done"<<endl;
+
+        cout<<"Non Diagonal part started"<<endl;
+        _MODEL.Add_non_diagonal_terms();
+        cout<<"Non Diagonal part done"<<endl;
+
+
+        _MODEL.Add_Spin_Orbit_Coupling();
+
+        cout<<"Connections started"<<endl;
+        _MODEL.Add_connections();
+        cout<<"Connections done"<<endl;
+
+
+        cout<<"Size of Hilbert space = "<<_MODEL.Hamil.nrows<<endl;
+        cout<<scientific<<setprecision(1);
+        // Print_Matrix_COO(_MODEL.Hamil);
+        cout<<scientific<<setprecision(6);
+
+
+        double EG;
+        Mat_1_doub vecG;
+        if(DO_FULL_DIAGONALIZATION==true){
+            Diagonalize(_MODEL.Hamil, EG, vecG);
+            cout<<"GS energy from ED(without Lanczos) = "<<EG<<endl;
+        }
+
+
+        //        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXX MAT HAMIL XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+        //        cout<<scientific<<setprecision(2);
+        //        Print_Matrix_COO(_MODEL.Hamil);
+        //        cout<<scientific<<setprecision(15);
+        //        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+
+        LANCZOS<BASIS_multi_orb_Hubb_chain_GC, MODEL_multi_orb_Hubb_chain_GC<BASIS_multi_orb_Hubb_chain_GC>> _LANCZOS(_BASIS, _MODEL);
+        _LANCZOS.Dynamics_performed=false;
+        _LANCZOS.Read_Lanczos_parameters(inp_filename);
+        _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
+        _LANCZOS.Write_full_spectrum();
+        Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS.txt");
+
+        _MODEL.Initialize_one_point_to_calculate();
+        //_MODEL.Initialize_two_point_to_calculate();
+
+        //        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXX MAT JEFF_Z XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+        //        cout<<scientific<<setprecision(2);
+        //        Print_Matrix_COO(_MODEL.One_point_oprts[20][0]);
+        //        cout<<scientific<<setprecision(15);
+        //        cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+
+
+        for(int i=0;i<_LANCZOS.states_to_look.size();i++){
+            cout<<"===================FOR STATE NO "<<i<<"============================="<<endl;
+            _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, i);
+            // cout<<"Energy = "<<_LANCZOS.Evals_Tri_all[_LANCZOS.Evals_Tri_all.size()-1][i]<<endl;
+            //_LANCZOS.Measure_two_point_observables(_MODEL.two_point_obs, _MODEL.Two_point_oprts, _BASIS.Length, i, _MODEL.PBC);
+            _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs,_MODEL.One_point_oprts, _BASIS.Length, i,"multi_orb_Hubbard_chain_GC");
+            cout<<"============================================================================"<<endl;
+
+            _LANCZOS.Measure_macro_observables(_MODEL.macro_obs, _MODEL.Macro_oprts, i);
+        }
+
+
+
+      _MODEL.Run_SingleSite_5orb_NonInteracting();
+
+
+
+
+ //------------EXACT DIAGONALIZATION---------------------//
+
+
+
+        Mat_1_real Eigen_ED;
+        Mat_2_doub vecs;
+        DO_FULL_DIAGONALIZATION=true;
+        if(_MODEL.Hamil.nrows>800){
+            DO_FULL_DIAGONALIZATION=false;
+        }
+        if(DO_FULL_DIAGONALIZATION==true){
+
+
+            for(int opr_no=0;opr_no<_MODEL.One_point_oprts.size();opr_no++){
+                for(int _site=0;_site<_MODEL.One_point_oprts[opr_no].size();_site++){
+                    vector< int >().swap(_MODEL.One_point_oprts[opr_no][_site].columns );
+                    vector< int >().swap(_MODEL.One_point_oprts[opr_no][_site].rows );
+                    vector< double_type >().swap(_MODEL.One_point_oprts[opr_no][_site].value );
+                }
+            }
+            _MODEL.Initialize_one_point_to_calculate();
+            //            cout<<"XXXXXXXXXXXXXXXXXXXXXXXXX MAT JEFF_Z XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+            //            cout<<scientific<<setprecision(2);
+            //            Print_Matrix_COO(_MODEL.One_point_oprts[20][0]);
+            //            cout<<scientific<<setprecision(15);
+            //            cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+
+
+            //            _MODEL.Hamil.columns.clear();
+            //            _MODEL.Hamil.rows.clear();
+            //            _MODEL.Hamil.value.clear();
+
+            //            cout<<"Diagonal part started"<<endl;
+            //            _MODEL.Add_diagonal_terms();
+            //            cout<<"Diagonal part done"<<endl;
+            //            cout<<"Non Diagonal part started"<<endl;
+            //            _MODEL.Add_non_diagonal_terms();
+            //            cout<<"Non Diagonal part done"<<endl;
+            //            _MODEL.Add_Spin_Orbit_Coupling();
+            //            cout<<"Connections started"<<endl;
+            //            _MODEL.Add_connections();
+            //            cout<<"Connections done"<<endl;
+
+            //            cout<<"XXXXXXXXXXXXXXXXXXXXXXXXX MAT HAMIL XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+            //            cout<<scientific<<setprecision(2);
+            //            Print_Matrix_COO(_MODEL.Hamil);
+            //            cout<<scientific<<setprecision(15);
+            //            cout<<"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+
+
+            string fl_ED_out = "EXACT_RESULTS.txt";
+            ofstream file_ED_out(fl_ED_out.c_str());
+            cout<<"-----------------------------------------------------------------------"<<endl;
+            cout<<"AFTER THIS EXACT DIAGONALIZATION RESULTS ARE WRITTEN IN EXACT_RESULTS.txt-------------------"<<endl;
+
+            file_ED_out<<"//*****************Exact Diagonalization Energies**************//"<<endl;
+            file_ED_out<<"//------------------------------------------------------------//"<<endl;
+            Diagonalize(_MODEL.Hamil, Eigen_ED, vecs);
+            for(int i=0;i<Eigen_ED.size();i++){
+                file_ED_out<<i<<"   "<<scientific<<setprecision(6)<<Eigen_ED[i]<<endl;
+            }
+
+            Mat_2_doub Dummy_Eig_vecs;
+            Dummy_Eig_vecs = _LANCZOS.Eig_vecs;
+
+            for(int s_=0;s_<_LANCZOS.Eig_vecs.size();s_++){
+                _LANCZOS.Eig_vecs[s_].clear();
+            }
+            _LANCZOS.Eig_vecs.clear();
+            _LANCZOS.Eig_vecs.resize(_MODEL.Hamil.nrows);
+            for(int s_=0;s_<_MODEL.Hamil.nrows;s_++){
+                _LANCZOS.Eig_vecs[s_].resize(vecs[s_].size());
+                for(int comp=0;comp<_LANCZOS.Eig_vecs[s_].size();comp++){
+                    _LANCZOS.Eig_vecs[s_][comp] = vecs[s_][comp];
+                }
+            }
+
+            string fileED_name_state = "ED_State"+ to_string(0) + "_.txt";
+            Print_vector_in_file(_LANCZOS.Eig_vecs[0], fileED_name_state);
+
+            cout<<endl;
+
+
+            for(int i=0;i<_MODEL.Hamil.nrows;i++){
+                cout<<"===================FOR STATE NO (EXACT) "<<i<<"============================="<<endl;
+                _LANCZOS.Measure_one_point_observables(_MODEL.one_point_obs, _MODEL.One_point_oprts, _BASIS.Length, i);
+                // cout<<"Energy = "<<_LANCZOS.Evals_Tri_all[_LANCZOS.Evals_Tri_all.size()-1][i]<<endl;
+                //_LANCZOS.Measure_two_point_observables(_MODEL.two_point_obs, _MODEL.Two_point_oprts, _BASIS.Length, i, _MODEL.PBC);
+                _LANCZOS.Measure_two_point_observables_smartly(_MODEL.one_point_obs,_MODEL.One_point_oprts, _BASIS.Length, i,"3_orb_Hubbard_chain_GC");
+                cout<<"============================================================================"<<endl;
+                _LANCZOS.Measure_macro_observables(_MODEL.macro_obs, _MODEL.Macro_oprts, i);
+
+                cout<<endl<<endl<<endl;
+            }
+
+            _LANCZOS.Eig_vecs = Dummy_Eig_vecs;
+
+
+        }
+
+
+
+        cout<<"-----------------------------------------------------------------------"<<endl;
+        //------------------------------------------------------//
+
+
+
+   }
+
+
+
+
+
 
     if (model_name=="3_orb_Hubbard_chain_GC" && Restricted_Basis==false) {
 

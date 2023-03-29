@@ -14,14 +14,14 @@ Saving_Hamiltonian_and_Oprs = true
 Random_seed_generator = 564
 ---------------------------------------------
 Lanc_Error = 10e-12
-max_steps = 150
+max_steps = 200
 file_eval_spectrum = out0.txt
 save_all_Krylov_space_vecs = true
 get_overlap_bw_eigstates_and_K_vecs = true
 lanczos_reorthogonalization = true
 Get_Full_Spectrum = true
 need_few_eig_vecs = true
-few = 2
+few = 20
 ----------------------------------------
 Get_overlap_with_basis = false
 States_to_look = 2 0 1
