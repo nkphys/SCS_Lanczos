@@ -167,6 +167,8 @@ template <typename Basis_type>
 void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Add_non_diagonal_terms(){
 
 
+
+    bool PAIR_HOPPING_BOOL=false;
     double value;
     int m,j;
     int D_up,D_dn;
@@ -261,6 +263,7 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Add_non_diagonal_terms(){
                     //there have to be pair present at i,gamma_p
                     //there have to nothing at i,gamma
 
+                    if(PAIR_HOPPING_BOOL){
                     if(
                             ((bit_value(basis.D_dn_basis[j],gamma*basis.Length + site)==0)
                              &&
@@ -325,7 +328,8 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Add_non_diagonal_terms(){
 
 
 
-                    } //Pair-Hopping
+                    } 
+                    }//Pair-Hopping
 
 
                 } // site
