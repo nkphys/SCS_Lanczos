@@ -1,17 +1,17 @@
 Model = 3_orb_Hubbard_chain
 ------------------------------------------
 PBC = false
-Length = 4
-Ndown = 4
-Nup = 4
-CFS = -0.277 -0.203 -0.72
+Length = 1
+Ndown = 2
+Nup = 1
+CFS = 0 0 0
 
 Hopping_mat[0][orb] = 1 0 0
 Hopping_mat[1][orb] = 0 1 0
 Hopping_mat[2][orb] = 0 0 1
-U = 100.0
-JHund = 25.0 
-Uprime = 50.0
+U = 10.0
+JHund = 2.50 
+Uprime = 5.0
 H_mag = 0
 ----------------------------------------
 

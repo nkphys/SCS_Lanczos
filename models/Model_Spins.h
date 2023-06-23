@@ -15,7 +15,9 @@ class MODEL_Spins{
 
 public:
 
-    Mat_1_real H_field;
+    Mat_1_real Hx_field;
+    Mat_1_real Hy_field;
+    Mat_1_real Hz_field;
     Mat_1_real D_anisotropy;
     bool PBC;
     Matrix_COO Hamil;
@@ -38,9 +40,12 @@ public:
 
     string LongRangeExchangeZZfilepath;
     string LongRangeExchangePMfilepath;
+    string MagFieldVectorfilepath;
 
     Mat_2_doub Jzz_Exchange_mat;
     Mat_2_doub Jpm_Exchange_mat;
+
+    string Extenstion_to_FilePaths="";
 
 
 void Read_parameters(BASIS_Spins &basis, string filename);
@@ -52,6 +57,8 @@ void Initialize_Opr_for_Dynamics(BASIS_Spins &basis, int site);
 void Initialize_Opr_for_Dynamics(BASIS_Spins &basis);
 void Initialize_one_point_to_calculate_from_file(BASIS_Spins &basis);
 void Act_Hamil(BASIS_Spins &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+void Act_diagonal_terms(BASIS_Spins &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+void Act_connections(BASIS_Spins &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
 
 
 //void Initialize_one_point_to_calculate(BASIS_1_orb_tJ &basis);

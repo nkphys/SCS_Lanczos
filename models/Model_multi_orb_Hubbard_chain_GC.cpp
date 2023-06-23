@@ -168,7 +168,7 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Add_non_diagonal_terms(){
 
 
 
-    bool PAIR_HOPPING_BOOL=false;
+    bool PAIR_HOPPING_BOOL=true;
     double value;
     int m,j;
     int D_up,D_dn;
@@ -882,6 +882,7 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Add_connections(){
 template <typename Basis_type>
 void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Add_Spin_Orbit_Coupling(){
 
+    bool SOC_bw_t2g_and_eg=true;
 #ifdef USE_COMPLEX
 
 
@@ -930,7 +931,7 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Add_Spin_Orbit_Coupling(){
             SO_val[3].real(0.0);SO_val[3].imag(0.5);
 
 
-            if(N_orb==5){ //add SOC b/w eg and t_2g sector
+            if(N_orb==5 && SOC_bw_t2g_and_eg){ //add SOC b/w eg and t_2g sector
 
                orbs.resize(12);SO_val.resize(12);
                 
@@ -1053,7 +1054,7 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Add_Spin_Orbit_Coupling(){
             orbs[0].first = 1;orbs[0].second = 0;//yz-->xz
             SO_val[0].real(0.0);SO_val[0].imag(-0.5);
             
-            if(N_orb==5){ //add SOC b/w eg and t_2g sector
+            if(N_orb==5 && SOC_bw_t2g_and_eg){ //add SOC b/w eg and t_2g sector
 
                orbs.resize(2);SO_val.resize(2);
                 
@@ -1136,7 +1137,7 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Add_Spin_Orbit_Coupling(){
             orbs[0].first = 1;orbs[0].second = 0;
             SO_val[0].real(0.0);SO_val[0].imag(0.5);
 
-            if(N_orb==5){ //add SOC b/w eg and t_2g sector
+            if(N_orb==5 && SOC_bw_t2g_and_eg){ //add SOC b/w eg and t_2g sector
 
                orbs.resize(2);SO_val.resize(2);
                 
@@ -1414,6 +1415,8 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename)
     string hopp0_, Hopp0_ = "Hopping_mat[0][orb] = ";
     string hopp1_, Hopp1_ = "Hopping_mat[1][orb] = ";
     string hopp2_, Hopp2_ = "Hopping_mat[2][orb] = ";
+    string hopp3_, Hopp3_ = "Hopping_mat[3][orb] = ";
+    string hopp4_, Hopp4_ = "Hopping_mat[4][orb] = ";
 
     string restriction_on_local_occupations_, Restriction_On_Local_Occupations_ = "Restriction_on_local_occupations = ";
     string LongRangeHoppingfile_ = "LongRangeHopping_file = ";
@@ -1485,6 +1488,12 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename)
 
             if ((offset = line.find(Hopp2_, 0)) != string::npos) {
                 hopp2_ = line.substr (offset+Hopp2_.length());				}
+
+            if ((offset = line.find(Hopp3_, 0)) != string::npos) {
+                hopp3_ = line.substr (offset+Hopp3_.length());				}
+
+            if ((offset = line.find(Hopp4_, 0)) != string::npos) {
+                hopp4_ = line.substr (offset+Hopp4_.length());				}
 
 
             if ((offset = line.find(Restriction_On_Local_Occupations_, 0)) != string::npos) {
@@ -1613,22 +1622,28 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename)
     //cout<<"here 7"<<endl;
 
     stringstream hopp0_stream(hopp0_);
-
     for(int n=0;n<N_orb;n++){
         hopp0_stream >> Hopping_mat_NN[0][n];
     }
     stringstream hopp1_stream(hopp1_);
-
     for(int n=0;n<N_orb;n++){
         hopp1_stream >> Hopping_mat_NN[1][n];
     }
 
     stringstream hopp2_stream(hopp2_);
-
     for(int n=0;n<N_orb;n++){
         hopp2_stream >> Hopping_mat_NN[2][n];
     }
 
+    stringstream hopp3_stream(hopp3_);
+    for(int n=0;n<N_orb;n++){
+        hopp3_stream >> Hopping_mat_NN[3][n];
+    }
+
+    stringstream hopp4_stream(hopp4_);
+    for(int n=0;n<N_orb;n++){
+        hopp4_stream >> Hopping_mat_NN[4][n];
+    }
     cout<<"READING PARAMETERS"<<endl;
 
     // cout<<"here 8"<<endl;

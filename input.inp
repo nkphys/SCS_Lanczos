@@ -1,65 +1,50 @@
-Model = 2_orb_Hubbard_chain
 Geometry = LongRange
+Model = 1_orb_Hubbard_chain
 ------------------------------------------
-PBC = true
-Length = 8
+PBC = false
+Length_X = 4
+Length_Y = 3
+Total_Sites = 36
 Ndown = 1
-Nup = 0
-CFS = 0.0 0.0
+Nup = 1
+ 
+Hopping = 0.0
+Hopping_NN = 0.0
+U = 30.0
+H_mag = 36 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+File_Onsite_Energies = false pinning_ener.txt
+File_Hopping_Connections = YC3_L12_cluster_PBCxPBC_Hopping.txt
+File_NonLocal_Int_Connections = Interactions.txt
+File_Direct_Exchange_Connections = DirectExchange_YC3_L12_cluster_PBCxPBC.txt
+File_Pair_Hopping_Connections = PairHopping.txt
+File_Interaction_Assisted_Hopping_Connections = InteractionAssistedHopping_YC3_L12_cluster_PBCxPBC.txt
 
-LongRangeHopping_matrix_file = Hopp_file.txt
-LongRangeDenDenInt_matrix_file = DenDenInt_file.txt
-LongRangeHundsInt_matrix_file = HundsInt_file.txt
 
-
-Hopping_mat[0][orb] = 1.0 0.0
-Hopping_mat[1][orb] = 0.0 1.0
-#Remember if comlex, the hoppings should be written with (x,y) format
-U = 0
-JHund = 0
-Uprime = 0
-Dz_Anisotropy = 0.0
-H_mag = 0
+File_Three_Point_Observation = ThreePointOprs.txt
+File_Three_Point_Interaction = ThreePointIntrs.txt
 ----------------------------------------
-Saving_Hamiltonian_and_Oprs = true
-Random_seed_generator = 1
---------------------------------------
-Lanc_Error = 10e-10
-max_steps = 1000
+-------------------------------------
+Saving_Hamiltonian_and_Oprs = false
+Random_seed_generator = 564
+---------------------------------------------
+Lanc_Error = 10e-12
+max_steps = 400
 file_eval_spectrum = out0.txt
 save_all_Krylov_space_vecs = false
 get_overlap_bw_eigstates_and_K_vecs = false
-lanczos_reorthogonalization = true
-Get_Full_Spectrum = true
+lanczos_reorthogonalization = false
+Get_Full_Spectrum = false
 need_few_eig_vecs = false
-few = 6
+few = 2
 ----------------------------------------
 Get_overlap_with_basis = false
-States_to_look = 1 0
-overlap_out_file = overlap_out.txt
+States_to_look = 2 0 1
+# 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+overlap_out_file = out1.txt
 calculate_local_obs_for_states_to_look = false
 calculate_local_obs_for_states_to_look_for_first_n_basis = 100
 file_out_local_obs_for_states_to_look = local_obs_for_state_no
 --------------------------------------
-
-#D === Diagonal pair
-#AC === Along chain
-#OA === Orbital antisymmetric
-#OS === Orbital Symmetric
-#NOS1 === part_1 i.e / or _(on orb 0) 
-#NOS2 === part_2 i.e \ or -(on orb 1)
-#S === Spin Singlet
-#T === Spin Triplet
-
--------------------------
-Variational_state_contruction = AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0
-#AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 0
-#AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0 #AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0
-#AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0 
-#AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 0
-#AC S NOS1 0 1 AC S NOS2 1 2 AC S NOS1 2 3 AC S NOS2 3 4 AC S NOS1 4 5 AC S NOS2 5 0
-#AC S NOS1 6 7 AC S NOS2 7 0
--------------------------
 
 ----------------------------------
 Perform_Dynamics = false
@@ -71,26 +56,21 @@ d_omega = 0.001
 Opr_for_Dynamics = J
 Momentum_resolved = false
 k = 0.4
-file_dynamics_out = orb0_spin0_k0_TBCm3M4
-Dynamics_dos_operators = 6 1.0 0.0 0 0 0 1.0 0.0 0 0 1 1.0 0.0 0 0 2 1.0 0.0 0 0 3 1.0 0.0 0 0 4 1.0 0.0 0 0 5
+file_dynamics_out = orb0_up_site1
+Dynamics_dos_operators = 1 1.0 0.0 0 1 1
 ---------------------------------
 
 ---------------------------------------------------
 #2 1.654 0 0 1 0.0321 0 1 1
-#no_of_orps real imag(if in complex) orb spin site ...
+#no_of_orps real orb spin site ...
 
 #upspin=0, downspin=1
+---------------------------------
+
+Static_Finite_Temperature = false
+Number_of_Random_States = 300
+Number_of_LowKrylov_States_used = 100
+Temperature = 0.2
 
 
-
-----------------------------------------
-Perform_RIXS = false
-Gamma = 0.2
-No_of_intermediate_states(n) = 100
-Light_polarization_in = 1 0 0 
-Light_polarization_in = 0 1 0
-Incident_energy = 0.1
-----------------------------------------
-
-
-Processors = 8
+Processors = 4

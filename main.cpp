@@ -17,6 +17,8 @@
 #include "LTLM_Static.cpp"
 #include "FTLM_Dynamics.cpp"
 #include "LTLM_Dynamics.cpp"
+#include "TimeDependentLanczos.h"
+#include "TimeDependentLanczos.cpp"
 #include "reading_input.h"
 
 //Remember "cpp" files for templated class over basis need to be included in this code
@@ -40,9 +42,10 @@ int main(int argc, char** argv){
     bool Restricted_Basis;
     bool Static_Finite_Temp;
     bool Dynamics_Finite_Temp;
+    bool TimeDependent;
     int no_of_processors;
 
-    reading_input(inp_filename, model_name, Do_Dynamics, Static_Finite_Temp, Dynamics_Finite_Temp,  Perform_RIXS, Restricted_Basis, no_of_processors);
+    reading_input(inp_filename, model_name, TimeDependent, Do_Dynamics, Static_Finite_Temp, Dynamics_Finite_Temp,  Perform_RIXS, Restricted_Basis, no_of_processors);
     cout<<"Do_Dynamics ="<<Do_Dynamics<<endl;
 
 
@@ -60,6 +63,16 @@ int main(int argc, char** argv){
 #endif
 
 
+    if(TimeDependent){
+
+        TD_Lanczos TD_Lanczos_;
+        TD_Lanczos_.inp_filename = inp_filename;
+        TD_Lanczos_.reading_input();
+
+
+    }
+
+    else{
 
     if(model_name=="SpinlessFermionsFockSpace"){
 
@@ -617,7 +630,7 @@ int main(int argc, char** argv){
             _BASIS2.Construct_basis();
 
             for(int i=0;i<_BASIS2.Length;i++){
-                _MODEL2.H_field[i]=0.0;
+                _MODEL2.Hz_field[i]=0.0;
             }
 
             _MODEL2.Add_diagonal_terms(_BASIS2);
@@ -634,7 +647,7 @@ int main(int argc, char** argv){
             _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
             _LANCZOS_Dynamics.GS_energy=_LANCZOS.GS_energy;
             for(int i=0;i<_BASIS2.Length;i++){
-                _LANCZOS_Dynamics.GS_energy += abs(_MODEL.H_field[i])*0.5;
+                _LANCZOS_Dynamics.GS_energy += abs(_MODEL.Hz_field[i])*0.5;
             }
 
 
@@ -3016,7 +3029,7 @@ int main(int argc, char** argv){
             file_ED_out<<"//------------------------------------------------------------//"<<endl;
             Diagonalize(_MODEL.Hamil, Eigen_ED, vecs);
             for(int i=0;i<Eigen_ED.size();i++){
-                file_ED_out<<i<<"   "<<scientific<<setprecision(6)<<Eigen_ED[i]<<endl;
+                file_ED_out<<i<<"   "<<scientific<<setprecision(20)<<Eigen_ED[i]<<endl;
             }
 
             Mat_2_doub Dummy_Eig_vecs;
@@ -3718,6 +3731,7 @@ int main(int argc, char** argv){
 
 
         if(_LANCZOS.Saving_Hamil){
+            cout<<"INTERACTION ASSISTED HOPPING MAY BE HAVE SOME ISSUE WHEN HAMIL IS SAVED"<<endl;
             _MODEL.Add_diagonal_terms(_BASIS);
             cout<<"Diagonal terms added"<<endl;
             _MODEL.Add_non_diagonal_terms(_BASIS);
@@ -4826,6 +4840,11 @@ int main(int argc, char** argv){
     //=======================================================================================================================================================================================================//
 
 
+
+
+
+
+    }
 
 #ifdef _OPENMP
     end_time = omp_get_wtime();

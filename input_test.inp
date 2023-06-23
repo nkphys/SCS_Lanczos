@@ -1,33 +1,42 @@
-Model = 3_orb_Hubbard_chain_GC
+PerformTimeDependent_Lanczos = false
+
+Model = multi_orb_Hubbard_chain_GC
 Restricted_Basis = false
 Restriction_on_local_occupations = 3 3 4 5
 ------------------------------------------
 PBC = true
+N_Orb = 5
 Length = 1
-N_Total = 3
-CFS = 0.0 0.0 0.0
+N_Total = 6
+
+#xz yz xy x2-y2 z2
+CFS = 0.0 0.0 0.0 1.000000 1.000000
 LongRangeHopping_file = 4_site_PBC_chain.dat
  
 Hopping_mat[0][orb] = 1.0 0.0 0.0
 Hopping_mat[1][orb] = 0.0 1.0 0.0
 Hopping_mat[2][orb] = 0.0 0.0 1.0
-U = 10.0
-JHund = 2.5
-Uprime = 5.0
-H_mag = 0
-lambda_SOC = 0.0
+U = 0.800
+JHund = 0.040000
+Uprime = 0.720000
+H_mag = 0.0
+lambda_SOC = 0.005000
 ----------------------------------------
-Random_seed_generator = 321
+Random_seed_generator = 1
+----------------------------------------
+Saving_Hamiltonian_and_Oprs = true
 --------------------------------------
-Lanc_Error = -10e-10
+
+--------------------------------------
+Lanc_Error = 10e-10
 max_steps = 250
 file_eval_spectrum = Tri_evals_OBC_GC.txt
-save_all_Krylov_space_vecs = false
-get_overlap_bw_eigstates_and_K_vecs = false
-lanczos_reorthogonalization = false
+save_all_Krylov_space_vecs = true
+get_overlap_bw_eigstates_and_K_vecs = true
+lanczos_reorthogonalization = true
 Get_Full_Spectrum = true
-need_few_eig_vecs = false
-Get_overlap_with_basis = false
+need_few_eig_vecs = true
+Get_overlap_with_basis = true
 States_to_look = 1 0
 overlap_out_file = out0.txt
 calculate_local_obs_for_states_to_look = true
@@ -39,7 +48,7 @@ seed_file = seed_GSold.txt
 
 
 ----------------------------------
-Perform_Dynamics = true
+Perform_Dynamics = false
 check_omega = 0.5
 Opr_for_Dynamics = Mz_kPBC
 Momentum_resolved = true
@@ -47,37 +56,6 @@ k = 0
 file_dynamics_out = MzMz_k0_PBC
 Dynamics_dos_operators = 1 1.0 0.0 2 1 0
 
----------------------------------------------------
-#xz
-#orb=0
-
-#yz
-#orb=1
-
-#xy
-#orb=2
-
-#j_3by2_m3by2
-#2 0.707106 0.0 0 1 0 0.0 -0.707106 1 1 0
-
-#j_3by2_3by2
-#2 0.707106 0.0 0 0 0 0.0 0.707106 1 0 0
-
-#j_3by2_1by2
-#3 -0.4082482 0.0 1 1 0 0.0 0.4082482 0 1 0 0.8164965 0.0 2 0 0
-
-#j_3by2_m1by2
-#3 0.4082482 0.0 1 0 0 0.0 0.4082482 0 0 0 0.8164965 0.0 2 1 0
-
-#j_1by2_1by2
-#3 0.57735 0.0 1 1 0 0.0 -0.5773502 0 1 0 0.577350 0.0 2 0 0
-
-#j_1by2_m1by2
-#3 -0.57735 0.0 1 0 0 0.0 -0.5773502 0 0 0 0.577350 0.0 2 1 0
--------------------------------------------------------
-#2 1.0 0.0 0 0 1 1.0 0.0 0 1 1
-#no_of_orps real imag orb spin site ...
-#upspin=0, downspin=1
 ---------------------------------
 
 ---------------For both RIXS and std. dynamics---------

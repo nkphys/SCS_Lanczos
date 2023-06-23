@@ -1,6 +1,6 @@
 #include "reading_input.h"
 
-void reading_input(string filename, string & Model_Name, bool &Do_Dynamics, bool &Static_Finite_Temp, bool &Dynamics_Finite_Temp, bool &Perform_RIXS, bool &Restricted_Basis, int &No_Of_Processors){
+void reading_input(string filename, string & Model_Name, bool &TimeDependent, bool &Do_Dynamics, bool &Static_Finite_Temp, bool &Dynamics_Finite_Temp, bool &Perform_RIXS, bool &Restricted_Basis, int &No_Of_Processors){
 
 
     string filepath = filename;
@@ -11,6 +11,7 @@ void reading_input(string filename, string & Model_Name, bool &Do_Dynamics, bool
     string perform_rixs_, Perform_RIXS_ = "Perform_RIXS = ";
     string restricted_basis_, Restricted_Basis_ = "Restricted_Basis = ";
     string processors_, Processors_ = "Processors = ";
+    string timedependentlanczos, TimeDependentLanczos_ = "PerformTimeDependent_Lanczos = ";
     int offset;
     string line;
 
@@ -31,6 +32,9 @@ void reading_input(string filename, string & Model_Name, bool &Do_Dynamics, bool
 
             if ((offset = line.find(Do_Dynamics_, 0)) != string::npos) {
                 do_dynamics_ = line.substr (offset+Do_Dynamics_.length());				}
+
+            if ((offset = line.find(TimeDependentLanczos_, 0)) != string::npos) {
+                timedependentlanczos = line.substr (offset+TimeDependentLanczos_.length());	 }
 
             if ((offset = line.find(Restricted_Basis_, 0)) != string::npos) {
                 restricted_basis_ = line.substr (offset+Restricted_Basis_.length());	}
@@ -61,6 +65,13 @@ void reading_input(string filename, string & Model_Name, bool &Do_Dynamics, bool
     }
     else{
         Do_Dynamics=false;
+    }
+
+    if(timedependentlanczos=="true"){
+        TimeDependent=true;
+    }
+    else{
+        TimeDependent=false;
     }
 
     if(perform_rixs_=="true"){

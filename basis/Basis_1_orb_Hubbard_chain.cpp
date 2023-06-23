@@ -41,6 +41,8 @@ void BASIS_1_orb_Hubb_chain::Construct_basis(){
     DupMax_ = d_up_max;
     DupMin_ = d_up_min;
 
+    
+
     //putting correct D_'s in the D arrays
     int num;
     D_up_basis.clear();
@@ -56,6 +58,7 @@ void BASIS_1_orb_Hubb_chain::Construct_basis(){
 
     }
 
+//cout<<"here"<<endl;
 
     D_dn_basis.clear();
     inverse_Ddn.resize(d_dn_max-d_dn_min+1);

@@ -24,10 +24,157 @@ using namespace std;
 
 void MODEL_Spins::Act_Hamil(BASIS_Spins &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
 
- cout<<"NOT WORKING AT PRESENT"<<endl;
+    assert (Vec_in.size() == basis.D_max + 1 - basis.D_min);
+    Vec_out.clear();
+    Vec_out.resize(basis.D_max + 1 - basis.D_min);
+    Act_diagonal_terms(basis, Vec_in, Vec_out);
+    cout<<"Diagonal done"<<endl;
+   // Act_non_diagonal_terms(basis, Vec_in, Vec_out);
+   // cout<<"Non diagonal done"<<endl;
+    Act_connections(basis, Vec_in, Vec_out);
+    cout<<"Connections done"<<endl;
 
 }
 
+
+void MODEL_Spins::Act_diagonal_terms(BASIS_Spins &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
+
+    assert (Vec_out.size() == basis.D_max + 1 - basis.D_min);
+    assert (Vec_in.size() == Vec_out.size());
+
+
+    //Remember H[l][i]=<l|H|i>
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
+   for (int i=basis.D_min;i<basis.D_max + 1;i++){
+            double_type value;
+            value=zero;
+            
+        //magnetic Field in Z-direction
+        for(int site=0;site<basis.Length;site++){
+            value+=one*(Hz_field[site])*
+                    ( ( (1.0*value_at_pos(i, site, basis.BASE)) - (0.5*basis.TwoTimesSpin)) );
+        }
+
+
+
+        //SzSz exchange
+        for(int site_i=0;site_i<basis.Length;site_i++){
+            for(int site_j=0;site_j<basis.Length;site_j++){
+                if(Jzz_Exchange_mat[site_i][site_j]!=zero){
+                    assert(Jzz_Exchange_mat[site_i][site_j] == Jzz_Exchange_mat[site_j][site_i]);
+                    value+=  Jzz_Exchange_mat[site_i][site_j]*
+                            (0.5*( ( (1.0*value_at_pos(i, site_i, basis.BASE)) - (0.5*basis.TwoTimesSpin))*
+                                   ( (1.0*value_at_pos(i, site_j, basis.BASE)) - (0.5*basis.TwoTimesSpin))
+                                   ));
+
+                }
+            }
+        }
+
+        //(Sz_local)^2 exchange
+        for(int site_i=0;site_i<basis.Length;site_i++){
+            if(D_anisotropy[2]!=zero){
+                value+=  D_anisotropy[2]*
+                        ( ( (1.0*value_at_pos(i, site_i, basis.BASE)) - (0.5*basis.TwoTimesSpin))*
+                          ( (1.0*value_at_pos(i, site_i, basis.BASE)) - (0.5*basis.TwoTimesSpin))
+                          );
+            }
+        }
+
+
+
+
+            if(abs(value)>0){
+                Vec_out[i] +=value*one*Vec_in[i];
+            }
+        
+    }
+
+}
+
+
+
+void MODEL_Spins::Act_connections(BASIS_Spins &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
+
+    assert (Vec_out.size() == basis.D_max + 1 - basis.D_min);
+    assert (Vec_in.size() == Vec_out.size());
+    
+
+
+    double_type phase;
+    double_type value;
+    int m,j;
+    unsigned long long int i_new, i_new_temp;
+    unsigned long long int m_new;
+    int Val_site, Val_site_p;
+    int Val_site_new, Val_site_p_new;
+    double_type Factor;
+    complex<double> iota_(0.0,1.0);
+
+
+    for (unsigned long long int i=basis.D_min;i<basis.D_max+1;i++){
+
+        value=zero;
+
+        for(int site_p=0;site_p<basis.Length ;site_p++){
+            Val_site_p = value_at_pos(i, site_p, basis.BASE);
+
+            for(int site=site_p+1;site<basis.Length ;site++){
+                Val_site = value_at_pos<unsigned long long int>(i, site, basis.BASE);
+
+
+                if((Jpm_Exchange_mat[site_p][site]!=zero)){
+                    //SpSm-connections
+                    //Sp_site_p*Sm_site  Exchange coupling:
+                    //Jpm[site_p][site] x Sp_site_p x Sm_site
+                    // + (Jpm[site_p][site])* x Sm_site_p x Sp_site
+
+                    //site cannot be in -Spin, and
+                    //site_p cannot be in Spin
+
+                    if(
+                            (Val_site != 0)
+                            &&
+                            (Val_site_p != (basis.BASE - 1))
+                            )
+                    {
+
+                        Val_site_p_new = Val_site_p + 1;
+                        Val_site_new = Val_site - 1;
+
+
+                        i_new_temp = Updated_decimal_with_value_at_pos<unsigned long long int>(i, site, basis.BASE, Val_site_new);
+                        i_new = Updated_decimal_with_value_at_pos<unsigned long long int>(i_new_temp, site_p, basis.BASE, Val_site_p_new);
+
+
+                        Factor = sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                                       ((Val_site - (0.5*basis.TwoTimesSpin))*
+                                        (Val_site_new - (0.5*basis.TwoTimesSpin))  ) );
+                        Factor = Factor*sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                                              ((Val_site_p - (0.5*basis.TwoTimesSpin))*
+                                               (Val_site_p_new - (0.5*basis.TwoTimesSpin))  ) );
+
+                        assert(i_new<i);
+
+                        Hamil.value.push_back((0.5*(Jpm_Exchange_mat[site_p][site]))*Factor*one);
+                        Hamil.rows.push_back(i_new);
+                        Hamil.columns.push_back(i);
+
+                    } // if SpSm possible
+
+                }
+
+            }//site_p
+
+        } // site
+
+    } // "i" i.e up_decimals
+    
+    
+}
 
 void MODEL_Spins::Add_diagonal_terms(BASIS_Spins &basis){
 
@@ -45,7 +192,7 @@ void MODEL_Spins::Add_diagonal_terms(BASIS_Spins &basis){
 
         //magnetic Field in Z-direction
         for(int site=0;site<basis.Length;site++){
-            value+=one*(H_field[site])*
+            value+=one*(Hz_field[site])*
                     ( ( (1.0*value_at_pos(i, site, basis.BASE)) - (0.5*basis.TwoTimesSpin)) );
         }
 
@@ -180,6 +327,8 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
 
     string LongRangeExchangePMfile_ = "LongRangeExchangePM file = ";
 
+    string MagFieldVectorFile_ = "MagFieldVectorFile = ";
+
     string fourpointobservablessitesfile_ ,FourPointObservablesSitesFile_ = "FourPointObservablesSites file = ";
 
     string no_of_onepoint_obs_, No_Of_Onepoint_Obs_ = "No_of_onepoint_obs = ";
@@ -205,6 +354,10 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
 
             if ((offset = line.find(LongRangeExchangePMfile_, 0)) != string::npos) {
                 LongRangeExchangePMfilepath = line.substr (offset+LongRangeExchangePMfile_.length());  }
+
+
+            if ((offset = line.find(MagFieldVectorFile_, 0)) != string::npos) {
+                MagFieldVectorfilepath = line.substr (offset+MagFieldVectorFile_.length());  }
 
             if ((offset = line.find(PBC_, 0)) != string::npos) {
                 pbc_ = line.substr (offset+PBC_.length());				}
@@ -242,16 +395,19 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
 
 
 
-    cout<<"Magnetic field :"<<endl;
-    double temp_h;
-    stringstream hmag_stream;
-    hmag_stream<<hmag;
-    H_field.clear();
-    H_field.resize(basis.Length); //Hz
+    MagFieldVectorfilepath = MagFieldVectorfilepath + Extenstion_to_FilePaths; 
+
+    cout<<"Reading Magnetic field :"<<endl;
+     ifstream inMagfile(MagFieldVectorfilepath.c_str());
+    double temp_hx, temp_hy , temp_hz;
+    int temp_site;
+    Hx_field.clear();Hy_field.clear();Hz_field.clear();
+    Hx_field.resize(basis.Length);Hy_field.resize(basis.Length);Hz_field.resize(basis.Length);
     for(int i=0;i<basis.Length;i++){
-        hmag_stream >> temp_h;
-        H_field[i]=temp_h;
-        cout<<H_field[i]<<" ";
+        inMagfile >> temp_site >> temp_hx >> temp_hy >> temp_hz ;
+        Hx_field[i]=temp_hx;Hy_field[i]=temp_hy;Hz_field[i]=temp_hz;
+        assert(i==temp_site);
+        cout<<i<<"  "<<Hx_field[i]<<"  "<<Hy_field[i]<<"  "<<Hz_field[i]<<endl;
     }
     cout<<endl;
 
@@ -267,6 +423,8 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
     }
 
 
+    LongRangeExchangePMfilepath = LongRangeExchangePMfilepath + Extenstion_to_FilePaths; 
+    LongRangeExchangeZZfilepath = LongRangeExchangeZZfilepath + Extenstion_to_FilePaths;
 
     Read_matrix_from_file(LongRangeExchangePMfilepath,
                           Jpm_Exchange_mat ,basis.Length,basis.Length);
