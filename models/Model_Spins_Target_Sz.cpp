@@ -521,7 +521,7 @@ void MODEL_Spins_Target_Sz::Act_SiSj(int &site_i, int &site_j, ulli &m, Mat_1_ul
     //----------------------------------------------------------------------------
 
 
-    //0.5*S+(i)S-(j)------------------------------------------------------------------
+    //0.5*S+(i)S-(j)---------------------------------------------------------------
     //if i notequal to j : then site_i cannot be in Spin, and site_j cannot be in -Spin
     if(site_i!=site_j){
         allowed = ((val_site_j != 0) && (val_site_i != (basis.BASE - 1)));

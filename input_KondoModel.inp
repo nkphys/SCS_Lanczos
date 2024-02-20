@@ -1,0 +1,96 @@
+Read_Basis = false
+Write_Basis = false
+
+Read_Basis_File = abc.txt
+Write_Basis_File = abc.txt
+
+PerformTimeDependent_Lanczos = false
+Evolution_Type = WithConstModelType
+#later on add WithDiffModelTypes (if needed someday)
+
+TimeMax = 10.0
+Time_slice_width = 0.01
+Time_otoc = 5.0
+
+M_EigStates = 40
+KrylovStepsForTimeEvo = 40
+
+SiteV = 3
+SiteW = 0
+
+Scheduler_File = dmrg_sched.txt
+Use_Scheduler = true
+
+Model = KondoModel
+
+------------------------------------------
+Length = 16
+TotalSzTarget = -9.0
+Target_Total_Ne = 2
+
+#in format "site Hx Hy Hz"
+H_mag = 0
+
+LongRangeJ_LocalSpins_file = J_LSpins_longrange_4x4.txt
+
+LongRange_Hopping_file = Hoppings_longrange_4x4.txt
+
+KondoExchange_file = KondoExchange_longrange_4x4.txt
+#Matrix of s_{row} . S_{col}
+
+
+KondoHopping_file = KondoHopping_longrange_4x4.txt
+#i l j val * c^{daggger_}{i} c_{l} S_{j}
+----------------------------------------
+
+No_of_onepoint_obs = 1
+One_point_oprt_path_1 = Sz.txt
+One_point_oprt_path_2 = Sm.txt
+
+Saving_Hamiltonian_and_Oprs = true
+--------------------------------------
+FourPointObservablesSites file = fourpoint.txt
+-------------------------------------
+Lanc_Error = 10e-16
+max_steps = 130
+Random_seed_generator = 2
+file_eval_spectrum = out0.txt
+save_all_Krylov_space_vecs = true
+get_overlap_bw_eigstates_and_K_vecs = true
+lanczos_reorthogonalization = false
+Get_Full_Spectrum = true
+need_few_eig_vecs = true
+few = 1
+----------------------------------------
+Get_overlap_with_basis = false
+States_to_look = 1 0
+overlap_out_file = out0.txt
+calculate_local_obs_for_states_to_look = true
+calculate_local_obs_for_states_to_look_for_first_n_basis = 100
+file_out_local_obs_for_states_to_look = local_obs_for_state_no
+--------------------------------------
+
+
+Static_Finite_Temperature = false
+Dynamics_Finite_Temperature = false
+Number_of_Random_States = 20
+Number_of_LowKrylov_States_used = 200
+Temperature_Range = 0.1 0.01 1.0
+Energy_Offset_FTLM = -3.6510934089371769317
+Temperature_LTLM_Dynamics = 0.91
+
+
+----------------------------------
+Perform_Dynamics = false
+eta = 0.05
+check_omega = 0.2
+omega_max = 100.0
+omega_min = 0.0
+d_omega = 0.01
+Opr_for_Dynamics = Sm
+Momentum_resolved = true
+k = 0.0
+file_dynamics_out = Dyn_Sm_K0.0
+---------------------------------
+
+Processors = 1

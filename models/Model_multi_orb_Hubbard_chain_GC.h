@@ -51,6 +51,14 @@ public:
     Mat_1_doub State_c_on_GS;
     Mat_1_doub State_cdagger_on_GS;
 
+
+    bool GetOverlapWithSingleSiteStates;
+    int SingleSiteStates_no;
+    Mat_1_string SingleSiteStatesFiles;
+    Mat_2_doub SingleSiteStates; 
+    Mat_2_int D_up_p_SingleSiteStates;
+    Mat_2_int D_dn_p_SingleSiteStates;
+
     enum {num_Hopping, num_CFS, num_InterOrbRepulsion, num_IntraOrbRepulsion
                    , num_Hunds_zz, num_Hunds_pm_mp, num_PairHopping};
 
@@ -81,6 +89,8 @@ public:
     void Act_Hamil(Basis_type &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
     void Act_translational_opr(Mat_1_doub &Vec_in, Mat_1_doub &Vec_out);
 
+
+    void Get_OverlapMatrixWithSingleSiteStates(Mat_1_doub &State_vec_);
 
 private:
     Basis_type& basis;

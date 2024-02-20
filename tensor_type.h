@@ -112,6 +112,7 @@ struct pair_int{
     int second;
 };
 typedef vector<pair_int> Mat_1_intpair;
+typedef vector<Mat_1_intpair> Mat_2_intpair;
 
 struct tetra_int{
     int first;
@@ -132,6 +133,21 @@ struct trio_int{
 
 typedef vector<trio_int> Mat_1_trio_int;
 typedef vector<Mat_1_trio_int> Mat_2_trio_int;
+
+
+
+
+struct triad_int{
+    int first_;
+    int second_;
+    int third_;
+};
+
+typedef vector<triad_int> Mat_1_triad_int;
+typedef vector<Mat_1_triad_int> Mat_2_triad_int;
+
+
+
 
 
 class INT_CSR_MAT{

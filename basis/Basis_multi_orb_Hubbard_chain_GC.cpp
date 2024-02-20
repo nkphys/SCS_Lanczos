@@ -158,6 +158,34 @@ void BASIS_multi_orb_Hubb_chain_GC::Construct_basis(){
 }
 
 
+
+void BASIS_multi_orb_Hubb_chain_GC::Print_state_in_file_with_basis(Mat_1_doub vec, string filename){
+
+ofstream file_out(filename.c_str());
+
+file_out<<"#value   BasisDensities....."<<endl;
+file_out<<vec.size()<<endl;
+
+for(int basis_index=0;basis_index<vec.size();basis_index++){
+file_out<<basis_index<< "  "<<vec[basis_index]<<"  ";
+
+for(int orb_no=0;orb_no<N_orb;orb_no++){
+for(int site=0;site<Length;site++){
+file_out<<bit_value(D_up_basis[basis_index],orb_no*Length + site)<<"  ";
+}
+}
+
+for(int orb_no=0;orb_no<N_orb;orb_no++){
+for(int site=0;site<Length;site++){
+file_out<<bit_value(D_dn_basis[basis_index],orb_no*Length + site)<<"  ";
+}
+}
+file_out<<endl;
+}
+
+
+}
+
 void BASIS_multi_orb_Hubb_chain_GC::clear(){
     D_up_basis.clear();
     D_dn_basis.clear();

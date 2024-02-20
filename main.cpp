@@ -1,4 +1,3 @@
-
 #include <iostream>  //for cin and cout
 #include <math.h>  // for pow
 #include <stdlib.h>  //for div(q,n).rem(quot),abs(int n)
@@ -68,7 +67,15 @@ int main(int argc, char** argv){
         TD_Lanczos TD_Lanczos_;
         TD_Lanczos_.inp_filename = inp_filename;
         TD_Lanczos_.reading_input();
+        TD_Lanczos_.Create_Scheduler();
 
+        TD_Lanczos_.Constructing_InitialState();
+
+        //TD_Lanczos_.Perform_TD_Lanczos();
+        string otoc_type ="Sz";
+        int siteV=TD_Lanczos_.SiteV;
+        int siteW=TD_Lanczos_.SiteW;
+        TD_Lanczos_.Calculate_OTOC(otoc_type, siteV, siteW);
 
     }
 
@@ -715,6 +722,53 @@ int main(int argc, char** argv){
 
     }
 
+
+    if(model_name=="KondoModel"){
+    cout<<"Model :" <<model_name<<endl;
+
+    MODEL_KondoModel _MODEL;
+    BASIS_KondoModel _BASIS;
+
+
+//    _BASIS.Length=64;
+//    _BASIS.Target_Total_Ne=4;
+//    _BASIS.Target_Total_Sz=-32;
+    _MODEL.Read_parameters(_BASIS, inp_filename);
+    _BASIS.Construct_basis();
+
+    _MODEL.Add_diagonal_terms(_BASIS);
+    _MODEL.Add_FermionHopping(_BASIS);
+    _MODEL.Add_Kondocouplings(_BASIS);
+
+    LANCZOS<BASIS_KondoModel, MODEL_KondoModel> _LANCZOS(_BASIS, _MODEL);
+    _LANCZOS.Dynamics_performed=false;
+    _LANCZOS.Read_Lanczos_parameters(inp_filename);
+
+    _LANCZOS.TimeEvoPerformed=false;
+
+    //Print_Matrix_COO(_MODEL.Hamil);
+    DO_FULL_DIAGONALIZATION=true;
+    if((DO_FULL_DIAGONALIZATION==true) && _MODEL.Hamil.nrows<700 ){
+        double EG;
+        Mat_1_real Evals_temp;
+        Mat_1_doub vecG;
+        Diagonalize(_MODEL.Hamil, Evals_temp, vecG);
+        cout<<"GS energy from ED(without Lanczos) = "<<Evals_temp[0]<<endl;
+        cout<<"All eigenvalues using ED------------------------------"<<endl;
+        cout<<"-------------------------------------------------------"<<endl;
+        for(int i=0;i<Evals_temp.size();i++){
+            cout<<i<<"  "<<Evals_temp[i]<<endl;
+        }
+        cout<<"-------------------------------------------------------"<<endl;
+        cout<<"-------------------------------------------------------"<<endl;
+    }
+
+
+    _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
+
+    _LANCZOS.Write_full_spectrum();
+
+    }
 
     if(model_name=="SpinOnlyTargetSz"){
 
@@ -2926,6 +2980,7 @@ int main(int argc, char** argv){
         if(DO_FULL_DIAGONALIZATION==true){
             Diagonalize(_MODEL.Hamil, EG, vecG);
             cout<<"GS energy from ED(without Lanczos) = "<<EG<<endl;
+            //Print_vector_in_file(,"seed_GS.txt");
         }
 
 
@@ -2942,6 +2997,13 @@ int main(int argc, char** argv){
         _LANCZOS.Write_full_spectrum();
         Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS.txt");
 
+         Mat_1_doub vec_temp;
+        _MODEL.Act_translational_opr(_LANCZOS.Eig_vec, vec_temp);
+        cout<<"Translation by 1 lattice spacing : "<<dot_product(_LANCZOS.Eig_vec,vec_temp)<<endl;
+
+        if(_MODEL.GetOverlapWithSingleSiteStates){
+        _MODEL.Get_OverlapMatrixWithSingleSiteStates(_LANCZOS.Eig_vec);
+        }
         _MODEL.Initialize_one_point_to_calculate();
         //_MODEL.Initialize_two_point_to_calculate();
 
@@ -3049,6 +3111,12 @@ int main(int argc, char** argv){
 
             string fileED_name_state = "ED_State"+ to_string(0) + "_.txt";
             Print_vector_in_file(_LANCZOS.Eig_vecs[0], fileED_name_state);
+
+            for(int state=0;state<_LANCZOS.Eig_vecs.size();state++){
+              string fileED_name_state_temp = "ED_State"+ to_string(state) + "_with_basis.txt";
+            _BASIS.Print_state_in_file_with_basis(_LANCZOS.Eig_vecs[state], fileED_name_state_temp);
+            }
+
 
             cout<<endl;
 

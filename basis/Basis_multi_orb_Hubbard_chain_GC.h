@@ -34,6 +34,7 @@ public:
 
 
 void Construct_basis();
+void Print_state_in_file_with_basis(Mat_1_doub vec, string filename);
 void clear();
 };
 

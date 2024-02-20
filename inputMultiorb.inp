@@ -10,29 +10,38 @@ Length = 2
 N_Total = 12
 
 #xz yz xy x2-y2 z2
-CFS = 0.0 0.0 0.0 1.0 1.0 
+CFS = 0.0 0.0 0.0 2.0 2.0 
 LongRangeHopping_file = 4_site_PBC_chain.dat
  
 Hopping_mat[0][orb] = 1.0 0.0 0.0 0.0 0.0
 Hopping_mat[1][orb] = 0.0 1.0 0.0 0.0 0.0
-Hopping_mat[2][orb] = 0.0 0.0 1.0 0.0 0.0
-Hopping_mat[3][orb] = 0.0 0.0 0.0 1.0 0.0
+Hopping_mat[2][orb] = 0.0 0.0 0.0 0.0 0.0
+Hopping_mat[3][orb] = 0.0 0.0 0.0 0.0 0.0
 Hopping_mat[4][orb] = 0.0 0.0 0.0 0.0 1.0
 
-U = 1.0
-JHund = 0.25
-Uprime = 0.50
+U = 5.0
+JHund = 1.25
+Uprime = 2.5
 H_mag = 0.0
-lambda_SOC = -0.15
+lambda_SOC = 0.2
+
 ----------------------------------------
 Random_seed_generator = 1
 ----------------------------------------
 Saving_Hamiltonian_and_Oprs = true
 --------------------------------------
 
+Get_Overlap_With_Single_Site_States = true
+Single_Site_States_Files = 150  state_0_n6.txt state_1_n6.txt state_2_n6.txt state_3_n6.txt state_4_n6.txt state_5_n6.txt state_6_n6.txt state_7_n6.txt state_8_n6.txt state_9_n6.txt state_10_n6.txt state_11_n6.txt state_12_n6.txt state_13_n6.txt state_14_n6.txt state_15_n6.txt state_16_n6.txt state_17_n6.txt state_18_n6.txt state_19_n6.txt state_20_n6.txt state_21_n6.txt state_22_n6.txt state_23_n6.txt state_24_n6.txt state_25_n6.txt state_26_n6.txt state_27_n6.txt state_28_n6.txt state_29_n6.txt state_30_n6.txt state_31_n6.txt state_32_n6.txt state_33_n6.txt state_34_n6.txt state_35_n6.txt state_36_n6.txt state_37_n6.txt state_38_n6.txt state_39_n6.txt state_40_n6.txt state_41_n6.txt state_42_n6.txt state_43_n6.txt state_44_n6.txt state_45_n6.txt state_46_n6.txt state_47_n6.txt state_48_n6.txt state_49_n6.txt state_0_n5.txt state_1_n5.txt state_2_n5.txt state_3_n5.txt state_4_n5.txt state_5_n5.txt state_6_n5.txt state_7_n5.txt state_8_n5.txt state_9_n5.txt state_10_n5.txt state_11_n5.txt state_12_n5.txt state_13_n5.txt state_14_n5.txt state_15_n5.txt state_16_n5.txt state_17_n5.txt state_18_n5.txt state_19_n5.txt state_20_n5.txt state_21_n5.txt state_22_n5.txt state_23_n5.txt state_24_n5.txt state_25_n5.txt state_26_n5.txt state_27_n5.txt state_28_n5.txt state_29_n5.txt state_30_n5.txt state_31_n5.txt state_32_n5.txt state_33_n5.txt state_34_n5.txt state_35_n5.txt state_36_n5.txt state_37_n5.txt state_38_n5.txt state_39_n5.txt state_40_n5.txt state_41_n5.txt state_42_n5.txt state_43_n5.txt state_44_n5.txt state_45_n5.txt state_46_n5.txt state_47_n5.txt state_48_n5.txt state_49_n5.txt state_0_n7.txt state_1_n7.txt state_2_n7.txt state_3_n7.txt state_4_n7.txt state_5_n7.txt state_6_n7.txt state_7_n7.txt state_8_n7.txt state_9_n7.txt state_10_n7.txt state_11_n7.txt state_12_n7.txt state_13_n7.txt state_14_n7.txt state_15_n7.txt state_16_n7.txt state_17_n7.txt state_18_n7.txt state_19_n7.txt state_20_n7.txt state_21_n7.txt state_22_n7.txt state_23_n7.txt state_24_n7.txt state_25_n7.txt state_26_n7.txt state_27_n7.txt state_28_n7.txt state_29_n7.txt state_30_n7.txt state_31_n7.txt state_32_n7.txt state_33_n7.txt state_34_n7.txt state_35_n7.txt state_36_n7.txt state_37_n7.txt state_38_n7.txt state_39_n7.txt state_40_n7.txt state_41_n7.txt state_42_n7.txt state_43_n7.txt state_44_n7.txt state_45_n7.txt state_46_n7.txt state_47_n7.txt state_48_n7.txt state_49_n7.txt 
+
+
+
+
+
+
 --------------------------------------
-Lanc_Error = 10e-10
-max_steps = 250
+Lanc_Error = 10e-15
+max_steps = 600
 file_eval_spectrum = Tri_evals_OBC_GC.txt
 save_all_Krylov_space_vecs = true
 get_overlap_bw_eigstates_and_K_vecs = true
@@ -42,7 +51,7 @@ need_few_eig_vecs = true
 Get_overlap_with_basis = true
 States_to_look = 1 0
 overlap_out_file = out0.txt
-calculate_local_obs_for_states_to_look = true
+calculate_local_obs_for_states_to_look = false
 calculate_local_obs_for_states_to_look_for_first_n_basis = 4000
 file_out_local_obs_for_states_to_look = local_obs_for_state_no
 Read_the_seed = false

@@ -49,6 +49,15 @@ int val(char c);
 
 bool shouldSwap(char str[], int start, int curr);
 
+void from_deci_type2_to_n_array(int dec, int base, Mat_1_int &n_array);
+
+int bit_val_at_site_n_array(int site, int Length, Mat_1_int n_array);
+
+void Convert_n_array_to_bit_array(int Length, Mat_1_int n_array, Mat_1_int &bit_array);
+
+int FromBitArray_toDeci_type2(Mat_1_int bit_array, int base);
+
+int Count_bits_in_bw(int site_i,int  site_j, Mat_1_int bit_array);
 // Function to convert a number from given base 'b'
 // to decimal
 template <typename T> T toDeci(char *str, int base, T)
@@ -77,6 +86,53 @@ template <typename T> T toDeci(char *str, int base, T)
     return num;
 }
 
+
+
+template <typename T> T toDeci_type2(char *str, int base, T)
+{
+    int len = strlen(str);
+    int power = 1; // Initialize power of base
+    T num = 0;  // Initialize result
+    int i;
+
+    // Decimal equivalent is str[len-1]*1 +
+    // str[len-1]*base + str[len-1]*(base^2) + ...
+
+   Mat_1_int n_vals;
+   n_vals.clear();
+   int n_=0;
+
+    for(int i=0;i<len;i++){
+        if(val(str[i])==1){
+           n_vals.push_back(n_+1);
+           n_=0;
+        }
+        else{
+        n_ +=1;
+        }
+    }
+
+    for (i = 0; i < n_vals.size(); i++)
+    {
+        // A digit in input number must be
+        // less than number's base
+        if ( n_vals[i] >= base)
+        {
+            printf("Invalid Number");
+            assert(false);
+            return -1;
+        }
+
+        num += n_vals[i] * power;
+        power = power * base;
+    }
+
+    return num;
+}
+
+
+pair_int toDeci_type3(char *str, int base1_, int base2_);
+
 // Prints all distinct permutations in str[0..n-1]
 template <typename T>
 void findPermutations(char str[], int index, int n, vector<T> & dec_vec, int base)
@@ -104,7 +160,33 @@ void findPermutations(char str[], int index, int n, vector<T> & dec_vec, int bas
     }
 }
 
+template <typename T>
+void findPermutations_type2(char str[], int index, int n, vector<T> & dec_vec, int base)
+{
+    T dec_temp;
 
+    if (index >= n) {
+        dec_temp=toDeci_type2(str, base, T());
+        dec_vec.push_back(dec_temp);
+        //cout << str << endl;
+        return;
+    }
+
+    for (int i = index; i < n; i++) {
+
+        // Proceed further for str[i] only if it
+        // doesn't match with any of the characters
+        // after str[index]
+        bool check = shouldSwap(str, index, i);
+        if (check) {
+            swap(str[index], str[i]);
+            findPermutations_type2(str, index+1, n, dec_vec, base);
+            swap(str[index], str[i]);
+        }
+    }
+}
+
+void findPermutations_type3(char str[], int index, int n, Mat_1_intpair &dec_vec, int base1_, int base2_);
 
 char reVal(int num);
 

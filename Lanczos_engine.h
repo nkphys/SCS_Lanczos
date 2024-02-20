@@ -26,6 +26,8 @@
 #include "basis/Basis_1_orb_tJ.h"
 #include "basis/Basis_Spins.h"
 #include "models/Model_Spins.h"
+#include "basis/Basis_KondoModel.h"
+#include "models/Model_KondoModel.h"
 #include "basis/Basis_Spins_Target_Sz.h"
 #include "models/Model_Spins_Target_Sz.h"
 #include "models/Model_3_orb_Hubbard_chain_GC.h"
@@ -120,6 +122,13 @@ public:
     Mat_1_doub Saved_Seed;
     Mat_1_doub Seed_used;
     Mat_2_doub Mat_elements;
+
+
+    Mat_2_doub Mat_for_TimeEvo;
+    int M_TimeEvo;
+    Mat_1_doub Vec_new_TimeEvo;
+    double dt_TimeEvo;
+    bool TimeEvoPerformed;
 
     bool Eig_vecs_required;
 

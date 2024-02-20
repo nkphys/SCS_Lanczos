@@ -1231,7 +1231,7 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Add_Spin_Orbit_Coupling(){
 template <typename Basis_type>
 void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Run_SingleSite_5orb_NonInteracting(){
 
-//#ifdef USE_COMPLEX
+#ifdef USE_COMPLEX
 
 Matrix_COO Hamil_NI_Site;
 Hamil_NI_Site.nrows = 10; 
@@ -1315,7 +1315,7 @@ cout<<"-----------------------------------------"<<endl;
 
 cout<<scientific<<setprecision(8)<<endl;
 
-//#endif
+#endif
 
 }
 
@@ -1421,7 +1421,8 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename)
     string restriction_on_local_occupations_, Restriction_On_Local_Occupations_ = "Restriction_on_local_occupations = ";
     string LongRangeHoppingfile_ = "LongRangeHopping_file = ";
 
-
+    string get_overlap_with_single_site_states_,  Get_Overlap_With_Single_Site_States_ = "Get_Overlap_With_Single_Site_States = ";
+    string single_site_states_files_, Single_Site_States_Files_ = "Single_Site_States_Files = "; 
 
     int offset;
     string line;
@@ -1442,6 +1443,12 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename)
 
             if ((offset = line.find(PBC_, 0)) != string::npos) {
                 pbc_ = line.substr (offset+PBC_.length());				}
+
+            if ((offset = line.find(Single_Site_States_Files_, 0)) != string::npos) {
+                single_site_states_files_ = line.substr (offset+Single_Site_States_Files_.length());				}
+
+            if ((offset = line.find(Get_Overlap_With_Single_Site_States_, 0)) != string::npos) {
+                get_overlap_with_single_site_states_ = line.substr (offset+Get_Overlap_With_Single_Site_States_.length());				}
 
             if ((offset = line.find(NSC_, 0)) != string::npos) {
                 nsc_ = line.substr (offset + NSC_.length());		}
@@ -1514,6 +1521,22 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename)
     }
     else{
         USE_LONG_RANGE_HOPPINGS = false;
+    }
+
+
+    if(get_overlap_with_single_site_states_ =="true"){
+        GetOverlapWithSingleSiteStates =true;
+    }
+    else{
+        GetOverlapWithSingleSiteStates=false;
+    }
+
+    stringstream single_site_states_files_stream;
+    single_site_states_files_stream<<single_site_states_files_;
+    single_site_states_files_stream>>SingleSiteStates_no;
+    SingleSiteStatesFiles.resize(SingleSiteStates_no);
+    for(int i=0;i<SingleSiteStates_no;i++){
+        single_site_states_files_stream>>SingleSiteStatesFiles[i];
     }
 
     if(pbc_ == "true"){
@@ -3162,8 +3185,8 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Get_ExcitonCoherence_Length(Mat_
                 Matrix_COO_vector_multiplication("cx", OPR_, vector_used, temp_vec);
                 value_ = dot_product(temp_vec,vector_used);
 
-                Num_ += (pow( abs(site-site_p),2 )*1.0)*(value_*conj(value_));
-                Den_ += value_*conj(value_);
+                Num_ += (pow( abs(site-site_p),2 )*1.0)*(value_*conjugate(value_));
+                Den_ += value_*conjugate(value_);
 
                 cout<<value_<<" ";
 
@@ -3184,6 +3207,185 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Get_ExcitonCoherence_Length(Mat_
     }
 
 #endif
+}
+
+
+
+template <typename Basis_type>
+void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Get_OverlapMatrixWithSingleSiteStates(Mat_1_doub &State_vec_){
+
+string overlap_file_str = "Overlap_with_SingleSiteStates.txt";
+ofstream overlap_file(overlap_file_str.c_str());
+string temp_string;
+int vec_size, temp_int;
+int local_den_up, local_den_dn;
+double_type overlap_;
+//local_den_up.resize(N_orb);
+//local_den_dn.resize(N_orb);
+SingleSiteStates.resize(SingleSiteStates_no);
+D_up_p_SingleSiteStates.resize(SingleSiteStates_no);
+D_dn_p_SingleSiteStates.resize(SingleSiteStates_no);
+
+for(int n=0;n<SingleSiteStates_no;n++){
+     ifstream file_in(SingleSiteStatesFiles[n].c_str());
+     getline(file_in,temp_string);
+     //file_in>>temp_string;
+     file_in>>vec_size;
+     SingleSiteStates[n].resize(vec_size);
+     D_up_p_SingleSiteStates[n].resize(vec_size);
+     D_dn_p_SingleSiteStates[n].resize(vec_size);
+     for(int i=0;i<vec_size;i++){
+     file_in>>temp_int>>SingleSiteStates[n][i];
+
+      D_up_p_SingleSiteStates[n][i]=0;
+      D_dn_p_SingleSiteStates[n][i]=0;
+      for(int orb=0;orb<N_orb;orb++){
+        file_in>>local_den_up;
+        D_up_p_SingleSiteStates[n][i] += pow(2, orb*basis.Length)*local_den_up;
+      }
+      for(int orb=0;orb<N_orb;orb++){
+        file_in>>local_den_dn;
+        D_dn_p_SingleSiteStates[n][i] += pow(2, orb*basis.Length)*local_den_dn;
+      }
+     }
+    }
+
+
+
+int D_up, D_dn;
+int nup_temp, ndn_temp;
+int m_new, i_new, j_new;
+
+
+if(basis.Length==1){
+for(int n=0;n<SingleSiteStates_no;n++){ //site=0
+overlap_=0.0;
+
+//cout<<"HERE 1"<<endl;
+for(int ni=0;ni<SingleSiteStates[n].size();ni++){
+D_up = D_up_p_SingleSiteStates[n][ni]*pow(2,0);
+D_dn = D_dn_p_SingleSiteStates[n][ni]*pow(2,0);
+
+//cout<<"HERE 2: "<<e ndl;
+//------------
+if(basis.Restricted==true){
+nup_temp = __builtin_popcount(D_up);
+ndn_temp = __builtin_popcount(D_dn);
+if((__builtin_popcount(D_up) + __builtin_popcount(D_dn)) == basis.N_total){
+m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+}
+                        }
+else{
+    if((__builtin_popcount(D_up) + __builtin_popcount(D_dn)) == basis.N_total){
+i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                                    basis.Nup_offsets[__builtin_popcount(D_up)].first;
+    }
+                        }
+//------------
+
+
+if((__builtin_popcount(D_up) + __builtin_popcount(D_dn)) == basis.N_total){
+overlap_ += State_vec_[m_new]*conjugate(SingleSiteStates[n][ni]);
+}
+}    
+overlap_file<<n<<"  "<<overlap_<<endl;
+}
+}
+
+if(basis.Length==2){
+for(int n=0;n<SingleSiteStates_no;n++){ //site=0
+for(int m=0;m<SingleSiteStates_no;m++){ //site=1
+overlap_=0.0;
+
+for(int ni=0;ni<SingleSiteStates[n].size();ni++){
+for(int mi=0;mi<SingleSiteStates[m].size();mi++){
+D_up = D_up_p_SingleSiteStates[n][ni]*pow(2,0) +
+               D_up_p_SingleSiteStates[m][mi]*pow(2,1);
+
+D_dn = D_dn_p_SingleSiteStates[n][ni]*pow(2,0) +
+               D_dn_p_SingleSiteStates[m][mi]*pow(2,1);
+
+//------------
+if(basis.Restricted==true){
+nup_temp = __builtin_popcount(D_up);
+ndn_temp = __builtin_popcount(D_dn);
+if((__builtin_popcount(D_up) + __builtin_popcount(D_dn)) == basis.N_total){
+m_new = basis.D_updn_reverse[nup_temp][D_up-basis.D_up_min[nup_temp]][D_dn-basis.D_dn_min[ndn_temp]];
+   }
+      }
+else{
+    if((__builtin_popcount(D_up) + __builtin_popcount(D_dn)) == basis.N_total){
+i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+        basis.Nup_offsets[__builtin_popcount(D_up)].first;
+
+    }
+                        }
+//------------
+
+int n_up_offset, n_dn_offset;
+int n_up0, n_dn0;
+int n_up1, n_dn1;
+double Sign_FM;
+if((__builtin_popcount(D_up) + __builtin_popcount(D_dn)) == basis.N_total){
+
+
+//sign_FM_up
+n_up_offset=0;
+for(int orb2_=0;orb2_<N_orb;orb2_++){
+//bit_value(D_up,orb2_*basis.Length + 1)
+for(int orb1_=(N_orb-1);orb1_>orb2_;orb1_--){
+n_up_offset +=bit_value(D_up,orb1_*basis.Length + 0)*bit_value(D_up,orb2_*basis.Length + 1);
+}
+}
+
+n_up0=0;n_dn0=0;
+n_up1=0;n_dn1=0;
+for(int orb2_=0;orb2_<N_orb;orb2_++){
+n_up1 +=bit_value(D_up,orb2_*basis.Length + 1);
+n_dn1 +=bit_value(D_dn,orb2_*basis.Length + 1);
+n_up0 +=bit_value(D_up,orb2_*basis.Length + 0);
+n_dn0 +=bit_value(D_dn,orb2_*basis.Length + 0);
+}
+
+
+n_dn_offset=0;
+for(int orb2_=0;orb2_<N_orb;orb2_++){
+//bit_value(D_up,orb2_*basis.Length + 1)
+for(int orb1_=(N_orb-1);orb1_>orb2_;orb1_--){
+n_dn_offset +=bit_value(D_dn,orb1_*basis.Length + 0)*bit_value(D_dn,orb2_*basis.Length + 1);
+}
+}
+
+
+
+Sign_FM = pow(-1.0,n_up_offset+n_dn_offset);
+Sign_FM = Sign_FM*pow(-1.0,n_dn0*n_up1);
+//Sign_FM = Sign_FM*pow(-1.0,n_up0*n_dn0 + n_up0*n_dn1 + n_up1*n_dn1);
+
+overlap_ += Sign_FM*State_vec_[m_new]*conjugate(SingleSiteStates[n][ni])*conjugate(SingleSiteStates[m][mi]);
+
+// if(n==0 && m==1){
+// cout<<"overlap 01: "<<n<<"  "<<m<<"  "<<ni<<"  "<<mi<<"  "<<State_vec_[m_new]<<"  "<<conjugate(SingleSiteStates[n][ni])<<"  "<<conjugate(SingleSiteStates[m][mi])<<endl;
+// }
+// if(n==1 && m==0){
+// cout<<"overlap 10: "<<n<<"  "<<m<<"  "<<ni<<"  "<<mi<<"  "<<State_vec_[m_new]<<"  "<<conjugate(SingleSiteStates[n][ni])<<"  "<<conjugate(SingleSiteStates[m][mi])<<endl;
+// }
+
+}
+
+}  
+}    
+
+overlap_file<<n<<"  "<<m<<"  "<<overlap_<<endl;
+}
+}
+}
+
+
 }
 
 
@@ -4708,7 +4910,7 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Get_cdagger_on_GS(Mat_1_doub & E
                     sign_FM = pow(-1.0, sign_pow_up);
 
 #ifdef USE_COMPLEX
-                    value = sign_FM*EigVec_[i]*conj(value_in);
+                    value = sign_FM*EigVec_[i]*conjugate(value_in);
 #endif
 #ifndef USE_COMPLEX
                     value = sign_FM*EigVec_[i]*(value_in);
@@ -4746,7 +4948,7 @@ void MODEL_multi_orb_Hubb_chain_GC<Basis_type>::Get_cdagger_on_GS(Mat_1_doub & E
 
 
 #ifdef USE_COMPLEX
-                    value = sign_FM*EigVec_[i]*conj(value_in);
+                    value = sign_FM*EigVec_[i]*conjugate(value_in);
 #endif
 #ifndef USE_COMPLEX
                     value = sign_FM*EigVec_[i]*(value_in);

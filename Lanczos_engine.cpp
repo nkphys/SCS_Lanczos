@@ -127,6 +127,8 @@ void LANCZOS<Basis_type, Model_type>::Perform_LANCZOS(Matrix_COO &Hamil){
     //-------------SEED CREATED----------------------------//
 
 
+    cout<<"In Lanczos milestone 1"<<endl;
+
     E0_old=0;
     diff_E=1.0;
     diff_GF_imag=1.0;
@@ -226,7 +228,7 @@ void LANCZOS<Basis_type, Model_type>::Perform_LANCZOS(Matrix_COO &Hamil){
         tmpnrm_type_double=Norm(Kvector_np1);
         tmpnrm=sqrt(tmpnrm_type_double);
 
-        if((tmpnrm)>0.000001){
+        if((tmpnrm)>0.0000000000000000001){
 #ifdef _OPENMP
 #pragma omp parallel for default(shared)
 #endif
@@ -541,10 +543,44 @@ sort(numbers.begin(), numbers.end(), comp);
     }
 
 
-    for(int i=0;i<Krylov_space_vecs.size();i++){
-        vector < double_type >().swap(Krylov_space_vecs[i]);
+
+
+
+    cout<<"----Lanczos milestone 2-----"<<endl;
+    //cout<<TimeEvoPerformed<<endl;
+
+    if(TimeEvoPerformed){
+        Vec_new_TimeEvo.resize(Hamil.nrows);
+    for(int i=0;i<Hamil.nrows;i++){
+    Vec_new_TimeEvo[i]=0.0;
+    }
+    }
+
+    for(int n=0;n<Krylov_space_vecs.size();n++){
+
+        if(TimeEvoPerformed){
+#ifdef USE_COMPLEX
+        for(int i=0;i<Hamil.nrows;i++){ //sum over basis size
+        for(int l=0;l<M_TimeEvo;l++){ //sum over eigenvectors
+
+        Vec_new_TimeEvo[i] +=red_eig_vecs[l][n]*
+                      Krylov_space_vecs[n][i]*
+                     conjugate(red_eig_vecs[l][0])*
+                     exp(-1.0*iota_comp* (Evals_Tri_all[Lanc_iter_done-1][l])*dt_TimeEvo);
+
+        }
+        }
+#else
+     cout<<"USE_COMPLEX FOR TIME EVOLUTION"<<endl;
+     assert(false);
+#endif
+        }
+
+        vector < double_type >().swap(Krylov_space_vecs[n]);
     }
     Krylov_space_vecs.clear();
+
+    cout<<"----Lanczos milstone 3-----"<<endl;
 
 
 }

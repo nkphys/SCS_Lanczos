@@ -19,6 +19,12 @@ public:
     Mat_1_real Hy_field;
     Mat_1_real Hz_field;
     Mat_1_real D_anisotropy;
+
+    Mat_1_real Hx_field_const;
+    Mat_1_real Hy_field_const;
+    Mat_1_real Hz_field_const;
+    Mat_1_real D_anisotropy_const;
+
     bool PBC;
     Matrix_COO Hamil;
 
@@ -45,10 +51,18 @@ public:
     Mat_2_doub Jzz_Exchange_mat;
     Mat_2_doub Jpm_Exchange_mat;
 
+    Mat_2_doub Jzz_Exchange_mat_const;
+    Mat_2_doub Jpm_Exchange_mat_const;
+
     string Extenstion_to_FilePaths="";
 
 
 void Read_parameters(BASIS_Spins &basis, string filename);
+void MeasureEnergy(BASIS_Spins &basis, Mat_1_doub &Vec, double_type &Energy_);
+void MeasureTwoPointOprs(BASIS_Spins &basis, Mat_1_doub &Vec);
+void MeasureLocalOprs(BASIS_Spins &basis, Mat_1_doub &Vec);
+void Act_Operator(BASIS_Spins &basis, Mat_1_doub &Vec_in, Mat_1_doub &Vec_out, string opr_str, int opr_site);
+void Update_Hamiltonian_Params(BASIS_Spins &basis, double Hx_factor,double Hz_factor, double Jpm_factor, double Jzz_factor);
 void Add_diagonal_terms(BASIS_Spins &basis);
 void Add_non_diagonal_terms(BASIS_Spins &basis);
 void Add_connections(BASIS_Spins &basis);
