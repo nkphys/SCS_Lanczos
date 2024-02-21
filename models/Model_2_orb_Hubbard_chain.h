@@ -133,6 +133,9 @@ public:
     void Get_cdagger_on_GS(Mat_1_doub & EigVec_, BASIS_2_orb_Hubb_chain & basis_Np1, BASIS_2_orb_Hubb_chain & basis,
                                                    Mat_1_trio_int TRIO_VEC, Mat_1_doub values);
 
+
+    void Get_CdaggerC_type_Opr(BASIS_2_orb_Hubb_chain &basis, Matrix_COO &OPR, int site1, int orb1, int spin1, int site2, int orb2, int spin2);
+
 };
 
 #endif

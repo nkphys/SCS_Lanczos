@@ -1643,6 +1643,7 @@ int main(int argc, char** argv){
         bool PERFORM_Nm2_Variational_Calculation=false;
         bool Cheaper_SpinSpincorr=true;
 
+        bool Get_SingleParticleDenMat=true;
 
 
         MODEL_2_orb_Hubb_chain _MODEL;
@@ -1719,6 +1720,34 @@ int main(int argc, char** argv){
             }
         }
 
+
+        if(Get_SingleParticleDenMat==true){
+        int spin1=0;
+        int orb1=0;
+        int spin2=0;
+        int orb2=0;
+        Matrix_COO OPR_;
+        double val_;
+        cout<<"-------------------------------------------------"<<endl;
+        for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
+        cout<<"Cdag[orb="<<orb1<<"][spin="<<spin1<<"]C[orb="<< orb2<<"][spin="<< spin2 <<"]"
+            <<" for state = "<<state_<<endl;
+
+        for(int site1=0;site1<_BASIS.Length;site1++){
+            for(int site2=0;site2<_BASIS.Length;site2++){
+                OPR_.columns.clear();
+                OPR_.rows.clear();
+                OPR_.value.clear();
+        _MODEL.Get_CdaggerC_type_Opr( _BASIS, OPR_, site1, orb1, spin1, site2, orb2, spin2);
+         val_=_LANCZOS.Measure_observable(OPR_, state_);
+         cout<<val_<<" ";
+            }
+        cout<<endl;
+        }
+        cout<<endl;
+        }
+        cout<<"--------------------------------------------------"<<endl;
+        }
 
         if(Cheaper_SpinSpincorr==true){
 
