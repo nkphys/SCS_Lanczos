@@ -1723,11 +1723,16 @@ int main(int argc, char** argv){
 
         if(Get_SingleParticleDenMat==true){
         int spin1=0;
-        int orb1=0;
         int spin2=0;
-        int orb2=0;
         Matrix_COO OPR_;
         double val_;
+
+        for(int orb1=0;orb1<2;orb1++){
+        for(int orb2=orb1;orb2<2;orb2++){
+        for(int spin_=0;spin_<2;spin_++){
+        spin1=spin_;
+        spin2=spin_;
+
         cout<<"-------------------------------------------------"<<endl;
         for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
         cout<<"Cdag[orb="<<orb1<<"][spin="<<spin1<<"]C[orb="<< orb2<<"][spin="<< spin2 <<"]"
@@ -1747,6 +1752,9 @@ int main(int argc, char** argv){
         cout<<endl;
         }
         cout<<"--------------------------------------------------"<<endl;
+        }
+        }
+        }
         }
 
         if(Cheaper_SpinSpincorr==true){
