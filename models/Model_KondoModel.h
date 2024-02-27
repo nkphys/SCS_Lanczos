@@ -34,10 +34,26 @@ public:
 
 void Read_parameters(BASIS_KondoModel &basis, string filename);
 void Add_diagonal_terms(BASIS_KondoModel &basis);
+void Add_LocalSpin_couplings(BASIS_KondoModel &basis);
 void Add_FermionHopping(BASIS_KondoModel &basis);
 void Add_Kondocouplings(BASIS_KondoModel &basis);
 
 void Act_Hamil(BASIS_KondoModel &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+
+void Initializer_opr_LocalizedSpin_SzSz_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j);
+void Initializer_opr_LocalizedSpin_SpSm_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j);
+void Initializer_opr_LocalizedSpin_SmSp_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j);
+
+void Initializer_opr_Fermionsz_LocalizedSz_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j);
+void Initializer_opr_Fermionsminus_LocalizedSplus_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j);
+void Initializer_opr_Fermionsplus_LocalizedSminus_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j);
+
+
+
+void Initializer_opr_Fermions_LocalOprs(string opr_type, BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i);
+void Initializer_opr_Fermions_szsz_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j);
+void Initializer_opr_Fermions_spsm_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j);
+void Initializer_opr_Fermions_smsp_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j);
 
 //void Initialize_one_point_to_calculate(BASIS_1_orb_tJ &basis);
 //void Initialize_two_point_to_calculate(BASIS_1_orb_tJ &basis);

@@ -127,7 +127,7 @@ void MODEL_KondoModel::Add_diagonal_terms(BASIS_KondoModel &basis){
         i_local = basis.Concatenate_Spins_and_Fermions(i_fermion, i_Lspins, SzSetNo);
         m = basis.Get_basis_ind(i_local, SzSetNo);
 
-
+        value=0.0;
         for(int site_i=0;site_i<Length;site_i++){
             for(int site_j=0;site_j<Length;site_j++){
            //sz_i Sz_j
@@ -140,16 +140,17 @@ void MODEL_KondoModel::Add_diagonal_terms(BASIS_KondoModel &basis){
             bit_dn_fermion = bit_val_at_site_n_array(site_i, Length, n_dn_array);
             sz_fermion = (0.5*(bit_up_fermion - bit_dn_fermion));
 
-            value = KondoExchange_mat[site_i][site_j]*Sz_Localized*sz_fermion;
-
+            value += KondoExchange_mat[site_i][site_j]*Sz_Localized*sz_fermion;
+                }
+        }}
             if(value!=0){
                 Hamil.value.push_back(value*one);
                 Hamil.rows.push_back(m);
                 Hamil.columns.push_back(m);
             }
-            }
-        }
-        }
+
+
+
 
     }
     }
@@ -159,6 +160,121 @@ void MODEL_KondoModel::Add_diagonal_terms(BASIS_KondoModel &basis){
 
 }
 
+
+void MODEL_KondoModel::Add_LocalSpin_couplings(BASIS_KondoModel &basis){
+
+
+    //Remember H[l][m]=<l|H|m>
+    ulli m, m_new;
+    double value;
+    int dec_i_Ls, dec_i_Ls_new;
+    Mat_1_int n_array;
+    int LocalSpinsSzWithOffset, base_Ls;
+    int LocalSpinsSzWithOffset_new, base_Ls_new;
+    int bit_i, bit_j;
+    double Sz_Localized;
+    Mat_1_int bit_array, bit_array_new;
+    int i_local;
+
+    int bits_in_bw;
+
+    //-----------------
+    int d_dn_, d_up_;
+    int d_dn_new_, d_up_new_;
+    int N_up, N_dn;
+    //ulli m, m_new;
+    //int i_fermion_new;
+    Mat_1_int n_dn_array, n_up_array;
+    int bit_up_fermion, bit_dn_fermion;
+    Mat_1_int bit_dn_array, bit_up_array;
+    Mat_1_int bit_dn_array_new, bit_up_array_new;
+    //int i_local, i_local_new;
+    int FermionsSzWithOffset, FermionsSzWithOffset_new;
+    int BASE_NEW_DN, BASE_NEW_UP;
+    int BASE_DN, BASE_UP;
+    //int bits_in_bw;
+    //double FM_SIGN;
+    //-------------------
+
+    int SzSetNo_new;
+    int i_fermion_new;
+    int i_local_new, i_Lspins_new;
+
+    int bits_in_bw_up, bits_in_bw_dn;
+    int bits_in_bw_up2, bits_in_bw_dn2;
+    double FM_SIGN;
+
+
+    //Kondo coupling Sminus_i X Splus_j
+    for(int SzSetNo=0;SzSetNo<basis.No_of_SzSets;SzSetNo++){
+    for(int i_Lspins=0;i_Lspins<basis.Dec_LocalizedSpins[SzSetNo].size();i_Lspins++){
+
+        dec_i_Ls=basis.Dec_LocalizedSpins[SzSetNo][i_Lspins];
+
+        LocalSpinsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].first;
+        base_Ls=Length-LocalSpinsSzWithOffset+2;
+        from_deci_type2_to_n_array(dec_i_Ls, base_Ls, n_array);
+
+        Convert_n_array_to_bit_array(Length, n_array, bit_array);
+
+    for(int i_fermion=0;i_fermion<basis.Dec_dnup_Fermions[SzSetNo].size();i_fermion++){
+
+        i_local = basis.Concatenate_Spins_and_Fermions(i_fermion, i_Lspins, SzSetNo);
+        m = basis.Get_basis_ind(i_local, SzSetNo);
+
+
+        //Kondo
+        for(int site_i=0;site_i<Length;site_i++){
+            for(int site_j=site_i+1;site_j<Length;site_j++){
+
+           if(abs(J_LSpins_mat[site_i][site_j])>EPS_){
+
+
+            //Sminus_i Splus_j
+            if( bit_array[site_j]==0  &&
+                bit_array[site_i]==1
+                    ){
+
+                 //FermionsSzWithOffset_new = FermionsSzWithOffset -1;
+                 //LocalSpinsSzWithOffset_new=LocalSpinsSzWithOffset+1;
+
+                 //SzSetNo_new = basis.Inverse_SzWithOffsetAllowed[LocalSpinsSzWithOffset_new + (Length+1)*(FermionsSzWithOffset_new)];
+
+                 bit_array_new=bit_array;
+
+                 bit_array_new[site_j]=1;
+                 bit_array_new[site_i]=0;
+
+                 dec_i_Ls_new = FromBitArray_toDeci_type2(bit_array_new, base_Ls);
+
+                 i_Lspins_new = basis.InverseDec_LocalizedSpins[SzSetNo][dec_i_Ls_new];
+
+                 i_local_new = basis.Concatenate_Spins_and_Fermions(i_fermion, i_Lspins_new, SzSetNo);
+                 m_new = basis.Get_basis_ind(i_local_new, SzSetNo);
+
+                 value = 0.5*J_LSpins_mat[site_i][site_j];
+
+                 if(value!=0){
+                     assert(m_new>=m);
+                     Hamil.value.push_back(value*one);
+                     Hamil.rows.push_back(m);
+                     Hamil.columns.push_back(m_new);
+                 }
+
+            }
+
+
+
+
+            }
+        }
+    }
+
+    }
+    }
+    }
+
+}
 
 void MODEL_KondoModel::Add_FermionHopping(BASIS_KondoModel &basis){
 
@@ -334,6 +450,7 @@ void MODEL_KondoModel::Add_Kondocouplings(BASIS_KondoModel &basis){
     int i_local_new, i_Lspins_new;
 
     int bits_in_bw_up, bits_in_bw_dn;
+    int bits_in_bw_up2, bits_in_bw_dn2;
     double FM_SIGN;
 
 
@@ -376,12 +493,11 @@ void MODEL_KondoModel::Add_Kondocouplings(BASIS_KondoModel &basis){
 
         for(int site_i=0;site_i<Length;site_i++){
             for(int site_j=0;site_j<Length;site_j++){
-           //sz_i Sz_j
 
            if(abs(KondoExchange_mat[site_i][site_j])>EPS_){
 
 
-            //Splus X sminus
+            //sminus_i Splus_j
             if( bit_array[site_j]==0  &&
                 bit_up_array[site_i]==1
                     ){
@@ -408,8 +524,8 @@ void MODEL_KondoModel::Add_Kondocouplings(BASIS_KondoModel &basis){
 
                  i_fermion_new = basis.InverseDec_Fermions[SzSetNo_new][d_dn_new_ + (basis.Dmax_dn[SzSetNo_new]+1)*d_up_new_];
 
-                 base_Ls=Length-LocalSpinsSzWithOffset_new+2;
-                 dec_i_Ls_new = FromBitArray_toDeci_type2(bit_array_new, base_Ls);
+                 base_Ls_new=Length-LocalSpinsSzWithOffset_new+2;
+                 dec_i_Ls_new = FromBitArray_toDeci_type2(bit_array_new, base_Ls_new);
 
                  i_Lspins_new = basis.InverseDec_LocalizedSpins[SzSetNo_new][dec_i_Ls_new];
 
@@ -417,8 +533,14 @@ void MODEL_KondoModel::Add_Kondocouplings(BASIS_KondoModel &basis){
                  m_new = basis.Get_basis_ind(i_local_new, SzSetNo_new);
 
 
-                 bits_in_bw_up = Count_bits_in_bw(0, site_i, bit_up_array) + bit_up_array[0];
-                 bits_in_bw_dn = N_up - 1 + Count_bits_in_bw(0, site_i, bit_dn_array) + bit_dn_array[0];
+                 //basis: up ...down
+                 //bits_in_bw_up = Count_bits_in_bw(site_i, "closed", Length, "open", bit_up_array) + 1;
+                 //bits_in_bw_dn = Count_bits_in_bw(0, "closed", site_i, "open",bit_dn_array);
+
+                 //basis: down ...up
+                 bits_in_bw_dn = Count_bits_in_bw(site_i, "closed", Length, "open", bit_dn_array);
+                 bits_in_bw_up = Count_bits_in_bw(0, "closed", site_i, "open", bit_up_array);
+
                  FM_SIGN = pow(-1.0,(1.0*(bits_in_bw_up + bits_in_bw_dn)));
 
                  value = 0.5*KondoExchange_mat[site_i][site_j]*FM_SIGN;
@@ -442,7 +564,6 @@ void MODEL_KondoModel::Add_Kondocouplings(BASIS_KondoModel &basis){
     }
     }
     }
-
 
 
     //Kondo hopping  +0.5 X c(up,i)_dag X c(up,l) X Sz(j)
@@ -486,6 +607,7 @@ void MODEL_KondoModel::Add_Kondocouplings(BASIS_KondoModel &basis){
             bit_j = bit_val_at_site_n_array(site_j, Length, n_array);
             Sz_Localized = ((1.0*bit_j)-0.5);
 
+            if(site_l>=site_i){
             if((bit_up_array[site_l]==1 && bit_up_array[site_i]==0) &&
                 bit_dn_array[site_i]==0){
 
@@ -499,7 +621,6 @@ void MODEL_KondoModel::Add_Kondocouplings(BASIS_KondoModel &basis){
             m_new = basis.Get_basis_ind(i_local_new, SzSetNo);
 
             bits_in_bw = Count_bits_in_bw(site_i, site_l, bit_up_array);
-
             FM_SIGN = pow(-1.0,(1.0*bits_in_bw));
 
             value = 0.5*FM_SIGN*KondoHoppings[index]*Sz_Localized;
@@ -510,9 +631,8 @@ void MODEL_KondoModel::Add_Kondocouplings(BASIS_KondoModel &basis){
                 Hamil.columns.push_back(m);
             }
             }
-
+            }
         }
-
     }
     }
     }
@@ -559,6 +679,7 @@ void MODEL_KondoModel::Add_Kondocouplings(BASIS_KondoModel &basis){
             bit_j = bit_val_at_site_n_array(site_j, Length, n_array);
             Sz_Localized = ((1.0*bit_j)-0.5);
 
+            if(site_l>=site_i){
             if((bit_dn_array[site_l]==1 && bit_dn_array[site_i]==0) &&
                 bit_up_array[site_i]==0){
 
@@ -583,7 +704,7 @@ void MODEL_KondoModel::Add_Kondocouplings(BASIS_KondoModel &basis){
                 Hamil.columns.push_back(m);
             }
             }
-
+        }
         }
 
     }
@@ -667,12 +788,12 @@ void MODEL_KondoModel::Add_Kondocouplings(BASIS_KondoModel &basis){
                 i_local_new = basis.Concatenate_Spins_and_Fermions(i_fermion_new, i_Lspins_new, SzSetNo_new);
                 m_new = basis.Get_basis_ind(i_local_new, SzSetNo_new);
 
+                bits_in_bw_up = Count_bits_in_bw(0, "closed", site_l, "open", bit_up_array);
+                bits_in_bw_dn = Count_bits_in_bw(site_i, "closed", Length, "open", bit_dn_array);
 
-                bits_in_bw_up = Count_bits_in_bw(0, site_l, bit_up_array) + bit_up_array[0];
-                bits_in_bw_dn = N_up - 1 + Count_bits_in_bw(0, site_i, bit_dn_array) + bit_dn_array[0];
                 FM_SIGN = pow(-1.0,(1.0*(bits_in_bw_up + bits_in_bw_dn)));
 
-                value = KondoHoppings[index]*FM_SIGN;
+                value = 0.5*KondoHoppings[index]*FM_SIGN;
 
                 if(value!=0){
                     assert(m_new>=m);
@@ -695,6 +816,1188 @@ void MODEL_KondoModel::Add_Kondocouplings(BASIS_KondoModel &basis){
 
 
 }
+
+
+void MODEL_KondoModel::Initializer_opr_LocalizedSpin_SzSz_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j){
+
+    OPR.nrows = basis.basis_size;
+    OPR.ncols = OPR.nrows;
+
+    OPR.columns.clear();
+    OPR.rows.clear();
+    OPR.value.clear();
+
+
+
+    //Remember H[l][m]=<l|H|m>
+    ulli m;
+    double value;
+    int dec_i_Ls;
+    Mat_1_int n_array;
+    int LocalSpinsSzWithOffset, base_Ls;
+    int bit_i, bit_j;
+    int i_local;
+
+
+    //Sz_i Sz_j
+    for(int SzSetNo=0;SzSetNo<basis.No_of_SzSets;SzSetNo++){
+    for(int i_Lspins=0;i_Lspins<basis.Dec_LocalizedSpins[SzSetNo].size();i_Lspins++){
+
+    value=0;
+    dec_i_Ls=basis.Dec_LocalizedSpins[SzSetNo][i_Lspins];
+
+    LocalSpinsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].first;
+    base_Ls=Length-LocalSpinsSzWithOffset+2;
+    from_deci_type2_to_n_array(dec_i_Ls, base_Ls, n_array);
+
+    bit_i = bit_val_at_site_n_array(site_i, Length, n_array);
+    bit_j = bit_val_at_site_n_array(site_j, Length, n_array);
+
+    //0-->dn, 1-->up
+    value = ((1.0*bit_i)-0.5)*((1.0*bit_j)-0.5);
+
+
+    for(int i_fermion=0;i_fermion<basis.Dec_dnup_Fermions[SzSetNo].size();i_fermion++){
+        i_local = basis.Concatenate_Spins_and_Fermions(i_fermion, i_Lspins, SzSetNo);
+        m = basis.Get_basis_ind(i_local, SzSetNo);
+
+        if(value!=0){
+            OPR.value.push_back(value*one);
+            OPR.rows.push_back(m);
+            OPR.columns.push_back(m);
+        }
+    }
+
+    }
+    }
+
+
+}
+
+
+
+void MODEL_KondoModel::Initializer_opr_LocalizedSpin_SpSm_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j){
+
+    OPR.nrows = basis.basis_size;
+    OPR.ncols = OPR.nrows;
+
+    OPR.columns.clear();
+    OPR.rows.clear();
+    OPR.value.clear();
+
+
+
+    //Remember H[l][m]=<l|H|m>
+    ulli m, m_new;
+    double value;
+    int dec_i_Ls, dec_i_Ls_new;
+    Mat_1_int n_array;
+    int LocalSpinsSzWithOffset, base_Ls;
+    Mat_1_int bit_array, bit_array_new;
+    int i_local;
+
+
+    //-----------------
+    int d_dn_, d_up_;
+    int N_up, N_dn;
+    //ulli m, m_new;
+    //int i_fermion_new;
+    Mat_1_int n_dn_array, n_up_array;
+    Mat_1_int bit_dn_array, bit_up_array;
+    int FermionsSzWithOffset;
+    int BASE_DN, BASE_UP;
+    //int bits_in_bw;
+    //double FM_SIGN;
+    //-------------------
+
+    int i_local_new, i_Lspins_new;
+
+
+
+
+    //Kondo coupling Splus_i X Sminus_j
+    for(int SzSetNo=0;SzSetNo<basis.No_of_SzSets;SzSetNo++){
+    for(int i_Lspins=0;i_Lspins<basis.Dec_LocalizedSpins[SzSetNo].size();i_Lspins++){
+
+        dec_i_Ls=basis.Dec_LocalizedSpins[SzSetNo][i_Lspins];
+
+        LocalSpinsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].first;
+        base_Ls=Length-LocalSpinsSzWithOffset+2;
+        from_deci_type2_to_n_array(dec_i_Ls, base_Ls, n_array);
+        Convert_n_array_to_bit_array(Length, n_array, bit_array);
+
+    for(int i_fermion=0;i_fermion<basis.Dec_dnup_Fermions[SzSetNo].size();i_fermion++){
+
+        i_local = basis.Concatenate_Spins_and_Fermions(i_fermion, i_Lspins, SzSetNo);
+        m = basis.Get_basis_ind(i_local, SzSetNo);
+
+        d_dn_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].first;
+        d_up_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].second;
+
+        FermionsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].second;
+        N_up = FermionsSzWithOffset;
+        N_dn = Target_Total_Ne-N_up;
+
+        BASE_DN = Length-N_dn+2;
+        BASE_UP = Length-N_up+2;
+
+        from_deci_type2_to_n_array(d_dn_, BASE_DN, n_dn_array);
+        from_deci_type2_to_n_array(d_up_, BASE_UP, n_up_array);
+
+        Convert_n_array_to_bit_array(Length, n_dn_array, bit_dn_array);
+        Convert_n_array_to_bit_array(Length, n_up_array, bit_up_array);
+
+
+        //local Kondo
+
+            //Splus_i X Sminus_j
+            if( (bit_array[site_j]==1  &&
+                bit_array[site_i]==0)
+                    ||
+                    ((site_j==site_i)  && bit_array[site_j]==1 )
+                    ){
+
+                 bit_array_new=bit_array;
+
+                 if(site_j!=site_i){
+                 bit_array_new[site_j]=0;
+                 bit_array_new[site_i]=1;
+                    }
+                 dec_i_Ls_new = FromBitArray_toDeci_type2(bit_array_new, base_Ls);
+                 i_Lspins_new = basis.InverseDec_LocalizedSpins[SzSetNo][dec_i_Ls_new];
+
+                 i_local_new = basis.Concatenate_Spins_and_Fermions(i_fermion, i_Lspins_new, SzSetNo);
+                 m_new = basis.Get_basis_ind(i_local_new, SzSetNo);
+
+                 value = 1.0;
+
+                 if(value!=0){
+                     //assert(m_new>=m);
+                     OPR.value.push_back(value*one);
+                     OPR.rows.push_back(m);
+                     OPR.columns.push_back(m_new);
+                 }
+
+            }
+    }
+    }
+    }
+
+
+}
+
+
+
+
+void MODEL_KondoModel::Initializer_opr_LocalizedSpin_SmSp_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j){
+
+    OPR.nrows = basis.basis_size;
+    OPR.ncols = OPR.nrows;
+
+    OPR.columns.clear();
+    OPR.rows.clear();
+    OPR.value.clear();
+
+
+
+    //Remember H[l][m]=<l|H|m>
+    ulli m, m_new;
+    double value;
+    int dec_i_Ls, dec_i_Ls_new;
+    Mat_1_int n_array;
+    int LocalSpinsSzWithOffset, base_Ls;
+    Mat_1_int bit_array, bit_array_new;
+    int i_local;
+
+
+    //-----------------
+    int d_dn_, d_up_;
+    int N_up, N_dn;
+    //ulli m, m_new;
+    //int i_fermion_new;
+    Mat_1_int n_dn_array, n_up_array;
+    Mat_1_int bit_dn_array, bit_up_array;
+    int FermionsSzWithOffset;
+    int BASE_DN, BASE_UP;
+    //int bits_in_bw;
+    //double FM_SIGN;
+    //-------------------
+
+    int i_local_new, i_Lspins_new;
+
+
+
+
+    //Kondo coupling Sminus_i X Splus_j
+    for(int SzSetNo=0;SzSetNo<basis.No_of_SzSets;SzSetNo++){
+    for(int i_Lspins=0;i_Lspins<basis.Dec_LocalizedSpins[SzSetNo].size();i_Lspins++){
+
+        dec_i_Ls=basis.Dec_LocalizedSpins[SzSetNo][i_Lspins];
+
+        LocalSpinsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].first;
+        base_Ls=Length-LocalSpinsSzWithOffset+2;
+        from_deci_type2_to_n_array(dec_i_Ls, base_Ls, n_array);
+        Convert_n_array_to_bit_array(Length, n_array, bit_array);
+
+    for(int i_fermion=0;i_fermion<basis.Dec_dnup_Fermions[SzSetNo].size();i_fermion++){
+
+        i_local = basis.Concatenate_Spins_and_Fermions(i_fermion, i_Lspins, SzSetNo);
+        m = basis.Get_basis_ind(i_local, SzSetNo);
+
+        d_dn_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].first;
+        d_up_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].second;
+
+        FermionsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].second;
+        N_up = FermionsSzWithOffset;
+        N_dn = Target_Total_Ne-N_up;
+
+        BASE_DN = Length-N_dn+2;
+        BASE_UP = Length-N_up+2;
+
+        from_deci_type2_to_n_array(d_dn_, BASE_DN, n_dn_array);
+        from_deci_type2_to_n_array(d_up_, BASE_UP, n_up_array);
+
+        Convert_n_array_to_bit_array(Length, n_dn_array, bit_dn_array);
+        Convert_n_array_to_bit_array(Length, n_up_array, bit_up_array);
+
+
+        //local Kondo
+
+            //Sminus_i X Splus_j
+            if( (bit_array[site_i]==1  &&
+                bit_array[site_j]==0)
+                    ||
+                    ((site_j==site_i)  && bit_array[site_j]==0 )
+                    ){
+
+                 bit_array_new=bit_array;
+
+                 if(site_j!=site_i){
+                 bit_array_new[site_j]=1;
+                 bit_array_new[site_i]=0;
+                    }
+                 dec_i_Ls_new = FromBitArray_toDeci_type2(bit_array_new, base_Ls);
+                 i_Lspins_new = basis.InverseDec_LocalizedSpins[SzSetNo][dec_i_Ls_new];
+
+                 i_local_new = basis.Concatenate_Spins_and_Fermions(i_fermion, i_Lspins_new, SzSetNo);
+                 m_new = basis.Get_basis_ind(i_local_new, SzSetNo);
+
+                 value = 1.0;
+
+                 if(value!=0){
+                     //assert(m_new>=m);
+                     OPR.value.push_back(value*one);
+                     OPR.rows.push_back(m);
+                     OPR.columns.push_back(m_new);
+                 }
+
+            }
+    }
+    }
+    }
+
+
+}
+
+
+
+void MODEL_KondoModel::Initializer_opr_Fermions_LocalOprs(string opr_type, BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i){
+
+
+    OPR.nrows = basis.basis_size;
+    OPR.ncols = OPR.nrows;
+    OPR.columns.clear();
+    OPR.rows.clear();
+    OPR.value.clear();
+
+    //Remember H[l][m]=<l|H|m>
+    ulli m;
+    double value;
+    int dec_i_Ls;
+    Mat_1_int n_array;
+    int LocalSpinsSzWithOffset, base_Ls;
+    int i_local;
+
+
+    //-----------------
+    int d_dn_, d_up_;
+    //int d_dn_new_, d_up_new_;
+    int N_up, N_dn;
+    //ulli m, m_new;
+    //int i_fermion_new;
+    Mat_1_int n_dn_array, n_up_array;
+    int bit_up_fermion, bit_dn_fermion;
+    Mat_1_int bit_dn_array, bit_up_array;
+    //Mat_1_int bit_dn_array_new, bit_up_array_new;
+    //int i_local, i_local_new;
+    int FermionsSzWithOffset;
+    int BASE_DN, BASE_UP;
+    //int bits_in_bw;
+    //double FM_SIGN;
+    //-------------------
+
+
+    double n_site_i, sz_fermion_site_j;
+
+
+   if(opr_type=="n_local"){
+    for(int SzSetNo=0;SzSetNo<basis.No_of_SzSets;SzSetNo++){
+
+       // dec_i_Ls=basis.Dec_LocalizedSpins[SzSetNo][i_Lspins];
+
+        //LocalSpinsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].first;
+       // base_Ls=Length-LocalSpinsSzWithOffset+2;
+        //from_deci_type2_to_n_array(dec_i_Ls, base_Ls, n_array);
+
+    for(int i_fermion=0;i_fermion<basis.Dec_dnup_Fermions[SzSetNo].size();i_fermion++){
+
+        d_dn_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].first;
+        d_up_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].second;
+
+        FermionsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].second;
+        N_up = FermionsSzWithOffset;
+        N_dn = Target_Total_Ne-N_up;
+
+        BASE_DN = Length-N_dn+2;
+        BASE_UP = Length-N_up+2;
+
+        from_deci_type2_to_n_array(d_dn_, BASE_DN, n_dn_array);
+        from_deci_type2_to_n_array(d_up_, BASE_UP, n_up_array);
+
+        Convert_n_array_to_bit_array(Length, n_dn_array, bit_dn_array);
+        Convert_n_array_to_bit_array(Length, n_up_array, bit_up_array);
+
+
+           //n(site_i)
+
+            bit_up_fermion = bit_val_at_site_n_array(site_i, Length, n_up_array);
+            bit_dn_fermion = bit_val_at_site_n_array(site_i, Length, n_dn_array);
+            n_site_i = (1.0*(bit_up_fermion + bit_dn_fermion));
+
+            value = n_site_i;
+
+            if(abs(value)>EPS_){
+             for(int i_Lspins=0;i_Lspins<basis.Dec_LocalizedSpins[SzSetNo].size();i_Lspins++){
+                 i_local = basis.Concatenate_Spins_and_Fermions(i_fermion, i_Lspins, SzSetNo);
+                 m = basis.Get_basis_ind(i_local, SzSetNo);
+
+                OPR.value.push_back(value*one);
+                OPR.rows.push_back(m);
+                OPR.columns.push_back(m);
+            }
+    }
+    }
+    }
+        }
+
+
+}
+
+
+
+void MODEL_KondoModel::Initializer_opr_Fermions_szsz_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j){
+
+
+    OPR.nrows = basis.basis_size;
+    OPR.ncols = OPR.nrows;
+    OPR.columns.clear();
+    OPR.rows.clear();
+    OPR.value.clear();
+
+    //Remember H[l][m]=<l|H|m>
+    ulli m;
+    double value;
+    int dec_i_Ls;
+    Mat_1_int n_array;
+    int LocalSpinsSzWithOffset, base_Ls;
+    int i_local;
+
+
+    //-----------------
+    int d_dn_, d_up_;
+    //int d_dn_new_, d_up_new_;
+    int N_up, N_dn;
+    //ulli m, m_new;
+    //int i_fermion_new;
+    Mat_1_int n_dn_array, n_up_array;
+    int bit_up_fermion, bit_dn_fermion;
+    //Mat_1_int bit_dn_array, bit_up_array;
+    //Mat_1_int bit_dn_array_new, bit_up_array_new;
+    //int i_local, i_local_new;
+    int FermionsSzWithOffset;
+    int BASE_DN, BASE_UP;
+    //int bits_in_bw;
+    //double FM_SIGN;
+    //-------------------
+
+
+    double sz_fermion_site_i, sz_fermion_site_j;
+
+
+    //Kondo coupling szXsz
+    for(int SzSetNo=0;SzSetNo<basis.No_of_SzSets;SzSetNo++){
+
+       // dec_i_Ls=basis.Dec_LocalizedSpins[SzSetNo][i_Lspins];
+
+        //LocalSpinsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].first;
+       // base_Ls=Length-LocalSpinsSzWithOffset+2;
+        //from_deci_type2_to_n_array(dec_i_Ls, base_Ls, n_array);
+
+    for(int i_fermion=0;i_fermion<basis.Dec_dnup_Fermions[SzSetNo].size();i_fermion++){
+
+        d_dn_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].first;
+        d_up_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].second;
+
+        FermionsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].second;
+        N_up = FermionsSzWithOffset;
+        N_dn = Target_Total_Ne-N_up;
+
+        BASE_DN = Length-N_dn+2;
+        BASE_UP = Length-N_up+2;
+
+        from_deci_type2_to_n_array(d_dn_, BASE_DN, n_dn_array);
+        from_deci_type2_to_n_array(d_up_, BASE_UP, n_up_array);
+
+        //Convert_n_array_to_bit_array(Length, n_dn_array, bit_dn_array);
+        //Convert_n_array_to_bit_array(Length, n_up_array, bit_up_array);
+
+
+
+
+           //sz_i sz_j
+
+            bit_up_fermion = bit_val_at_site_n_array(site_i, Length, n_up_array);
+            bit_dn_fermion = bit_val_at_site_n_array(site_i, Length, n_dn_array);
+            sz_fermion_site_i = (0.5*(bit_up_fermion - bit_dn_fermion));
+
+            bit_up_fermion = bit_val_at_site_n_array(site_j, Length, n_up_array);
+            bit_dn_fermion = bit_val_at_site_n_array(site_j, Length, n_dn_array);
+            sz_fermion_site_j = (0.5*(bit_up_fermion - bit_dn_fermion));
+
+            value = sz_fermion_site_i*sz_fermion_site_j;
+
+            if(value!=0){
+             for(int i_Lspins=0;i_Lspins<basis.Dec_LocalizedSpins[SzSetNo].size();i_Lspins++){
+                 i_local = basis.Concatenate_Spins_and_Fermions(i_fermion, i_Lspins, SzSetNo);
+                 m = basis.Get_basis_ind(i_local, SzSetNo);
+
+                OPR.value.push_back(value*one);
+                OPR.rows.push_back(m);
+                OPR.columns.push_back(m);
+            }
+    }
+    }
+    }
+
+
+
+}
+
+
+void MODEL_KondoModel::Initializer_opr_Fermions_spsm_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j){
+
+    OPR.nrows = basis.basis_size;
+    OPR.ncols = OPR.nrows;
+    OPR.columns.clear();
+    OPR.rows.clear();
+    OPR.value.clear();
+
+    //Remember H[l][m]=<l|H|m>
+    ulli m, m_new;
+    double value;
+    int dec_i_Ls, dec_i_Ls_new;
+    Mat_1_int n_array;
+    int LocalSpinsSzWithOffset, base_Ls;
+    int LocalSpinsSzWithOffset_new, base_Ls_new;
+    int bit_i, bit_j;
+    double Sz_Localized;
+    Mat_1_int bit_array, bit_array_new;
+    int i_local;
+
+    int bits_in_bw;
+
+    //-----------------
+    int d_dn_, d_up_;
+    int d_dn_new_, d_up_new_;
+    int N_up, N_dn;
+    //ulli m, m_new;
+    //int i_fermion_new;
+    Mat_1_int n_dn_array, n_up_array;
+    int bit_up_fermion, bit_dn_fermion;
+    Mat_1_int bit_dn_array, bit_up_array;
+    Mat_1_int bit_dn_array_new, bit_up_array_new;
+    //int i_local, i_local_new;
+    int FermionsSzWithOffset, FermionsSzWithOffset_new;
+    int BASE_NEW_DN, BASE_NEW_UP;
+    int BASE_DN, BASE_UP;
+    //int bits_in_bw;
+    //double FM_SIGN;
+    //-------------------
+
+    int SzSetNo_new;
+    int i_fermion_new;
+    int i_local_new, i_Lspins_new;
+
+    int bits_in_bw_up, bits_in_bw_dn;
+    double FM_SIGN;
+
+
+    //Kondo coupling splus_i X sminus_j
+    for(int SzSetNo=0;SzSetNo<basis.No_of_SzSets;SzSetNo++){
+    for(int i_Lspins=0;i_Lspins<basis.Dec_LocalizedSpins[SzSetNo].size();i_Lspins++){
+
+        dec_i_Ls=basis.Dec_LocalizedSpins[SzSetNo][i_Lspins];
+
+        LocalSpinsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].first;
+        base_Ls=Length-LocalSpinsSzWithOffset+2;
+        from_deci_type2_to_n_array(dec_i_Ls, base_Ls, n_array);
+
+        Convert_n_array_to_bit_array(Length, n_array, bit_array);
+
+    for(int i_fermion=0;i_fermion<basis.Dec_dnup_Fermions[SzSetNo].size();i_fermion++){
+
+        i_local = basis.Concatenate_Spins_and_Fermions(i_fermion, i_Lspins, SzSetNo);
+        m = basis.Get_basis_ind(i_local, SzSetNo);
+
+        d_dn_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].first;
+        d_up_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].second;
+
+        FermionsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].second;
+        N_up = FermionsSzWithOffset;
+        N_dn = Target_Total_Ne-N_up;
+
+        BASE_DN = Length-N_dn+2;
+        BASE_UP = Length-N_up+2;
+
+        from_deci_type2_to_n_array(d_dn_, BASE_DN, n_dn_array);
+        from_deci_type2_to_n_array(d_up_, BASE_UP, n_up_array);
+
+        Convert_n_array_to_bit_array(Length, n_dn_array, bit_dn_array);
+        Convert_n_array_to_bit_array(Length, n_up_array, bit_up_array);
+
+
+        //local Kondo
+
+        //splus_i X sminus_j
+            if( (bit_up_array[site_j]==1  &&
+                bit_dn_array[site_i]==1)
+                    ||
+
+                ((site_i==site_j) && bit_up_array[site_j]==1)
+                    ){
+
+                 bit_dn_array_new=bit_dn_array;
+                 bit_up_array_new=bit_up_array;
+
+                 if(site_i!=site_j){
+                 assert(bit_dn_array[site_j]==0);
+                 assert(bit_up_array[site_i]==0);
+
+                 bit_dn_array_new[site_i]=0;
+                 bit_up_array_new[site_i]=1;
+
+                 bit_up_array_new[site_j]=0;
+                 bit_dn_array_new[site_j]=1;
+                }
+                 else{
+                     assert(bit_dn_array[site_j]==0);
+
+                     //bit_up_array_new[site_i]=0;
+                    // bit_dn_array_new[site_i]=1;
+                 }
+
+
+                 d_up_new_ = FromBitArray_toDeci_type2(bit_up_array_new, BASE_UP);
+                 d_dn_new_ = FromBitArray_toDeci_type2(bit_dn_array_new, BASE_DN);
+
+                 i_fermion_new = basis.InverseDec_Fermions[SzSetNo][d_dn_new_ + (basis.Dmax_dn[SzSetNo]+1)*d_up_new_];
+
+                 i_local_new = basis.Concatenate_Spins_and_Fermions(i_fermion_new, i_Lspins, SzSetNo);
+                 m_new = basis.Get_basis_ind(i_local_new, SzSetNo);
+
+                 bits_in_bw_up = Count_bits_in_bw(0, "closed", site_i, "open", bit_up_array) + Count_bits_in_bw(0, "closed", site_j, "open", bit_up_array);
+                 bits_in_bw_dn = Count_bits_in_bw(0, "closed", site_i, "open", bit_dn_array) + Count_bits_in_bw(0, "closed", site_j, "open", bit_dn_array);
+
+                 FM_SIGN = pow(-1.0,(1.0*(bits_in_bw_up + bits_in_bw_dn)));
+
+                 value = FM_SIGN;
+
+                 if(value!=0){
+                     //assert(m_new>=m);
+                     OPR.value.push_back(value*one);
+                     OPR.rows.push_back(m);
+                     OPR.columns.push_back(m_new);
+                 }
+
+            }
+
+    }
+    }
+    }
+
+
+
+
+}
+
+
+
+void MODEL_KondoModel::Initializer_opr_Fermions_smsp_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j){
+
+    OPR.nrows = basis.basis_size;
+    OPR.ncols = OPR.nrows;
+    OPR.columns.clear();
+    OPR.rows.clear();
+    OPR.value.clear();
+
+    //Remember H[l][m]=<l|H|m>
+    ulli m, m_new;
+    double value;
+    int dec_i_Ls, dec_i_Ls_new;
+    Mat_1_int n_array;
+    int LocalSpinsSzWithOffset, base_Ls;
+    int LocalSpinsSzWithOffset_new, base_Ls_new;
+    int bit_i, bit_j;
+    double Sz_Localized;
+    Mat_1_int bit_array, bit_array_new;
+    int i_local;
+
+    int bits_in_bw;
+
+    //-----------------
+    int d_dn_, d_up_;
+    int d_dn_new_, d_up_new_;
+    int N_up, N_dn;
+    //ulli m, m_new;
+    //int i_fermion_new;
+    Mat_1_int n_dn_array, n_up_array;
+    int bit_up_fermion, bit_dn_fermion;
+    Mat_1_int bit_dn_array, bit_up_array;
+    Mat_1_int bit_dn_array_new, bit_up_array_new;
+    //int i_local, i_local_new;
+    int FermionsSzWithOffset, FermionsSzWithOffset_new;
+    int BASE_NEW_DN, BASE_NEW_UP;
+    int BASE_DN, BASE_UP;
+    //int bits_in_bw;
+    //double FM_SIGN;
+    //-------------------
+
+    int SzSetNo_new;
+    int i_fermion_new;
+    int i_local_new, i_Lspins_new;
+
+    int bits_in_bw_up, bits_in_bw_dn;
+    double FM_SIGN;
+
+
+    //Kondo coupling splus_i X sminus_j
+    for(int SzSetNo=0;SzSetNo<basis.No_of_SzSets;SzSetNo++){
+    for(int i_Lspins=0;i_Lspins<basis.Dec_LocalizedSpins[SzSetNo].size();i_Lspins++){
+
+        dec_i_Ls=basis.Dec_LocalizedSpins[SzSetNo][i_Lspins];
+
+        LocalSpinsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].first;
+        base_Ls=Length-LocalSpinsSzWithOffset+2;
+        from_deci_type2_to_n_array(dec_i_Ls, base_Ls, n_array);
+
+        Convert_n_array_to_bit_array(Length, n_array, bit_array);
+
+    for(int i_fermion=0;i_fermion<basis.Dec_dnup_Fermions[SzSetNo].size();i_fermion++){
+
+        i_local = basis.Concatenate_Spins_and_Fermions(i_fermion, i_Lspins, SzSetNo);
+        m = basis.Get_basis_ind(i_local, SzSetNo);
+
+        d_dn_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].first;
+        d_up_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].second;
+
+        FermionsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].second;
+        N_up = FermionsSzWithOffset;
+        N_dn = Target_Total_Ne-N_up;
+
+        BASE_DN = Length-N_dn+2;
+        BASE_UP = Length-N_up+2;
+
+        from_deci_type2_to_n_array(d_dn_, BASE_DN, n_dn_array);
+        from_deci_type2_to_n_array(d_up_, BASE_UP, n_up_array);
+
+        Convert_n_array_to_bit_array(Length, n_dn_array, bit_dn_array);
+        Convert_n_array_to_bit_array(Length, n_up_array, bit_up_array);
+
+
+        //local Kondo
+
+        //sminus_i X splus_j
+            if( (bit_dn_array[site_j]==1  &&
+                bit_up_array[site_i]==1)
+                    ||
+
+                ((site_i==site_j) && bit_dn_array[site_j]==1)
+                    ){
+
+                 bit_dn_array_new=bit_dn_array;
+                 bit_up_array_new=bit_up_array;
+
+                 if(site_i!=site_j){
+                 assert(bit_up_array[site_j]==0);
+                 assert(bit_dn_array[site_i]==0);
+
+                 bit_dn_array_new[site_i]=1;
+                 bit_up_array_new[site_i]=0;
+
+                 bit_up_array_new[site_j]=1;
+                 bit_dn_array_new[site_j]=0;
+                }
+                 else{
+                     assert(bit_up_array[site_j]==0);
+
+                     //bit_up_array_new[site_i]=0;
+                    // bit_dn_array_new[site_i]=1;
+                 }
+
+
+                 d_up_new_ = FromBitArray_toDeci_type2(bit_up_array_new, BASE_UP);
+                 d_dn_new_ = FromBitArray_toDeci_type2(bit_dn_array_new, BASE_DN);
+
+                 i_fermion_new = basis.InverseDec_Fermions[SzSetNo][d_dn_new_ + (basis.Dmax_dn[SzSetNo]+1)*d_up_new_];
+
+                 i_local_new = basis.Concatenate_Spins_and_Fermions(i_fermion_new, i_Lspins, SzSetNo);
+                 m_new = basis.Get_basis_ind(i_local_new, SzSetNo);
+
+                 //bits_in_bw_up = Count_bits_in_bw(0, site_i, bit_up_array) + Count_bits_in_bw(0, site_j, bit_up_array);
+                // bits_in_bw_dn = Count_bits_in_bw(0, site_i, bit_dn_array) + Count_bits_in_bw(0, site_j, bit_dn_array);
+
+                 bits_in_bw_up = Count_bits_in_bw(0, "closed", site_i, "open", bit_up_array) + Count_bits_in_bw(0, "closed", site_j, "open", bit_up_array);
+                 bits_in_bw_dn = Count_bits_in_bw(0, "closed", site_i, "open", bit_dn_array) + Count_bits_in_bw(0, "closed", site_j, "open", bit_dn_array);
+
+                 FM_SIGN = pow(-1.0,(1.0*(bits_in_bw_up + bits_in_bw_dn)));
+
+                 value = FM_SIGN;
+
+                 if(value!=0){
+                     //assert(m_new>=m);
+                     OPR.value.push_back(value*one);
+                     OPR.rows.push_back(m);
+                     OPR.columns.push_back(m_new);
+                 }
+
+            }
+
+    }
+    }
+    }
+
+
+
+
+}
+
+
+
+
+
+
+void MODEL_KondoModel::Initializer_opr_Fermionsz_LocalizedSz_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j){
+
+
+    OPR.nrows = basis.basis_size;
+    OPR.ncols = OPR.nrows;
+    OPR.columns.clear();
+    OPR.rows.clear();
+    OPR.value.clear();
+
+    ulli m;
+    double value;
+    int dec_i_Ls;
+    Mat_1_int n_array;
+    int LocalSpinsSzWithOffset, base_Ls;
+    int bit_i, bit_j;
+    int i_local;
+
+
+    //-----------------
+    int d_dn_, d_up_;
+    //int d_dn_new_, d_up_new_;
+    int N_up, N_dn;
+    //ulli m, m_new;
+    //int i_fermion_new;
+    Mat_1_int n_dn_array, n_up_array;
+    int bit_up_fermion, bit_dn_fermion;
+    //Mat_1_int bit_dn_array, bit_up_array;
+    //Mat_1_int bit_dn_array_new, bit_up_array_new;
+    //int i_local, i_local_new;
+    int FermionsSzWithOffset;
+    int BASE_NEW_DN, BASE_NEW_UP;
+    //int bits_in_bw;
+    //double FM_SIGN;
+    //-------------------
+
+
+    double Sz_Localized, sz_fermion;
+
+
+    //Kondo coupling sz_iXSz_j
+    for(int SzSetNo=0;SzSetNo<basis.No_of_SzSets;SzSetNo++){
+    for(int i_Lspins=0;i_Lspins<basis.Dec_LocalizedSpins[SzSetNo].size();i_Lspins++){
+
+        dec_i_Ls=basis.Dec_LocalizedSpins[SzSetNo][i_Lspins];
+
+        LocalSpinsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].first;
+        base_Ls=Length-LocalSpinsSzWithOffset+2;
+        from_deci_type2_to_n_array(dec_i_Ls, base_Ls, n_array);
+
+    for(int i_fermion=0;i_fermion<basis.Dec_dnup_Fermions[SzSetNo].size();i_fermion++){
+
+
+        d_dn_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].first;
+        d_up_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].second;
+
+        FermionsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].second;
+        N_up = FermionsSzWithOffset;
+        N_dn = Target_Total_Ne-N_up;
+
+        BASE_NEW_DN = Length-N_dn+2;
+        BASE_NEW_UP = Length-N_up+2;
+
+        from_deci_type2_to_n_array(d_dn_, BASE_NEW_DN, n_dn_array);
+        from_deci_type2_to_n_array(d_up_, BASE_NEW_UP, n_up_array);
+
+        //Convert_n_array_to_bit_array(Length, n_dn_array, bit_dn_array);
+        //Convert_n_array_to_bit_array(Length, n_up_array, bit_up_array);
+
+
+        i_local = basis.Concatenate_Spins_and_Fermions(i_fermion, i_Lspins, SzSetNo);
+        m = basis.Get_basis_ind(i_local, SzSetNo);
+
+        value=0.0;
+
+           //sz_i Sz_j
+            bit_j = bit_val_at_site_n_array(site_j, Length, n_array);
+            Sz_Localized = ((1.0*bit_j)-0.5);
+
+            bit_up_fermion = bit_val_at_site_n_array(site_i, Length, n_up_array);
+            bit_dn_fermion = bit_val_at_site_n_array(site_i, Length, n_dn_array);
+            sz_fermion = (0.5*(bit_up_fermion - bit_dn_fermion));
+
+            value = Sz_Localized*sz_fermion;
+
+            if(value!=0){
+                OPR.value.push_back(value*one);
+                OPR.rows.push_back(m);
+                OPR.columns.push_back(m);
+            }
+
+    }
+    }
+    }
+
+
+}
+
+
+
+void MODEL_KondoModel::Initializer_opr_Fermionsminus_LocalizedSplus_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j){
+
+
+    OPR.nrows = basis.basis_size;
+    OPR.ncols = OPR.nrows;
+    OPR.columns.clear();
+    OPR.rows.clear();
+    OPR.value.clear();
+
+
+    //Remember H[l][m]=<l|H|m>
+    ulli m, m_new;
+    double value;
+    int dec_i_Ls, dec_i_Ls_new;
+    Mat_1_int n_array;
+    int LocalSpinsSzWithOffset, base_Ls;
+    int LocalSpinsSzWithOffset_new, base_Ls_new;
+    int bit_i, bit_j;
+    double Sz_Localized;
+    Mat_1_int bit_array, bit_array_new;
+    int i_local;
+
+    int bits_in_bw;
+
+    //-----------------
+    int d_dn_, d_up_;
+    int d_dn_new_, d_up_new_;
+    int N_up, N_dn;
+    //ulli m, m_new;
+    //int i_fermion_new;
+    Mat_1_int n_dn_array, n_up_array;
+    int bit_up_fermion, bit_dn_fermion;
+    Mat_1_int bit_dn_array, bit_up_array;
+    Mat_1_int bit_dn_array_new, bit_up_array_new;
+    //int i_local, i_local_new;
+    int FermionsSzWithOffset, FermionsSzWithOffset_new;
+    int BASE_NEW_DN, BASE_NEW_UP;
+    int BASE_DN, BASE_UP;
+    //int bits_in_bw;
+    //double FM_SIGN;
+    //-------------------
+
+    int SzSetNo_new;
+    int i_fermion_new;
+    int i_local_new, i_Lspins_new;
+
+    int bits_in_bw_up, bits_in_bw_dn;
+    double FM_SIGN;
+
+
+    //Kondo coupling sminus_i Splus_j
+    for(int SzSetNo=0;SzSetNo<basis.No_of_SzSets;SzSetNo++){
+    for(int i_Lspins=0;i_Lspins<basis.Dec_LocalizedSpins[SzSetNo].size();i_Lspins++){
+
+        dec_i_Ls=basis.Dec_LocalizedSpins[SzSetNo][i_Lspins];
+
+        LocalSpinsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].first;
+        base_Ls=Length-LocalSpinsSzWithOffset+2;
+        from_deci_type2_to_n_array(dec_i_Ls, base_Ls, n_array);
+
+        Convert_n_array_to_bit_array(Length, n_array, bit_array);
+
+    for(int i_fermion=0;i_fermion<basis.Dec_dnup_Fermions[SzSetNo].size();i_fermion++){
+
+        i_local = basis.Concatenate_Spins_and_Fermions(i_fermion, i_Lspins, SzSetNo);
+        m = basis.Get_basis_ind(i_local, SzSetNo);
+
+        d_dn_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].first;
+        d_up_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].second;
+
+        FermionsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].second;
+        N_up = FermionsSzWithOffset;
+        N_dn = Target_Total_Ne-N_up;
+
+        BASE_DN = Length-N_dn+2;
+        BASE_UP = Length-N_up+2;
+
+        from_deci_type2_to_n_array(d_dn_, BASE_DN, n_dn_array);
+        from_deci_type2_to_n_array(d_up_, BASE_UP, n_up_array);
+
+        Convert_n_array_to_bit_array(Length, n_dn_array, bit_dn_array);
+        Convert_n_array_to_bit_array(Length, n_up_array, bit_up_array);
+
+
+        //local Kondo
+
+            //sminus_i Splus_j
+            if( bit_array[site_j]==0  &&
+                bit_up_array[site_i]==1
+                    ){
+                assert(bit_dn_array[site_i]==0);
+
+                 FermionsSzWithOffset_new = FermionsSzWithOffset -1;
+                 LocalSpinsSzWithOffset_new=LocalSpinsSzWithOffset+1;
+
+                 SzSetNo_new = basis.Inverse_SzWithOffsetAllowed[LocalSpinsSzWithOffset_new + (Length+1)*(FermionsSzWithOffset_new)];
+
+                 bit_array_new=bit_array;
+                 bit_dn_array_new=bit_dn_array;
+                 bit_up_array_new=bit_up_array;
+
+                 bit_array_new[site_j]=1;
+                 bit_dn_array_new[site_i]=1;
+                 bit_up_array_new[site_i]=0;
+
+                 BASE_NEW_DN = Length-(N_dn+1)+2;
+                 BASE_NEW_UP = Length-(N_up-1)+2;
+
+                 d_up_new_ = FromBitArray_toDeci_type2(bit_up_array_new, BASE_NEW_UP);
+                 d_dn_new_ = FromBitArray_toDeci_type2(bit_dn_array_new, BASE_NEW_DN);
+
+                 i_fermion_new = basis.InverseDec_Fermions[SzSetNo_new][d_dn_new_ + (basis.Dmax_dn[SzSetNo_new]+1)*d_up_new_];
+
+                 base_Ls_new=Length-LocalSpinsSzWithOffset_new+2;
+                 dec_i_Ls_new = FromBitArray_toDeci_type2(bit_array_new, base_Ls_new);
+
+                 i_Lspins_new = basis.InverseDec_LocalizedSpins[SzSetNo_new][dec_i_Ls_new];
+
+                 i_local_new = basis.Concatenate_Spins_and_Fermions(i_fermion_new, i_Lspins_new, SzSetNo_new);
+                 m_new = basis.Get_basis_ind(i_local_new, SzSetNo_new);
+
+
+                 //basis: up ...down
+                 //bits_in_bw_up = Count_bits_in_bw(site_i, "closed", Length, "open", bit_up_array) + 1;
+                 //bits_in_bw_dn = Count_bits_in_bw(0, "closed", site_i, "open",bit_dn_array);
+
+                 //basis: down ...up
+                 bits_in_bw_dn = Count_bits_in_bw(site_i, "closed", Length, "open", bit_dn_array);
+                 bits_in_bw_up = Count_bits_in_bw(0, "closed", site_i, "open", bit_up_array);
+
+                 FM_SIGN = pow(-1.0,(1.0*(bits_in_bw_up + bits_in_bw_dn)));
+
+                 value = FM_SIGN;
+
+                 if(value!=0){
+                     //assert(m_new>=m);
+                     OPR.value.push_back(value*one);
+                     OPR.rows.push_back(m);
+                     OPR.columns.push_back(m_new);
+                 }
+
+            }
+
+    }
+    }
+    }
+
+
+}
+
+
+
+
+void MODEL_KondoModel::Initializer_opr_Fermionsplus_LocalizedSminus_Correlation(BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i, int site_j){
+
+
+    OPR.nrows = basis.basis_size;
+    OPR.ncols = OPR.nrows;
+    OPR.columns.clear();
+    OPR.rows.clear();
+    OPR.value.clear();
+
+
+    //Remember H[l][m]=<l|H|m>
+    ulli m, m_new;
+    double value;
+    int dec_i_Ls, dec_i_Ls_new;
+    Mat_1_int n_array;
+    int LocalSpinsSzWithOffset, base_Ls;
+    int LocalSpinsSzWithOffset_new, base_Ls_new;
+    int bit_i, bit_j;
+    double Sz_Localized;
+    Mat_1_int bit_array, bit_array_new;
+    int i_local;
+
+    int bits_in_bw;
+
+    //-----------------
+    int d_dn_, d_up_;
+    int d_dn_new_, d_up_new_;
+    int N_up, N_dn;
+    //ulli m, m_new;
+    //int i_fermion_new;
+    Mat_1_int n_dn_array, n_up_array;
+    int bit_up_fermion, bit_dn_fermion;
+    Mat_1_int bit_dn_array, bit_up_array;
+    Mat_1_int bit_dn_array_new, bit_up_array_new;
+    //int i_local, i_local_new;
+    int FermionsSzWithOffset, FermionsSzWithOffset_new;
+    int BASE_NEW_DN, BASE_NEW_UP;
+    int BASE_DN, BASE_UP;
+    //int bits_in_bw;
+    //double FM_SIGN;
+    //-------------------
+
+    int SzSetNo_new;
+    int i_fermion_new;
+    int i_local_new, i_Lspins_new;
+
+    int bits_in_bw_up, bits_in_bw_dn;
+    double FM_SIGN;
+
+
+    //Kondo coupling splus_i Sminus_j
+    for(int SzSetNo=0;SzSetNo<basis.No_of_SzSets;SzSetNo++){
+    for(int i_Lspins=0;i_Lspins<basis.Dec_LocalizedSpins[SzSetNo].size();i_Lspins++){
+
+        dec_i_Ls=basis.Dec_LocalizedSpins[SzSetNo][i_Lspins];
+
+        LocalSpinsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].first;
+        base_Ls=Length-LocalSpinsSzWithOffset+2;
+        from_deci_type2_to_n_array(dec_i_Ls, base_Ls, n_array);
+
+        Convert_n_array_to_bit_array(Length, n_array, bit_array);
+
+    for(int i_fermion=0;i_fermion<basis.Dec_dnup_Fermions[SzSetNo].size();i_fermion++){
+
+        i_local = basis.Concatenate_Spins_and_Fermions(i_fermion, i_Lspins, SzSetNo);
+        m = basis.Get_basis_ind(i_local, SzSetNo);
+
+        d_dn_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].first;
+        d_up_= basis.Dec_dnup_Fermions[SzSetNo][i_fermion].second;
+
+        FermionsSzWithOffset=basis.SzWithOffsetAllowed[SzSetNo].second;
+        N_up = FermionsSzWithOffset;
+        N_dn = Target_Total_Ne-N_up;
+
+        BASE_DN = Length-N_dn+2;
+        BASE_UP = Length-N_up+2;
+
+        from_deci_type2_to_n_array(d_dn_, BASE_DN, n_dn_array);
+        from_deci_type2_to_n_array(d_up_, BASE_UP, n_up_array);
+
+        Convert_n_array_to_bit_array(Length, n_dn_array, bit_dn_array);
+        Convert_n_array_to_bit_array(Length, n_up_array, bit_up_array);
+
+
+        //local Kondo
+
+            //splus_i Sminus_j
+            if( bit_array[site_j]==1  &&
+                bit_dn_array[site_i]==1
+                    ){
+                assert(bit_up_array[site_i]==0);
+
+                 FermionsSzWithOffset_new = FermionsSzWithOffset +1;
+                 LocalSpinsSzWithOffset_new=LocalSpinsSzWithOffset -1;
+
+                 SzSetNo_new = basis.Inverse_SzWithOffsetAllowed[LocalSpinsSzWithOffset_new + (Length+1)*(FermionsSzWithOffset_new)];
+
+                 bit_array_new=bit_array;
+                 bit_dn_array_new=bit_dn_array;
+                 bit_up_array_new=bit_up_array;
+
+                 bit_array_new[site_j]=0;
+                 bit_dn_array_new[site_i]=0;
+                 bit_up_array_new[site_i]=1;
+
+                 BASE_NEW_DN = Length-(N_dn-1)+2;
+                 BASE_NEW_UP = Length-(N_up+1)+2;
+
+                 d_up_new_ = FromBitArray_toDeci_type2(bit_up_array_new, BASE_NEW_UP);
+                 d_dn_new_ = FromBitArray_toDeci_type2(bit_dn_array_new, BASE_NEW_DN);
+
+                 i_fermion_new = basis.InverseDec_Fermions[SzSetNo_new][d_dn_new_ + (basis.Dmax_dn[SzSetNo_new]+1)*d_up_new_];
+
+                 base_Ls_new=Length-LocalSpinsSzWithOffset_new+2;
+                 dec_i_Ls_new = FromBitArray_toDeci_type2(bit_array_new, base_Ls_new);
+
+                 i_Lspins_new = basis.InverseDec_LocalizedSpins[SzSetNo_new][dec_i_Ls_new];
+
+                 i_local_new = basis.Concatenate_Spins_and_Fermions(i_fermion_new, i_Lspins_new, SzSetNo_new);
+                 m_new = basis.Get_basis_ind(i_local_new, SzSetNo_new);
+
+
+                 //basis: up ...down
+                 //bits_in_bw_up = Count_bits_in_bw(site_i, "closed", Length, "open", bit_up_array);
+                 //bits_in_bw_dn = Count_bits_in_bw(0, "closed", site_i, "open",bit_dn_array);
+
+                 //basis: down ...up
+                 bits_in_bw_dn = Count_bits_in_bw(site_i, "closed", Length, "open", bit_dn_array) + 1;
+                 bits_in_bw_up = Count_bits_in_bw(0, "closed", site_i, "open", bit_up_array);
+
+                 FM_SIGN = pow(-1.0,(1.0*(bits_in_bw_up + bits_in_bw_dn)));
+
+                 value = FM_SIGN;
+
+                 if(value!=0){
+                     //assert(m_new>=m);
+                     OPR.value.push_back(value*one);
+                     OPR.rows.push_back(m);
+                     OPR.columns.push_back(m_new);
+                 }
+
+            }
+
+    }
+    }
+    }
+
+
+}
+
 
 void MODEL_KondoModel::Read_parameters(BASIS_KondoModel &basis, string filename){
 
@@ -879,13 +2182,13 @@ void MODEL_KondoModel::Read_parameters(BASIS_KondoModel &basis, string filename)
     }
 
     ifstream inputKondoHopping(KondoHopping_filepath.c_str());
-    stringstream line_stream;
     int site_i, site_l,site_j;
     double val_;
     triad_int temp_int_triad;
     KondoHoppings_sites.clear();
     KondoHoppings.clear();
     while(getline(inputKondoHopping,line_temp)){
+    stringstream line_stream;
     line_stream<<line_temp;
     line_stream>>site_i>>site_l>>site_j>>val_;
     temp_int_triad.first_=site_i;

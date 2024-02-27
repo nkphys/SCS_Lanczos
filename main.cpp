@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <algorithm>
 #include "iconprint.h"
 #include "Lanczos_engine.h"
 #include "Lanczos_engine.cpp"
@@ -737,6 +738,7 @@ int main(int argc, char** argv){
     _BASIS.Construct_basis();
 
     _MODEL.Add_diagonal_terms(_BASIS);
+    _MODEL.Add_LocalSpin_couplings(_BASIS);
     _MODEL.Add_FermionHopping(_BASIS);
     _MODEL.Add_Kondocouplings(_BASIS);
 
@@ -748,11 +750,11 @@ int main(int argc, char** argv){
 
     //Print_Matrix_COO(_MODEL.Hamil);
     DO_FULL_DIAGONALIZATION=true;
-    if((DO_FULL_DIAGONALIZATION==true) && _MODEL.Hamil.nrows<700 ){
+    if((DO_FULL_DIAGONALIZATION==true) && _MODEL.Hamil.nrows<2000 ){
         double EG;
         Mat_1_real Evals_temp;
-        Mat_1_doub vecG;
-        Diagonalize(_MODEL.Hamil, Evals_temp, vecG);
+        Mat_2_doub vecs;
+        Diagonalize(_MODEL.Hamil, Evals_temp, vecs);
         cout<<"GS energy from ED(without Lanczos) = "<<Evals_temp[0]<<endl;
         cout<<"All eigenvalues using ED------------------------------"<<endl;
         cout<<"-------------------------------------------------------"<<endl;
@@ -761,12 +763,262 @@ int main(int argc, char** argv){
         }
         cout<<"-------------------------------------------------------"<<endl;
         cout<<"-------------------------------------------------------"<<endl;
+
+        int temp_int;
+        if(_BASIS.basis_size>6){
+            temp_int=6;
+        }
+        else{
+            temp_int=_BASIS.basis_size;
+        }
+
+        for(int state_=0;state_<temp_int;state_++){
+        cout<<"For state = "<< state_<<"---------------------------------------------"<<endl;
+        cout<<"Fermion's local den------------------------------------"<<endl;
+        double sum_temp=0;
+        double val_temp_;
+        Mat_1_doub Vec_Temp;
+        for(int site_i=0;site_i<_BASIS.Length;site_i++){
+        Matrix_COO OPR_;
+        OPR_.columns.clear();
+        OPR_.rows.clear();
+        OPR_.value.clear();
+        _MODEL.Initializer_opr_Fermions_LocalOprs("n_local",_BASIS, OPR_, site_i);
+        Matrix_COO_vector_multiplication("FULL", OPR_, vecs[state_], Vec_Temp);
+        val_temp_ = dot_product(Vec_Temp, vecs[state_]);
+        sum_temp +=val_temp_;
+        cout<<"n["<<site_i<<"] = "<<val_temp_<<" ";
+        cout<<endl;
+        }
+        cout<<"-----------------------------------------------"<<endl;
+        cout<<"Total Fermions = "<<sum_temp<<endl;
+        }
+
+
+
+
     }
 
 
     _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
-
     _LANCZOS.Write_full_spectrum();
+
+
+    double Total_S2=0.0;;
+
+    double val_temp;
+    double sum_;
+    cout<<"---------------------------------------------"<<endl;
+    cout<<"SzSz corr------------------------------------"<<endl;
+    sum_=0;
+    for(int site_i=0;site_i<_BASIS.Length;site_i++){
+    for(int site_j=0;site_j<_BASIS.Length;site_j++){
+    Matrix_COO OPR_;
+    OPR_.columns.clear();
+    OPR_.rows.clear();
+    OPR_.value.clear();
+    _MODEL.Initializer_opr_LocalizedSpin_SzSz_Correlation(_BASIS, OPR_, site_i, site_j);
+    val_temp = _LANCZOS.Measure_observable(OPR_, 0);
+    sum_ +=val_temp;
+    cout<<val_temp<<" ";
+    }
+    cout<<endl;
+    }
+    cout<<"-----------------------------------------------"<<endl;
+    cout<<"Sum SzSz = "<<sum_<<endl;
+    Total_S2 +=sum_;
+
+    cout<<"---------------------------------------------"<<endl;
+    cout<<"SpSm corr------------------------------------"<<endl;
+    sum_=0;
+    for(int site_i=0;site_i<_BASIS.Length;site_i++){
+    for(int site_j=0;site_j<_BASIS.Length;site_j++){
+    Matrix_COO OPR_;
+    OPR_.columns.clear();
+    OPR_.rows.clear();
+    OPR_.value.clear();
+    _MODEL.Initializer_opr_LocalizedSpin_SpSm_Correlation(_BASIS, OPR_, site_i, site_j);
+    val_temp = _LANCZOS.Measure_observable(OPR_, 0);
+    sum_ +=val_temp;
+    cout<<val_temp<<" ";
+    }
+    cout<<endl;
+    }
+    cout<<"-----------------------------------------------"<<endl;
+    cout<<"Sum SpSm = "<<sum_<<endl;
+    Total_S2 +=0.5*sum_;
+
+
+    cout<<"---------------------------------------------"<<endl;
+    cout<<"SmSp corr------------------------------------"<<endl;
+    sum_=0;
+    for(int site_i=0;site_i<_BASIS.Length;site_i++){
+    for(int site_j=0;site_j<_BASIS.Length;site_j++){
+    Matrix_COO OPR_;
+    OPR_.columns.clear();
+    OPR_.rows.clear();
+    OPR_.value.clear();
+    _MODEL.Initializer_opr_LocalizedSpin_SmSp_Correlation(_BASIS, OPR_, site_i, site_j);
+    val_temp = _LANCZOS.Measure_observable(OPR_, 0);
+    sum_ +=val_temp;
+    cout<<val_temp<<" ";
+    }
+    cout<<endl;
+    }
+    cout<<"-----------------------------------------------"<<endl;
+    cout<<"Sum SmSp = "<<sum_<<endl;
+    Total_S2 +=0.5*sum_;
+
+    //Initializer_opr_Fermions_LocalOprs(string opr_type, BASIS_KondoModel &basis, Matrix_COO &OPR, int site_i)
+
+    cout<<"---------------------------------------------"<<endl;
+    cout<<"Fermion's local den------------------------------------"<<endl;
+    sum_=0;
+    for(int site_i=0;site_i<_BASIS.Length;site_i++){
+    Matrix_COO OPR_;
+    OPR_.columns.clear();
+    OPR_.rows.clear();
+    OPR_.value.clear();
+    _MODEL.Initializer_opr_Fermions_LocalOprs("n_local",_BASIS, OPR_, site_i);
+    val_temp = _LANCZOS.Measure_observable(OPR_, 0);
+    sum_ +=val_temp;
+    cout<<"n["<<site_i<<"] = "<<val_temp<<" ";
+    cout<<endl;
+    }
+    cout<<"-----------------------------------------------"<<endl;
+    cout<<"Total Fermions = "<<sum_<<endl;
+
+    cout<<"---------------------------------------------"<<endl;
+    cout<<"Fermion's szsz corr------------------------------------"<<endl;
+    sum_=0;
+    for(int site_i=0;site_i<_BASIS.Length;site_i++){
+    for(int site_j=0;site_j<_BASIS.Length;site_j++){
+    Matrix_COO OPR_;
+    OPR_.columns.clear();
+    OPR_.rows.clear();
+    OPR_.value.clear();
+    _MODEL.Initializer_opr_Fermions_szsz_Correlation(_BASIS, OPR_, site_i, site_j);
+    val_temp = _LANCZOS.Measure_observable(OPR_, 0);
+    sum_ +=val_temp;
+    cout<<val_temp<<" ";
+    }
+    cout<<endl;
+    }
+    cout<<"-----------------------------------------------"<<endl;
+    cout<<"Sum Fermion szsz = "<<sum_<<endl;
+    Total_S2 +=1.0*sum_;
+
+    cout<<"---------------------------------------------"<<endl;
+    cout<<"Fermion's spsm corr------------------------------------"<<endl;
+    sum_=0;
+    for(int site_i=0;site_i<_BASIS.Length;site_i++){
+    for(int site_j=0;site_j<_BASIS.Length;site_j++){
+    Matrix_COO OPR_;
+    OPR_.columns.clear();
+    OPR_.rows.clear();
+    OPR_.value.clear();
+    _MODEL.Initializer_opr_Fermions_spsm_Correlation(_BASIS, OPR_, site_i, site_j);
+    val_temp = _LANCZOS.Measure_observable(OPR_, 0);
+    sum_ +=val_temp;
+    cout<<val_temp<<" ";
+    }
+    cout<<endl;
+    }
+    cout<<"-----------------------------------------------"<<endl;
+    cout<<"Sum Fermion spsm = "<<sum_<<endl;
+    Total_S2 +=0.5*sum_;
+
+    cout<<"---------------------------------------------"<<endl;
+    cout<<"Fermion's smsp corr------------------------------------"<<endl;
+    sum_=0;
+    for(int site_i=0;site_i<_BASIS.Length;site_i++){
+    for(int site_j=0;site_j<_BASIS.Length;site_j++){
+    Matrix_COO OPR_;
+    OPR_.columns.clear();
+    OPR_.rows.clear();
+    OPR_.value.clear();
+    _MODEL.Initializer_opr_Fermions_smsp_Correlation(_BASIS, OPR_, site_i, site_j);
+    val_temp = _LANCZOS.Measure_observable(OPR_, 0);
+    sum_ +=val_temp;
+    cout<<val_temp<<" ";
+    }
+    cout<<endl;
+    }
+    cout<<"-----------------------------------------------"<<endl;
+    cout<<"Sum Fermion smsp = "<<sum_<<endl;
+    Total_S2 +=0.5*sum_;
+
+
+    //s.S--------------
+    cout<<"---------------------------------------------"<<endl;
+    cout<<"Fermion's szSz corr------------------------------------"<<endl;
+    sum_=0;
+    for(int site_i=0;site_i<_BASIS.Length;site_i++){
+    for(int site_j=0;site_j<_BASIS.Length;site_j++){
+    Matrix_COO OPR_;
+    OPR_.columns.clear();
+    OPR_.rows.clear();
+    OPR_.value.clear();
+    _MODEL.Initializer_opr_Fermionsz_LocalizedSz_Correlation(_BASIS, OPR_, site_i, site_j);
+    val_temp = _LANCZOS.Measure_observable(OPR_, 0);
+    sum_ +=val_temp;
+    cout<<val_temp<<" ";
+    }
+    cout<<endl;
+    }
+    cout<<"-----------------------------------------------"<<endl;
+    cout<<"Sum Fermion szSz = "<<sum_<<endl;
+    Total_S2 +=2.0*sum_;
+
+    cout<<"---------------------------------------------"<<endl;
+    cout<<"Fermion's spSm corr------------------------------------"<<endl;
+    sum_=0;
+    for(int site_i=0;site_i<_BASIS.Length;site_i++){
+    for(int site_j=0;site_j<_BASIS.Length;site_j++){
+    Matrix_COO OPR_;
+    OPR_.columns.clear();
+    OPR_.rows.clear();
+    OPR_.value.clear();
+    _MODEL.Initializer_opr_Fermionsplus_LocalizedSminus_Correlation(_BASIS, OPR_, site_i, site_j);
+    val_temp = _LANCZOS.Measure_observable(OPR_, 0);
+    sum_ +=val_temp;
+    cout<<val_temp<<" ";
+    }
+    cout<<endl;
+    }
+    cout<<"-----------------------------------------------"<<endl;
+    cout<<"Sum Fermion spSm = "<<sum_<<endl;
+    Total_S2 +=1.0*sum_;
+
+    cout<<"---------------------------------------------"<<endl;
+    cout<<"Fermion's smSp corr------------------------------------"<<endl;
+    sum_=0;
+    for(int site_i=0;site_i<_BASIS.Length;site_i++){
+    for(int site_j=0;site_j<_BASIS.Length;site_j++){
+    Matrix_COO OPR_;
+    OPR_.columns.clear();
+    OPR_.rows.clear();
+    OPR_.value.clear();
+    _MODEL.Initializer_opr_Fermionsminus_LocalizedSplus_Correlation(_BASIS, OPR_, site_i, site_j);
+    val_temp = _LANCZOS.Measure_observable(OPR_, 0);
+    sum_ +=val_temp;
+    cout<<val_temp<<" ";
+    }
+    cout<<endl;
+    }
+    cout<<"-----------------------------------------------"<<endl;
+    cout<<"Sum Fermion smSp = "<<sum_<<endl;
+    Total_S2 +=1.0*sum_;
+
+    cout<<"Total S2 = "<<Total_S2<<endl;
+
+
+    cout<<"Starting dynamical calculation"<<endl;
+
+    //Sm_iSp_j(w)
+    if(_LANCZOS.Dynamics_performed){
+
+    }
 
     }
 
@@ -3183,9 +3435,6 @@ int main(int argc, char** argv){
 
 
    }
-
-
-
 
 
 

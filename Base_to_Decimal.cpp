@@ -67,6 +67,49 @@ int Count_bits_in_bw(int site_i,int  site_j, Mat_1_int bit_array){
     return bits_in_bw;
 }
 
+
+
+
+int Count_bits_in_bw(int site_i, string type_i,int site_j, string type_j, Mat_1_int bit_array){
+
+    int bits_in_bw=0;
+
+
+    if(type_i=="open" && type_j=="open"){
+
+    if(site_i==site_j){
+      bits_in_bw=0;
+    }
+    else if(site_j>site_i){
+        for(int l=site_i+1;l<=site_j-1;l++){
+          bits_in_bw += bit_array[l];
+        }
+    }
+    else{
+        assert(site_i>site_j);
+        for(int l=site_j+1;l<=site_i-1;l++){
+          bits_in_bw += bit_array[l];
+        }
+    }
+    }
+
+    if(type_i=="closed" && type_j=="open"){
+    assert(site_j>=site_i);
+
+    if(site_i==site_j){
+      bits_in_bw=0;
+    }
+    else{
+        assert(site_j>site_i);
+        for(int l=site_i;l<=site_j-1;l++){
+          bits_in_bw += bit_array[l];
+        }
+    }
+    }
+    return bits_in_bw;
+
+}
+
 void from_deci_type2_to_n_array(int dec, int base, Mat_1_int &n_array){
 
 
@@ -165,7 +208,7 @@ if(n_array.size()>0){
 }
 
 for(int i=0;i<n_array.size();i++){
-n_offset = n_offset + n_array[0];
+n_offset = n_offset + n_array[i];
 if(site==n_offset){
  bit_val=1;
  break;

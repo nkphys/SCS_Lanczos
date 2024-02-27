@@ -58,6 +58,8 @@ void Convert_n_array_to_bit_array(int Length, Mat_1_int n_array, Mat_1_int &bit_
 int FromBitArray_toDeci_type2(Mat_1_int bit_array, int base);
 
 int Count_bits_in_bw(int site_i,int  site_j, Mat_1_int bit_array);
+
+int Count_bits_in_bw(int site_i, string type_i,int site_j, string type_j, Mat_1_int bit_array);
 // Function to convert a number from given base 'b'
 // to decimal
 template <typename T> T toDeci(char *str, int base, T)
