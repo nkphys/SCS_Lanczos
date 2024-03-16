@@ -4,42 +4,42 @@ Model = 1_orb_Hubbard_chain
 PBC = false
 Length_X = 1
 Length_Y = 1
-Total_Sites = 12
-Ndown = 2
-Nup = 10
+Total_Sites = 16
+Ndown = 4
+Nup = 5
  
 Hopping = 0.0
 Hopping_NN = 0.0
-U = 0.0
-H_mag = 12 0 0 0 0 0 0 0 0 0 0 0 0
-File_Onsite_Energies = false pinning_ener.txt
+U = 500.0
+H_mag = 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+File_Onsite_Energies = true pinning_ener.txt
 File_Hopping_Connections = Hopping.txt
 File_NonLocal_Int_Connections = Interactions.txt
 File_Direct_Exchange_Connections = DirectExchange.txt
 
 File_Pair_Hopping_Connections = PairHopping.txt
-File_Interaction_Assisted_Hopping_Connections = InteractionAssistedHopping2.txt
+File_Interaction_Assisted_Hopping_Connections = InteractionAssistedHopping.txt
 
 
 File_Three_Point_Observation = ThreePointOprs.txt
 File_Three_Point_Interaction = ThreePointIntrs.txt
 ----------------------------------------
 -------------------------------------
-Saving_Hamiltonian_and_Oprs = truee
+Saving_Hamiltonian_and_Oprs = true
 Random_seed_generator = 564
 ---------------------------------------------
 Lanc_Error = 10e-12
-max_steps = 150
+max_steps = 1000
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = true
+save_all_Krylov_space_vecs = truee
 get_overlap_bw_eigstates_and_K_vecs = true
-lanczos_reorthogonalization = true
+lanczos_reorthogonalization = truee
 Get_Full_Spectrum = true
 need_few_eig_vecs = true
 few = 2
 ----------------------------------------
 Get_overlap_with_basis = false
-States_to_look = 2 0 1
+States_to_look = 1 0
 # 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
 overlap_out_file = out1.txt
 calculate_local_obs_for_states_to_look = false

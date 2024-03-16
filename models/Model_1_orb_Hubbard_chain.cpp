@@ -1740,8 +1740,6 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
 
 
 
-
-
     NProcessors_=atoi(processors_.c_str());
 
 
@@ -1826,28 +1824,29 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     // string temp_x_, temp_y_, temp_site_, Ener_val_ ;
     int temp_x, temp_y, temp_site;
     double Ener_val;
+
     if(read_onsite_energies == "true"){
         _file_onsite_energies_ >> filename_Onsite_Energy;
 
         cout<<"reading Onsite energies from '"<<filename_Onsite_Energy<<"'"<<endl;
         ifstream inputfile_Onsite_Energy(filename_Onsite_Energy.c_str());
-        getline(inputfile_Onsite_Energy,line_temp);
+        //getline(inputfile_Onsite_Energy,line_temp);
 
-        for(int iy=0;iy<Length_Y_int;iy++){
-            for(int ix=0;ix<Length_X_int;ix++){
+        //for(int iy=0;iy<Length_Y_int;iy++){
+            //for(int ix=0;ix<Length_X_int;ix++){
+        for(int i=0;i<basis.Length;i++){
                 //inputfile_Onsite_Energy >> temp_x_ >> temp_y_ >> temp_site_ >> Ener_val_;
                 //temp_x = atoi(temp_x_.c_str());
                 //temp_y = atoi(temp_y_.c_str());
                 //temp_site = atoi(temp_site_.c_str());
                 //Ener_val = atof(Ener_val_.c_str());
 
-                inputfile_Onsite_Energy >> temp_x >> temp_y >> temp_site >> Ener_val;
-                assert(temp_x==ix);
-                assert(temp_y==iy);
-                assert(temp_site==iy*Length_X_int + ix);
+                inputfile_Onsite_Energy >> temp_site >> Ener_val;
+                cout<<temp_site<<"  "<<Ener_val<<endl;
+                assert(temp_site==i);
                 Onsite_Energy[temp_site]=Ener_val;
             }
-        }
+        //}
 
     }
     else{

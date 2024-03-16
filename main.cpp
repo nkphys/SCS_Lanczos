@@ -4062,7 +4062,7 @@ int main(int argc, char** argv){
         Null_int_vec.resize(1);
 
 
-        bool Dynamics_SPDOS = true;
+        bool Dynamics_SPDOS = false;
         bool Above_mu = true;
         bool Below_mu= true;
         bool Cheaper_observables=true;
@@ -4079,6 +4079,7 @@ int main(int argc, char** argv){
 
         LANCZOS<BASIS_1_orb_Hubb_chain, MODEL_1_orb_Hubb_chain> _LANCZOS(_BASIS, _MODEL);
         _LANCZOS.Dynamics_performed=false;
+        _LANCZOS.TimeEvoPerformed=false;
         _LANCZOS.Read_Lanczos_parameters(inp_filename);
 
         cout<<scientific<<setprecision(20);

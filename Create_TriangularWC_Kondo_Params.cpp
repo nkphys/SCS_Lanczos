@@ -11,12 +11,12 @@ int main(){
 
 
 double t_hop=1.0;	
-double LS_Jexc_val=-1.000;
-double KondoExchange_val=0.5;
-double KondoHopping_val=0.5;
+double LS_Jexc_val=-0.000;
+double KondoExchange_val=0.01;
+double KondoHopping_val=00.0;
 
-int L1=9;
-int L2=9;
+int L1=6;
+int L2=6;
 
 
 string Hopp_file_str = "Hopping.txt";

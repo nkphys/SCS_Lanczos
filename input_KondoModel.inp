@@ -24,9 +24,9 @@ Use_Scheduler = true
 Model = KondoModel
 
 ------------------------------------------
-Length = 81
-TotalSzTarget = -37.5
-Target_Total_Ne = 2
+Length = 36
+TotalSzTarget = -17.5
+Target_Total_Ne = 1
 
 #in format "site Hx Hy Hz"
 H_mag = 0

@@ -2,10 +2,10 @@ Model = 2_orb_Hubbard_chain
 Geometry = LongRange
 ------------------------------------------
 PBC = true
-Length = 4
-Ndown = 3
-Nup = 3
-CFS = 0.0 0.398
+Length = 2
+Ndown = 0
+Nup = 1
+CFS = 0.0 0
 
 
 U = 1.968
