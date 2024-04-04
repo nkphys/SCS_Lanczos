@@ -3,16 +3,19 @@ Geometry = LongRange
 ------------------------------------------
 PBC = true
 Length = 2
-Ndown = 0
+Ndown = 1
 Nup = 1
-CFS = 0.0 0
+CFS = 1000.0 0.0
 
 
-U = 1.968
+U = 0
 LongRangeHopping_matrix_file = Hopp.txt
 LongRangeDenDenInt_matrix_file = UpUp.txt
 LongRangeHundsInt_matrix_file = Hunds.txt
 
+CdagCdagCC_to_measure_file = CdagCdagCC_measurement_indices.txt
+#site1 orb1 spin1 ...
+#up=0, dn=1
 
 Hopping_mat[0][orb] = -1.0 0.0
 Hopping_mat[1][orb] = 0.0 -1.0

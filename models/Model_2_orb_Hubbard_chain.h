@@ -22,6 +22,8 @@ public:
     Mat_1_real CFS;
     Mat_1_real H_field;
 
+    Mat_1_string CdCdCC_set;
+
     Matrix_COO Hamil;
     bool Calculate_observables_onepoint;
     Mat_1_string one_point_obs;
@@ -116,6 +118,7 @@ public:
     void Initialize_macro_oprs_to_calculate(BASIS_2_orb_Hubb_chain &basis);
     void Initialize_one_point_to_calculate(BASIS_2_orb_Hubb_chain &basis);
     void Initialize_two_point_operator_sites_specific(string type , Matrix_COO &OPR_, int site, int site2, BASIS_2_orb_Hubb_chain &basis);
+    void Initialize_cdcdcc_operator(string indices_set,Matrix_COO &OPR_, BASIS_2_orb_Hubb_chain &basis);
     void Initialize_two_point_to_calculate(BASIS_2_orb_Hubb_chain &basis);
     void Initialize_Opr_for_Dynamics(BASIS_2_orb_Hubb_chain &basis);
     void Calculate_Local_Obs_for_States_to_Look(bool calculate_local_obs_for_states_to_look,

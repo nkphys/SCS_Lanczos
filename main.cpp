@@ -1896,6 +1896,7 @@ int main(int argc, char** argv){
         bool Cheaper_SpinSpincorr=true;
 
         bool Get_SingleParticleDenMat=true;
+        bool Get_cdcdcc_corr=true;
 
 
         MODEL_2_orb_Hubb_chain _MODEL;
@@ -2007,6 +2008,28 @@ int main(int argc, char** argv){
         }
         }
         }
+        }
+
+        if(Get_cdcdcc_corr){
+//Initialize_cdcdcc_operator(string indices_set,Matrix_COO &OPR_, BASIS_2_orb_Hubb_chain &basis);
+
+            Matrix_COO OPR_;
+            double_type cdcdcc_val;
+            for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
+                string CdCdCCOutFile = "CdCdCC_measurement_LanczosState"+to_string(state_)+".txt";
+                ofstream CdCdCC_out_file_(CdCdCCOutFile.c_str());
+                cout<<"<cd cd c c> correlations for state = "<<state_<<" in another file"<<endl;
+
+                CdCdCC_out_file_<<"#indices......     Value"<<endl;
+                for(int cdcdcc_no=0;cdcdcc_no<_MODEL.CdCdCC_set.size();cdcdcc_no++){
+                    OPR_.columns.clear();
+                    OPR_.rows.clear();
+                    OPR_.value.clear();
+                _MODEL.Initialize_cdcdcc_operator(_MODEL.CdCdCC_set[cdcdcc_no], OPR_, _BASIS);
+                   cdcdcc_val = _LANCZOS.Measure_observable(OPR_, state_);
+                    CdCdCC_out_file_<<_MODEL.CdCdCC_set[cdcdcc_no]<<"  "<<cdcdcc_val<<endl;
+                }
+            }
         }
 
         if(Cheaper_SpinSpincorr==true){

@@ -730,12 +730,8 @@ void MODEL_1_orb_Hubb_chain::Act_connections(BASIS_1_orb_Hubb_chain &basis, Mat_
     for(int site=0;site<basis.Length ;site++){
         for(int site_p=0;site_p<basis.Length ;site_p++){
 
-
             if(abs(Hopping_Mat[site_p][site])>0.0000000001)
-
             {
-
-
 
 #ifdef _OPENMP
 #pragma omp parallel

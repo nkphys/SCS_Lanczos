@@ -5010,7 +5010,7 @@ void MODEL_2_orb_Hubb_chain::Read_parameters(BASIS_2_orb_Hubb_chain &basis, stri
     string longrange_hopp_file_, Longrange_Hopp_File_ = "LongRangeHopping_matrix_file = ";
     string longrange_DenDenInt_file_, Longrange_DenDenInt_File_ = "LongRangeDenDenInt_matrix_file = ";
     string longrange_HundsInt_file_, Longrange_HundsInt_File_ = "LongRangeHundsInt_matrix_file = ";
-
+    string CdCdCC_file_, CdCdCC_File_ = "CdagCdagCC_to_measure_file = ";
 
 
 
@@ -5028,6 +5028,9 @@ void MODEL_2_orb_Hubb_chain::Read_parameters(BASIS_2_orb_Hubb_chain &basis, stri
 
             if ((offset = line.find(Longrange_Hopp_File_, 0)) != string::npos) {
                 longrange_hopp_file_ = line.substr (offset+Longrange_Hopp_File_.length());	}
+
+            if ((offset = line.find(CdCdCC_File_, 0)) != string::npos) {
+                CdCdCC_file_ = line.substr (offset+CdCdCC_File_.length());	}
 
             if ((offset = line.find(Longrange_DenDenInt_File_, 0)) != string::npos) {
                 longrange_DenDenInt_file_ = line.substr (offset+Longrange_DenDenInt_File_.length());    }
@@ -5195,6 +5198,17 @@ void MODEL_2_orb_Hubb_chain::Read_parameters(BASIS_2_orb_Hubb_chain &basis, stri
         }
 
     }
+
+
+    CdCdCC_set.clear();
+    string line_CdCdCC;
+    ifstream inputfile_CdCdCC(CdCdCC_file_.c_str());
+    while(getline(inputfile_CdCdCC,line_CdCdCC)){
+        //stringstream stream_CdCdCC;
+        //stream_CdCdCC<<line_CdCdCC;
+        CdCdCC_set.push_back(line_CdCdCC);
+    }
+
 
 
 
@@ -5851,6 +5865,272 @@ void MODEL_2_orb_Hubb_chain::Initialize_one_point_to_calculate(BASIS_2_orb_Hubb_
 
 }
 
+
+void MODEL_2_orb_Hubb_chain::Initialize_cdcdcc_operator(string indices_set,Matrix_COO &OPR_, BASIS_2_orb_Hubb_chain &basis){
+
+    OPR_.columns.clear();
+    OPR_.rows.clear();
+    OPR_.value.clear();
+    OPR_.nrows = basis.D_up_basis.size()*basis.D_dn_basis.size();
+    OPR_.ncols = basis.D_up_basis.size()*basis.D_dn_basis.size();
+
+    int UP_=0;
+    int DOWN_=1;
+
+    stringstream cdcdcc_indices_stream;
+    cdcdcc_indices_stream<<indices_set;
+
+    int site1_, site2_, site3_, site4_;
+    int orb1_, orb2_, orb3_, orb4_;
+    int spin1_, spin2_, spin3_, spin4_;
+
+    cdcdcc_indices_stream>>site1_>>orb1_>>spin1_;
+    cdcdcc_indices_stream>>site2_>>orb2_>>spin2_;
+    cdcdcc_indices_stream>>site3_>>orb3_>>spin3_;
+    cdcdcc_indices_stream>>site4_>>orb4_>>spin4_;
+
+
+    bool allowed_symm =true;
+    if(spin1_==UP_ || spin2_==UP_ ){
+    allowed_symm = allowed_symm && (basis.Nup>0);
+    }
+    if(spin1_==DOWN_ || spin2_==DOWN_ ){
+    allowed_symm = allowed_symm && (basis.Ndn>0);
+    }
+    if(spin1_==UP_ && spin2_==UP_ ){
+    allowed_symm = allowed_symm && (basis.Nup>1);
+    }
+    if(spin1_==DOWN_ && spin2_==DOWN_ ){
+    allowed_symm = allowed_symm && (basis.Ndn>1);
+    }
+
+   if (  (spin1_ + spin2_ -spin3_ -spin4_) !=0 ){
+    allowed_symm = false;
+    }
+
+    int m;
+    double value;
+    int D_up_temp, D_dn_temp;
+    int N_up_remaining;
+    int D_up, D_dn,i_new,j_new,m_new, l, lp;
+    double sign_FM=1.0;
+    int sign_pow_up;
+    int sign_pow_dn;
+
+
+    bool allowed;
+
+    for (int i=0;i<basis.D_up_basis.size();i++){
+        for (int j=0;j<basis.D_dn_basis.size();j++){
+            m=basis.D_dn_basis.size()*i + j;
+
+
+            allowed=allowed_symm;
+
+
+            if(spin4_==UP_){
+                allowed = allowed && (bit_value(basis.D_up_basis[i],orb4_*basis.Length + site4_)==1);
+            }
+            else{
+                assert(spin4_==DOWN_);
+                allowed = allowed && (bit_value(basis.D_dn_basis[j],orb4_*basis.Length + site4_)==1);
+            }
+            if(spin3_==UP_){
+                allowed = allowed && (bit_value(basis.D_up_basis[i],orb3_*basis.Length + site3_)==1);
+            }
+            else{
+                assert(spin3_==DOWN_);
+                allowed = allowed && (bit_value(basis.D_dn_basis[j],orb3_*basis.Length + site3_)==1);
+            }
+
+            if(spin2_==UP_){
+                allowed = allowed && (bit_value(basis.D_up_basis[i],orb2_*basis.Length + site2_)==0);
+            }
+            else{
+                assert(spin2_==DOWN_);
+                allowed = allowed && (bit_value(basis.D_dn_basis[j],orb2_*basis.Length + site2_)==0);
+            }
+
+            if(spin1_==UP_){
+                allowed = allowed && (bit_value(basis.D_up_basis[i],orb1_*basis.Length + site1_)==0);
+            }
+            else{
+                assert(spin1_==DOWN_);
+                allowed = allowed && (bit_value(basis.D_dn_basis[j],orb1_*basis.Length + site1_)==0);
+            }
+
+
+            if(allowed)
+            {
+                D_up_temp = basis.D_up_basis[i];
+                D_dn_temp = basis.D_dn_basis[j];
+
+                N_up_remaining = basis.Nup;
+
+                //Fourth term---------------------------------------------
+                if(spin4_==UP_){
+                    D_up = (int) (D_up_temp - pow(2,orb4_*basis.Length + site4_) );
+                    D_dn = D_dn_temp;
+
+                    if((orb4_*basis.Length + site4_)==0){
+                    sign_pow_up = 0;
+                    }
+                    else{
+                    sign_pow_up = one_bits_in_bw(0, orb4_*basis.Length + site4_, D_up_temp)
+                                  + bit_value(D_up_temp,0);
+                    }
+                    sign_pow_dn =0;
+
+                    N_up_remaining = N_up_remaining-1;
+                }
+                else{
+                    assert(spin4_==DOWN_);
+                    D_dn = (int) (D_dn_temp - pow(2,orb4_*basis.Length + site4_) );
+                    D_up = D_up_temp;
+                    if((orb4_*basis.Length + site4_)==0){
+                    sign_pow_dn = 0+N_up_remaining;
+                    }
+                    else{
+                    sign_pow_dn = one_bits_in_bw(0, orb4_*basis.Length + site4_, D_dn_temp)
+                                  + bit_value(D_dn_temp,0) + N_up_remaining;
+                    }
+                    sign_pow_up=0;
+                }
+
+                sign_FM = sign_FM*pow(-1.0, sign_pow_up + sign_pow_dn);
+
+                D_up_temp = D_up;
+                D_dn_temp = D_dn;
+                //-------------------------------------------------------------
+
+
+                //Third term---------------------------------------------
+                if(spin3_==UP_){
+                    D_up = (int) (D_up_temp - pow(2,orb3_*basis.Length + site3_) );
+                    D_dn = D_dn_temp;
+
+                    if((orb3_*basis.Length + site3_)==0){
+                    sign_pow_up = 0;
+                    }
+                    else{
+                    sign_pow_up = one_bits_in_bw(0, orb3_*basis.Length + site3_, D_up_temp)
+                                  + bit_value(D_up_temp,0);
+                    }
+                    sign_pow_dn =0;
+                    N_up_remaining = N_up_remaining -1;
+                }
+                else{
+                    assert(spin3_==DOWN_);
+                    D_dn = (int) (D_dn_temp - pow(2,orb3_*basis.Length + site3_) );
+                    D_up = D_up_temp;
+                    if((orb3_*basis.Length + site3_)==0){
+                    sign_pow_dn = 0+N_up_remaining;
+                    }
+                    else{
+                    sign_pow_dn = one_bits_in_bw(0, orb3_*basis.Length + site3_, D_dn_temp)
+                                  + bit_value(D_dn_temp,0) + N_up_remaining;
+                    }
+                    sign_pow_up=0;
+                }
+
+                sign_FM = sign_FM*pow(-1.0, sign_pow_up + sign_pow_dn);
+
+                D_up_temp = D_up;
+                D_dn_temp = D_dn;
+                //-------------------------------------------------------
+
+
+                //Second term---------------------------------------------
+                if(spin2_==UP_){
+                    D_up = (int) (D_up_temp + pow(2,orb2_*basis.Length + site2_) );
+                    D_dn = D_dn_temp;
+
+                    if((orb2_*basis.Length + site2_)==0){
+                    sign_pow_up = 0;
+                    }
+                    else{
+                    sign_pow_up = one_bits_in_bw(0, orb2_*basis.Length + site2_, D_up_temp)
+                                  + bit_value(D_up_temp,0);
+                    }
+                    sign_pow_dn =0;
+                    N_up_remaining = N_up_remaining +1;
+                }
+                else{
+                    assert(spin2_==DOWN_);
+                    D_dn = (int) (D_dn_temp + pow(2,orb2_*basis.Length + site2_) );
+                    D_up = D_up_temp;
+                    if((orb2_*basis.Length + site2_)==0){
+                    sign_pow_dn = 0+N_up_remaining;
+                    }
+                    else{
+                    sign_pow_dn = one_bits_in_bw(0, orb2_*basis.Length + site2_, D_dn_temp)
+                                  + bit_value(D_dn_temp,0) + N_up_remaining;
+                    }
+                    sign_pow_up=0;
+                }
+
+                sign_FM = sign_FM*pow(-1.0, sign_pow_up + sign_pow_dn);
+
+                D_up_temp = D_up;
+                D_dn_temp = D_dn;
+                //-------------------------------------------------------
+
+
+                //First term---------------------------------------------
+                if(spin1_==UP_){
+                    D_up = (int) (D_up_temp + pow(2,orb1_*basis.Length + site1_) );
+                    D_dn = D_dn_temp;
+
+                    if((orb1_*basis.Length + site1_)==0){
+                    sign_pow_up = 0;
+                    }
+                    else{
+                    sign_pow_up = one_bits_in_bw(0, orb1_*basis.Length + site1_, D_up_temp)
+                                  + bit_value(D_up_temp,0);
+                    }
+                    sign_pow_dn =0;
+                    N_up_remaining = N_up_remaining +1;
+                }
+                else{
+                    assert(spin1_==DOWN_);
+                    D_dn = (int) (D_dn_temp + pow(2,orb1_*basis.Length + site1_) );
+                    D_up = D_up_temp;
+                    if((orb1_*basis.Length + site1_)==0){
+                    sign_pow_dn = 0+N_up_remaining;
+                    }
+                    else{
+                    sign_pow_dn = one_bits_in_bw(0, orb1_*basis.Length + site1_, D_dn_temp)
+                                  + bit_value(D_dn_temp,0) + N_up_remaining;
+                    }
+                    sign_pow_up=0;
+                }
+
+                sign_FM = sign_FM*pow(-1.0, sign_pow_up + sign_pow_dn);
+
+                D_up_temp = D_up;
+                D_dn_temp = D_dn;
+                //-------------------------------------------------------
+
+
+                i_new = Find_int_in_intarray(D_up_temp,basis.D_up_basis);
+                j_new = Find_int_in_intarray(D_dn_temp,basis.D_dn_basis);
+
+                m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                //assert(m_new<m);
+                OPR_.value.push_back(sign_FM);
+                OPR_.rows.push_back(m_new);
+                OPR_.columns.push_back(m);
+
+            }
+
+        }
+    }
+
+
+
+
+}
 
 void MODEL_2_orb_Hubb_chain::Initialize_two_point_operator_sites_specific(string type , Matrix_COO &OPR_, int site, int site2, BASIS_2_orb_Hubb_chain &basis){
 
@@ -6948,132 +7228,132 @@ void MODEL_2_orb_Hubb_chain::Get_CdaggerC_type_Opr(BASIS_2_orb_Hubb_chain &basis
     int l,lp;
 
     if((spin1==spin2) && spin1==0){ //UP-->UP
-    for (int i=0;i<basis.D_up_basis.size();i++){
-        for (int j=0;j<basis.D_dn_basis.size();j++){
-            m=basis.D_dn_basis.size()*i + j;
+        for (int i=0;i<basis.D_up_basis.size();i++){
+            for (int j=0;j<basis.D_dn_basis.size();j++){
+                m=basis.D_dn_basis.size()*i + j;
 
-            value=0;
-
-
-            //---------------Hopping for up electrons-------------------//
-            //there have to be one up electron in orb2, site2
-            //there have to be no up electron in orb1, site1
-            if(
-                    ((bit_value(basis.D_up_basis[i],orb1*basis.Length + site1)==1)
-                    &&
-                    (bit_value(basis.D_up_basis[i],orb2*basis.Length + site2)==0))
-
-                    ||
-
-                    (bit_value(basis.D_up_basis[i],orb1*basis.Length + site1)==1
-                     &&
-                     ((orb1==orb2) && (site1==site2))
-                    )
-
-                    )
-            {
-
-                D_up = (int) (basis.D_up_basis[i] + pow(2,orb2*basis.Length + site2)
-                              - pow(2,orb1*basis.Length + site1) );
+                value=0;
 
 
-                //i_new = Find_int_in_intarray(D_up,basis.D_up_basis);
-                //j_new = j;
+                //---------------Hopping for up electrons-------------------//
+                //there have to be one up electron in orb2, site2
+                //there have to be no up electron in orb1, site1
+                if(
+                        ((bit_value(basis.D_up_basis[i],orb1*basis.Length + site1)==1)
+                         &&
+                         (bit_value(basis.D_up_basis[i],orb2*basis.Length + site2)==0))
 
-                i_new = basis.inverse_Dup[D_up - basis.DupMin_];
-                j_new=j;
+                        ||
 
-                m_new = basis.D_dn_basis.size()*i_new + j_new;
+                        (bit_value(basis.D_up_basis[i],orb1*basis.Length + site1)==1
+                         &&
+                         ((orb1==orb2) && (site1==site2))
+                         )
 
-                l=orb1*basis.Length + site1;
-                lp=orb2*basis.Length + site2;
+                        )
+                {
 
-                sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
-
-                sign_FM = pow(-1.0, sign_pow_up);
-
-                if( ((orb1==orb2) && (site1==site2)) ){
-                 sign_FM=1;
-                }
-
-                //assert(m_new<m);
-
-                   OPR.value.push_back(1.0*sign_FM*one);
-                   OPR.rows.push_back((m_new));
-                   OPR.columns.push_back((m));
+                    D_up = (int) (basis.D_up_basis[i] + pow(2,orb2*basis.Length + site2)
+                                  - pow(2,orb1*basis.Length + site1) );
 
 
-            } // if up hopping possible
+                    //i_new = Find_int_in_intarray(D_up,basis.D_up_basis);
+                    //j_new = j;
+
+                    i_new = basis.inverse_Dup[D_up - basis.DupMin_];
+                    j_new=j;
+
+                    m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                    l=orb1*basis.Length + site1;
+                    lp=orb2*basis.Length + site2;
+
+                    sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+
+                    sign_FM = pow(-1.0, sign_pow_up);
+
+                    if( ((orb1==orb2) && (site1==site2)) ){
+                        sign_FM=1;
+                    }
+
+                    //assert(m_new<m);
+
+                    OPR.value.push_back(1.0*sign_FM*one);
+                    OPR.rows.push_back((m_new));
+                    OPR.columns.push_back((m));
 
 
-        }// "j" i.e dn_decimals
-    } // "i" i.e up_decimals
+                } // if up hopping possible
+
+
+            }// "j" i.e dn_decimals
+        } // "i" i.e up_decimals
     }
 
 
 
     if((spin1==spin2) && spin1==1){ //DN-->DN
-    for (int i=0;i<basis.D_up_basis.size();i++){
-        for (int j=0;j<basis.D_dn_basis.size();j++){
-            m=basis.D_dn_basis.size()*i + j;
+        for (int i=0;i<basis.D_up_basis.size();i++){
+            for (int j=0;j<basis.D_dn_basis.size();j++){
+                m=basis.D_dn_basis.size()*i + j;
 
-            value=0;
-
-
-            //---------------Hopping for dn electrons-------------------//
-            //there have to be one dn electron in orb2, site2
-            //there have to be no dn electron in orb1, site1
-            if(
-                   ( (bit_value(basis.D_dn_basis[j],orb1*basis.Length + site1)==1)
-                    &&
-                    (bit_value(basis.D_dn_basis[j],orb2*basis.Length + site2)==0)
-                    )
-
-                    ||
-
-                    (bit_value(basis.D_dn_basis[j],orb1*basis.Length + site1)==1
-                     &&
-                     ((orb1==orb2) && (site1==site2))
-                    )
-
-                    )
-            {
-
-                D_dn = (int) (basis.D_dn_basis[j] + pow(2,orb2*basis.Length + site2)
-                              - pow(2,orb1*basis.Length + site1) );
+                value=0;
 
 
-                // j_new = Find_int_in_intarray(D_dn,basis.D_dn_basis);
-                // i_new = i;
+                //---------------Hopping for dn electrons-------------------//
+                //there have to be one dn electron in orb2, site2
+                //there have to be no dn electron in orb1, site1
+                if(
+                        ( (bit_value(basis.D_dn_basis[j],orb1*basis.Length + site1)==1)
+                          &&
+                          (bit_value(basis.D_dn_basis[j],orb2*basis.Length + site2)==0)
+                          )
 
-                j_new = basis.inverse_Ddn[D_dn - basis.DdnMin_];
-                i_new = i;
+                        ||
 
-                m_new = basis.D_dn_basis.size()*i_new + j_new;
+                        (bit_value(basis.D_dn_basis[j],orb1*basis.Length + site1)==1
+                         &&
+                         ((orb1==orb2) && (site1==site2))
+                         )
 
-                l=orb1*basis.Length + site1;
-                lp=orb2*basis.Length + site2;
+                        )
+                {
 
-                sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
-
-                sign_FM = pow(-1.0, sign_pow_dn);
-
-                if( ((orb1==orb2) && (site1==site2)) ){
-                 sign_FM=1;
-                }
-
-                //assert(m_new<m);
-
-                //conjugate(hopp_val) is used to preserve time-reversal symmetry
-                OPR.value.push_back(1.0*sign_FM*one);
-                OPR.rows.push_back((m_new));
-                OPR.columns.push_back((m));
-
-            } // if dn hopping possible
+                    D_dn = (int) (basis.D_dn_basis[j] + pow(2,orb2*basis.Length + site2)
+                                  - pow(2,orb1*basis.Length + site1) );
 
 
-        }// "j" i.e dn_decimals
-    } // "i" i.e up_decimals
+                    // j_new = Find_int_in_intarray(D_dn,basis.D_dn_basis);
+                    // i_new = i;
+
+                    j_new = basis.inverse_Ddn[D_dn - basis.DdnMin_];
+                    i_new = i;
+
+                    m_new = basis.D_dn_basis.size()*i_new + j_new;
+
+                    l=orb1*basis.Length + site1;
+                    lp=orb2*basis.Length + site2;
+
+                    sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+
+                    sign_FM = pow(-1.0, sign_pow_dn);
+
+                    if( ((orb1==orb2) && (site1==site2)) ){
+                        sign_FM=1;
+                    }
+
+                    //assert(m_new<m);
+
+                    //conjugate(hopp_val) is used to preserve time-reversal symmetry
+                    OPR.value.push_back(1.0*sign_FM*one);
+                    OPR.rows.push_back((m_new));
+                    OPR.columns.push_back((m));
+
+                } // if dn hopping possible
+
+
+            }// "j" i.e dn_decimals
+        } // "i" i.e up_decimals
     }
 
 }
