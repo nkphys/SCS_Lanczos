@@ -1,10 +1,18 @@
 PerformTimeDependent_Lanczos = true
 Evolution_Type = WithConstModelType
+
+
 #later on add WithDiffModelTypes (if needed someday)
+
 
 TimeMax = 10.0
 Time_slice_width = 0.01
 Time_otoc = 5.0
+
+NoOfColors = 2
+AnnealingTimes = 10 100
+ColorOfQubits = Color.txt
+ 
 
 M_EigStates = 40
 KrylovStepsForTimeEvo = 40
@@ -19,17 +27,17 @@ Use_Scheduler = true
 Model = SpinOnly
 ------------------------------------------
 PBC = true
-Length = 8
+Length = 2
 TwoTimesSpin = 1
 
 #in format "site Hx Hy Hz"
-MagFieldVectorFile = Hmag_8.txt
+MagFieldVectorFile = Hmag_2.txt
 
 
 D_anisotropy = 0 0 0.00
 
-LongRangeExchangeZZ file = Jzz_longrange_8.txt
-LongRangeExchangePM file = Jpm_longrange_8.txt
+LongRangeExchangeZZ file = Jzz_longrange_2.txt
+LongRangeExchangePM file = Jpm_longrange_2.txt
 
 ----------------------------------------
 

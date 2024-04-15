@@ -68,16 +68,20 @@ int main(int argc, char** argv){
         TD_Lanczos TD_Lanczos_;
         TD_Lanczos_.inp_filename = inp_filename;
         TD_Lanczos_.reading_input();
-        TD_Lanczos_.Create_Scheduler();
+        TD_Lanczos_.Create_MultiColorScheduler();
+
+        //assert(false);
 
         TD_Lanczos_.Constructing_InitialState();
 
-        //TD_Lanczos_.Perform_TD_Lanczos();
+        TD_Lanczos_.Perform_TD_Lanczos();
+
+        /*
         string otoc_type ="Sz";
         int siteV=TD_Lanczos_.SiteV;
         int siteW=TD_Lanczos_.SiteW;
         TD_Lanczos_.Calculate_OTOC(otoc_type, siteV, siteW);
-
+        */
     }
 
     else{
@@ -775,8 +779,8 @@ int main(int argc, char** argv){
         for(int state_=0;state_<temp_int;state_++){
         cout<<"For state = "<< state_<<"---------------------------------------------"<<endl;
         cout<<"Fermion's local den------------------------------------"<<endl;
-        double sum_temp=0;
-        double val_temp_;
+        double_type sum_temp=0;
+        double_type val_temp_;
         Mat_1_doub Vec_Temp;
         for(int site_i=0;site_i<_BASIS.Length;site_i++){
         Matrix_COO OPR_;
@@ -804,10 +808,10 @@ int main(int argc, char** argv){
     _LANCZOS.Write_full_spectrum();
 
 
-    double Total_S2=0.0;;
+    double_type Total_S2=0.0;;
 
-    double val_temp;
-    double sum_;
+    double_type val_temp;
+    double_type sum_;
     cout<<"---------------------------------------------"<<endl;
     cout<<"SzSz corr------------------------------------"<<endl;
     sum_=0;
@@ -1978,7 +1982,7 @@ int main(int argc, char** argv){
         int spin1=0;
         int spin2=0;
         Matrix_COO OPR_;
-        double val_;
+        double_type val_;
 
         for(int orb1=0;orb1<2;orb1++){
         for(int orb2=orb1;orb2<2;orb2++){

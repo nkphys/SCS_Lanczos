@@ -62,11 +62,79 @@ void TD_Lanczos::Create_Scheduler(){
 
 
 
+void TD_Lanczos::Create_MultiColorScheduler(){
+
+    //assert(abs(Restart_Time)<0.0000000001);
+
+
+    A_.resize(No_of_colors);
+    B_.resize(No_of_colors);
+
+    cout<<"No of Time slices = "<<No_TimeSlices<<endl;
+
+    Time_.resize(No_TimeSlices);
+    for(int color=0;color<No_of_colors;color++){
+    A_[color].resize(No_TimeSlices);
+    B_[color].resize(No_TimeSlices);
+    }
+
+
+    for(int color=0;color<No_of_colors;color++){
+    double time_normalized;
+    double a_temp, b_temp;
+    for(int time_ind=0;time_ind<No_TimeSlices;time_ind++){
+
+        time_normalized=(time_ind*dt_)/(ColorResolvedAnnealingTimes[color]);
+
+       // cout<<time_ind<<"  "<<time_normalized<<endl;
+        //assert(time_normalized>=0 && time_normalized<=1.0);
+
+        for(int time_ind2=0;time_ind2<Time_bare.size()-1;time_ind2++){
+            if(time_normalized>=Time_bare[time_ind2] && time_normalized<=Time_bare[time_ind2+1] ){
+                a_temp = (abs(Time_bare[time_ind2+1]-time_normalized)*Gamma_bare[time_ind2]
+                        +abs(Time_bare[time_ind2]-time_normalized)*Gamma_bare[time_ind2+1])*
+                        (1.0/(Time_bare[time_ind2+1]-Time_bare[time_ind2]));
+
+                b_temp = (abs(Time_bare[time_ind2+1]-time_normalized)*Js_bare[time_ind2]
+                        +abs(Time_bare[time_ind2]-time_normalized)*Js_bare[time_ind2+1])*
+                        (1.0/(Time_bare[time_ind2+1]-Time_bare[time_ind2]));
+
+                break;
+            }
+        }
+
+        Time_[time_ind]=time_ind*dt_;
+        A_[color][time_ind]=a_temp;
+        B_[color][time_ind]=b_temp;
+    }
+
+
+
+    string created_schd_str = "Created_ColoredScheduler_color"+ to_string(color)+ ".txt";
+    ofstream created_schd_stream(created_schd_str.c_str());
+
+    created_schd_stream<<"# time   A    B"<<endl;
+    for(int time_ind=0;time_ind<Time_.size();time_ind++){
+        created_schd_stream<<Time_[time_ind]<<"  "<<A_[color][time_ind]<<"  "<<B_[color][time_ind]<<endl;
+    }
+    }
+
+}
+
+
+
 void TD_Lanczos::reading_input(){
     string filepath = inp_filename;
 
 
     ifstream inputfile(filepath.c_str());
+
+
+    string no_of_colors_,  No_Of_Colors_ = "NoOfColors = ";
+    string annealingtimes_, AnnealingTimes_ = "AnnealingTimes = ";
+    string colorofqubits_, ColorOfQubits_ = "ColorOfQubits = ";
+
+
 
     string evolution_type, Evolution_Type_ = "Evolution_Type = ";
     string timemax, TimeMax_ = "TimeMax = ";
@@ -86,6 +154,7 @@ void TD_Lanczos::reading_input(){
     string Scheduler_File_ = "Scheduler_File = ";
     string use_scheduler_, Use_Scheduler_ = "Use_Scheduler = ";
 
+    string sites_, Sites_ = "Length = ";
 
     int offset;
     string line;
@@ -96,6 +165,17 @@ void TD_Lanczos::reading_input(){
         {
             getline(inputfile,line);
 
+            if ((offset = line.find(Sites_, 0)) != string::npos) {
+                sites_ = line.substr (offset+Sites_.length());  }
+
+            if ((offset = line.find(ColorOfQubits_, 0)) != string::npos) {
+                colorofqubits_ = line.substr (offset+ColorOfQubits_.length());  }
+
+            if ((offset = line.find(AnnealingTimes_, 0)) != string::npos) {
+                annealingtimes_ = line.substr (offset+AnnealingTimes_.length());  }
+
+            if ((offset = line.find(No_Of_Colors_, 0)) != string::npos) {
+                no_of_colors_ = line.substr (offset+No_Of_Colors_.length());  }
 
             if ((offset = line.find(Evolution_Type_, 0)) != string::npos) {
                 evolution_type = line.substr (offset+Evolution_Type_.length());	}
@@ -135,6 +215,24 @@ void TD_Lanczos::reading_input(){
     }
     else
     {cout<<"Unable to open input file while in the Model class."<<endl;}
+
+
+    No_of_colors = atoi(no_of_colors_.c_str());
+    ColorResolvedAnnealingTimes.resize(No_of_colors);
+
+    stringstream annealingtimes_stream;
+    annealingtimes_stream<<annealingtimes_;
+    for(int color_no=0;color_no<No_of_colors;color_no++){
+     annealingtimes_stream>>ColorResolvedAnnealingTimes[color_no];
+    }
+
+    Sites = atoi(sites_.c_str());
+    QubitColors.resize(Sites);
+    ifstream inColorQubit(colorofqubits_.c_str());
+    for(int i=0;i<Sites;i++){
+    inColorQubit>>QubitColors[i];
+    }
+
 
     EvolutionType=evolution_type;
     //    if(evolution_type != "WithConstModelType"){
@@ -208,7 +306,15 @@ void TD_Lanczos::Constructing_State_T0_via_HamiltonianGS(){
     _BASIS.Construct_basis();
 
     //double Hx_factor,double Hz_factor, double Jpm_factor, double Jzz_factor
-    _MODEL.Update_Hamiltonian_Params(_BASIS, Gamma_[0], 1.0, 1.0, Js_[0]);
+   // _MODEL.Update_Hamiltonian_Params(_BASIS, Gamma_[0], 1.0, 1.0, Js_[0]);
+
+    Mat_1_real A_factor, B_factor;
+    A_factor.resize(_BASIS.Length);
+    B_factor.resize(_BASIS.Length);
+    for(int site=0;site<Sites;site++){
+     A_factor[site] = A_[QubitColors[site]][0];
+     B_factor[site] = B_[QubitColors[site]][0];
+    }
 
    // _MODEL.Update_Hamiltonian_Params(_BASIS, 1.0, 1.0, 1.0, 1.0);
 
@@ -385,18 +491,25 @@ void TD_Lanczos::Perform_TD_Lanczos(){
         cout<<"Starting time evolution------------"<<endl;
 
         Mat_1_doub Psi_old = Psi0;
+        Mat_1_real A_factor, B_factor;
+        A_factor.resize(Sites);B_factor.resize(Sites);
         for(int time_slice=1;time_slice<=No_TimeSlices;time_slice++){
-
 
             MODEL_Spins _MODEL;
             BASIS_Spins _BASIS;
-
 
             //_MODEL.Extenstion_to_FilePaths="Timeslice"+to_string(time_slice)+".txt";
             _MODEL.Read_parameters(_BASIS, inp_filename);
             _BASIS.Construct_basis();
 
-            _MODEL.Update_Hamiltonian_Params(_BASIS, Gamma_[time_slice], 1.0, 1.0, Js_[time_slice]);
+
+            for(int site=0;site<Sites;site++){
+             A_factor[site] = A_[QubitColors[site]][time_slice];
+             B_factor[site] = B_[QubitColors[site]][time_slice];
+            }
+
+            //_MODEL.Update_Hamiltonian_Params(_BASIS, Gamma_[time_slice], 1.0, 1.0, Js_[time_slice]);
+              _MODEL.Update_Hamiltonian_Params_with_multicolors(_BASIS, A_factor, B_factor);
 
             _MODEL.Add_diagonal_terms(_BASIS);
             _MODEL.Add_non_diagonal_terms(_BASIS);

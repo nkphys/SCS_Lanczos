@@ -33,6 +33,8 @@ public:
 
     int SiteV, SiteW;
 
+
+    Mat_2_real A_,B_;
     Mat_1_real Time_, Time_bare;
     Mat_1_real Gamma_, Gamma_bare;
     Mat_1_real Js_, Js_bare;
@@ -47,6 +49,11 @@ public:
     string EvolutionType;
     string ModelName_str;
 
+    int No_of_colors;
+    Mat_1_int QubitColors;
+    Mat_1_real ColorResolvedAnnealingTimes;
+
+    int Sites;
 
     Mat_1_doub Psi0;
 
@@ -59,6 +66,7 @@ public:
     void Calculate_OTOC(string opr_type, int siteV, int siteW);
     void reading_input();
     void Create_Scheduler();
+    void Create_MultiColorScheduler();
 
     void Read_Scheduler();
 

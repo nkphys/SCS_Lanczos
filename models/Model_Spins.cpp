@@ -205,6 +205,10 @@ void MODEL_Spins::Act_connections(BASIS_Spins &basis, Mat_1_doub &Vec_in, Mat_1_
 
 void MODEL_Spins::Update_Hamiltonian_Params(BASIS_Spins &basis, double Hx_factor,double Hz_factor, double Jpm_factor, double Jzz_factor){
 
+
+
+
+
     for(int site=0;site<basis.Length;site++){
         Hz_field[site] = Hz_field_const[site]*Hz_factor;
     }
@@ -223,6 +227,38 @@ void MODEL_Spins::Update_Hamiltonian_Params(BASIS_Spins &basis, double Hx_factor
         for(int site=0;site<basis.Length ;site++){
         Jzz_Exchange_mat[site_p][site] = Jzz_Exchange_mat_const[site_p][site]*Jzz_factor;
         }}
+
+
+
+}
+
+
+void MODEL_Spins::Update_Hamiltonian_Params_with_multicolors(BASIS_Spins &basis, Mat_1_real& A_factor, Mat_1_real& B_factor){
+
+
+    for(int site=0;site<basis.Length;site++){
+        Hz_field[site] = Hz_field_const[site]*B_factor[site];
+    }
+
+    for(int site_p=0;site_p<basis.Length ;site_p++){
+        for(int site=0;site<basis.Length ;site++){
+        Jpm_Exchange_mat[site_p][site] = Jpm_Exchange_mat_const[site_p][site]*0.0;
+        }}
+
+
+    for(int site=0;site<basis.Length;site++){
+        Hx_field[site] = Hx_field_const[site]*A_factor[site];
+    }
+
+    for(int site_p=0;site_p<basis.Length ;site_p++){
+        for(int site=0;site<basis.Length ;site++){
+        assert(B_factor[site]>0.0);
+        assert(B_factor[site_p]>0.0);
+        Jzz_Exchange_mat[site_p][site] = Jzz_Exchange_mat_const[site_p][site]*
+                                         sqrt(B_factor[site]*B_factor[site_p]);
+        }}
+
+
 
 }
 
@@ -631,6 +667,8 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
 
     string no_of_onepoint_obs_, No_Of_Onepoint_Obs_ = "No_of_onepoint_obs = ";
 
+
+
     int offset;
     string line;
     ifstream inputfile(filepath.c_str());
@@ -696,7 +734,7 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
     MagFieldVectorfilepath = MagFieldVectorfilepath;// + Extenstion_to_FilePaths;
 
     cout<<"Reading Magnetic field :"<<endl;
-     ifstream inMagfile(MagFieldVectorfilepath.c_str());
+    ifstream inMagfile(MagFieldVectorfilepath.c_str());
     double temp_hx, temp_hy , temp_hz;
     int temp_site;
     Hx_field_const.clear();Hy_field_const.clear();Hz_field_const.clear();

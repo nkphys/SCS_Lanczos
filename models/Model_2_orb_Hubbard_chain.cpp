@@ -5891,6 +5891,20 @@ void MODEL_2_orb_Hubb_chain::Initialize_cdcdcc_operator(string indices_set,Matri
 
 
     bool allowed_symm =true;
+    if(spin3_==UP_ || spin4_==UP_ ){
+    allowed_symm = allowed_symm && (basis.Nup>0);
+    }
+    if(spin3_==DOWN_ || spin4_==DOWN_ ){
+    allowed_symm = allowed_symm && (basis.Ndn>0);
+    }
+    if(spin3_==UP_ && spin4_==UP_ ){
+    allowed_symm = allowed_symm && (basis.Nup>1);
+    }
+    if(spin3_==DOWN_ && spin4_==DOWN_ ){
+    allowed_symm = allowed_symm && (basis.Ndn>1);
+    }
+
+
     if(spin1_==UP_ || spin2_==UP_ ){
     allowed_symm = allowed_symm && (basis.Nup>0);
     }
@@ -5925,49 +5939,27 @@ void MODEL_2_orb_Hubb_chain::Initialize_cdcdcc_operator(string indices_set,Matri
             m=basis.D_dn_basis.size()*i + j;
 
 
-            allowed=allowed_symm;
+            sign_FM=1.0;
+            /*----------
+            */
 
-
-            if(spin4_==UP_){
-                allowed = allowed && (bit_value(basis.D_up_basis[i],orb4_*basis.Length + site4_)==1);
-            }
-            else{
-                assert(spin4_==DOWN_);
-                allowed = allowed && (bit_value(basis.D_dn_basis[j],orb4_*basis.Length + site4_)==1);
-            }
-            if(spin3_==UP_){
-                allowed = allowed && (bit_value(basis.D_up_basis[i],orb3_*basis.Length + site3_)==1);
-            }
-            else{
-                assert(spin3_==DOWN_);
-                allowed = allowed && (bit_value(basis.D_dn_basis[j],orb3_*basis.Length + site3_)==1);
-            }
-
-            if(spin2_==UP_){
-                allowed = allowed && (bit_value(basis.D_up_basis[i],orb2_*basis.Length + site2_)==0);
-            }
-            else{
-                assert(spin2_==DOWN_);
-                allowed = allowed && (bit_value(basis.D_dn_basis[j],orb2_*basis.Length + site2_)==0);
-            }
-
-            if(spin1_==UP_){
-                allowed = allowed && (bit_value(basis.D_up_basis[i],orb1_*basis.Length + site1_)==0);
-            }
-            else{
-                assert(spin1_==DOWN_);
-                allowed = allowed && (bit_value(basis.D_dn_basis[j],orb1_*basis.Length + site1_)==0);
-            }
-
-
-            if(allowed)
-            {
+//            if(allowed)
+//            {
                 D_up_temp = basis.D_up_basis[i];
                 D_dn_temp = basis.D_dn_basis[j];
-
                 N_up_remaining = basis.Nup;
+                allowed=allowed_symm;
 
                 //Fourth term---------------------------------------------
+                if(allowed){
+                if(spin4_==UP_){
+                    allowed = allowed && (bit_value(basis.D_up_basis[i],orb4_*basis.Length + site4_)==1);
+                }
+                else{
+                    assert(spin4_==DOWN_);
+                    allowed = allowed && (bit_value(basis.D_dn_basis[j],orb4_*basis.Length + site4_)==1);
+                }
+                if(allowed){
                 if(spin4_==UP_){
                     D_up = (int) (D_up_temp - pow(2,orb4_*basis.Length + site4_) );
                     D_dn = D_dn_temp;
@@ -6001,10 +5993,21 @@ void MODEL_2_orb_Hubb_chain::Initialize_cdcdcc_operator(string indices_set,Matri
 
                 D_up_temp = D_up;
                 D_dn_temp = D_dn;
+                }
+                }
                 //-------------------------------------------------------------
 
 
                 //Third term---------------------------------------------
+                if(allowed){
+                if(spin3_==UP_){
+                    allowed = allowed && (bit_value(D_up_temp,orb3_*basis.Length + site3_)==1);
+                }
+                else{
+                    assert(spin3_==DOWN_);
+                    allowed = allowed && (bit_value(D_dn_temp,orb3_*basis.Length + site3_)==1);
+                }
+                if(allowed){
                 if(spin3_==UP_){
                     D_up = (int) (D_up_temp - pow(2,orb3_*basis.Length + site3_) );
                     D_dn = D_dn_temp;
@@ -6037,10 +6040,21 @@ void MODEL_2_orb_Hubb_chain::Initialize_cdcdcc_operator(string indices_set,Matri
 
                 D_up_temp = D_up;
                 D_dn_temp = D_dn;
+                }
+                }
                 //-------------------------------------------------------
 
 
                 //Second term---------------------------------------------
+                if(allowed){
+                if(spin2_==UP_){
+                    allowed = allowed && (bit_value(D_up_temp,orb2_*basis.Length + site2_)==0);
+                }
+                else{
+                    assert(spin2_==DOWN_);
+                    allowed = allowed && (bit_value(D_dn_temp,orb2_*basis.Length + site2_)==0);
+                }
+                if(allowed){
                 if(spin2_==UP_){
                     D_up = (int) (D_up_temp + pow(2,orb2_*basis.Length + site2_) );
                     D_dn = D_dn_temp;
@@ -6073,10 +6087,21 @@ void MODEL_2_orb_Hubb_chain::Initialize_cdcdcc_operator(string indices_set,Matri
 
                 D_up_temp = D_up;
                 D_dn_temp = D_dn;
+                }
+                }
                 //-------------------------------------------------------
 
 
                 //First term---------------------------------------------
+                if(allowed){
+                if(spin1_==UP_){
+                    allowed = allowed && (bit_value(D_up_temp,orb1_*basis.Length + site1_)==0);
+                }
+                else{
+                    assert(spin1_==DOWN_);
+                    allowed = allowed && (bit_value(D_dn_temp,orb1_*basis.Length + site1_)==0);
+                }
+                if(allowed){
                 if(spin1_==UP_){
                     D_up = (int) (D_up_temp + pow(2,orb1_*basis.Length + site1_) );
                     D_dn = D_dn_temp;
@@ -6109,20 +6134,24 @@ void MODEL_2_orb_Hubb_chain::Initialize_cdcdcc_operator(string indices_set,Matri
 
                 D_up_temp = D_up;
                 D_dn_temp = D_dn;
+                }
+                }
                 //-------------------------------------------------------
 
 
+                if(allowed){
                 i_new = Find_int_in_intarray(D_up_temp,basis.D_up_basis);
                 j_new = Find_int_in_intarray(D_dn_temp,basis.D_dn_basis);
 
                 m_new = basis.D_dn_basis.size()*i_new + j_new;
 
+                //sign_FM=1.0;
                 //assert(m_new<m);
                 OPR_.value.push_back(sign_FM);
                 OPR_.rows.push_back(m_new);
                 OPR_.columns.push_back(m);
-
-            }
+                }
+            //}
 
         }
     }

@@ -19,13 +19,13 @@ public:
     int Target_Total_Ne;
     double Target_Total_Sz;
 
-    Mat_2_doub J_LSpins_mat;
-    Mat_2_doub Hopping_mat;
-    Mat_2_doub KondoExchange_mat;
+    Mat_2_real J_LSpins_mat;
+    Mat_2_real Hopping_mat;
+    Mat_2_real KondoExchange_mat;
     double LocalKondo;
 
     Mat_1_triad_int KondoHoppings_sites;
-    Mat_1_doub KondoHoppings;
+    Mat_1_real KondoHoppings;
 
     Matrix_COO Hamil;
 
