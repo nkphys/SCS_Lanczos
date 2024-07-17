@@ -73,7 +73,7 @@ int main(int argc, char** argv){
         //assert(false);
 
         TD_Lanczos_.Constructing_InitialState();
-
+        TD_Lanczos_.Get_TimeDependentEigenSpectrum();
         TD_Lanczos_.Perform_TD_Lanczos();
 
         /*
@@ -184,7 +184,7 @@ int main(int argc, char** argv){
 
             if(Hamil_construct){
 
-                if(_MODEL.Hamil.nrows<700){
+                if(_MODEL.Hamil.nrows<1000){
                     DO_FULL_DIAGONALIZATION=true;
                 }
                 else{
@@ -1772,6 +1772,101 @@ int main(int argc, char** argv){
     //=======================================================================================================================================================================================================//
 
 
+    if(model_name=="Moire_Kspace"){
+    MODEL_Moire_Kspace _MODEL;
+    BASIS_Moire_Kspace _BASIS;
+
+    _MODEL.Read_parameters(_BASIS, inp_filename);
+    _BASIS.Construct_basis();
+
+    _MODEL.Read_Interations(_BASIS);
+    cout<<"Interactions read"<<endl;
+
+    _MODEL.Read_Dispersion(_BASIS);
+    cout<<"Dispersion read"<<endl;
+
+    _MODEL.Add_Dispersion_term(_BASIS);
+    cout<<"K.E added"<<endl;
+
+    _MODEL.Add_Interaction_terms(_BASIS);
+    cout<<"Interactions added"<<endl;
+
+    cout<<"Size of Hilbert space = "<<_MODEL.Hamil.nrows<<endl;
+    cout<<scientific;
+    cout<<setprecision(8);
+//    Print_Matrix_COO(_MODEL.Hamil);
+//    Print_Matrix_COO_format(_MODEL.Hamil);
+
+
+    cout<<scientific<<setprecision(10);
+    DO_FULL_DIAGONALIZATION=false;
+    if(_MODEL.Hamil.nrows<1000){
+        DO_FULL_DIAGONALIZATION=true;
+    }
+    if(DO_FULL_DIAGONALIZATION==true){
+        double EG;
+        Mat_1_real Evals_temp;
+        Mat_1_doub vecG;
+        Diagonalize(_MODEL.Hamil, Evals_temp, vecG);
+        cout<<"GS energy from ED(without Lanczos) = "<<Evals_temp[0]<<endl;
+        cout<<"All eigenvalues using EG------------------------------"<<endl;
+        cout<<"-------------------------------------------------------"<<endl;
+        for(int i=0;i<Evals_temp.size();i++){
+            cout<<i<<"  "<<Evals_temp[i]<<endl;
+        }
+        cout<<"-------------------------------------------------------"<<endl;
+        cout<<"-------------------------------------------------------"<<endl;
+
+    }
+
+
+    LANCZOS<BASIS_Moire_Kspace, MODEL_Moire_Kspace> _LANCZOS(_BASIS, _MODEL);
+    _LANCZOS.Dynamics_performed=false;
+    _LANCZOS.Read_Lanczos_parameters(inp_filename);
+
+     _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
+
+     Matrix_COO OPR_;
+    complex<double> val_;
+     cout<<"<Sz(k)Sz(-k)>----k=(k1,k2)-------"<<endl;
+     for(int k1=0;k1<_BASIS.Length1;k1++){
+         for(int k2=0;k2<_BASIS.Length2;k2++){
+             OPR_.columns.clear();
+             OPR_.rows.clear();
+             OPR_.value.clear();
+     _MODEL.Initialize_Sk_opr(_BASIS, OPR_, k1, k2, "z", "z");
+      val_=_LANCZOS.Measure_observable(OPR_, 0);
+      cout<<k1<<"  "<<k2<<"  "<<val_/(_BASIS.Length*_BASIS.Length)<<endl;
+         }
+     }
+
+     cout<<"<Sp(k)Sm(-k)>----k=(k1,k2)-------"<<endl;
+     for(int k1=0;k1<_BASIS.Length1;k1++){
+         for(int k2=0;k2<_BASIS.Length2;k2++){
+             OPR_.columns.clear();
+             OPR_.rows.clear();
+             OPR_.value.clear();
+     _MODEL.Initialize_Sk_opr(_BASIS, OPR_, k1, k2, "plus", "minus");
+      val_=_LANCZOS.Measure_observable(OPR_, 0);
+      cout<<k1<<"  "<<k2<<"  "<<val_/(_BASIS.Length*_BASIS.Length)<<endl;
+         }
+     }
+
+     cout<<"<Sm(k)Sp(-k)>----k=(k1,k2)-------"<<endl;
+     for(int k1=0;k1<_BASIS.Length1;k1++){
+         for(int k2=0;k2<_BASIS.Length2;k2++){
+             OPR_.columns.clear();
+             OPR_.rows.clear();
+             OPR_.value.clear();
+     _MODEL.Initialize_Sk_opr(_BASIS, OPR_, k1, k2, "minus", "plus");
+      val_=_LANCZOS.Measure_observable(OPR_, 0);
+      cout<<k1<<"  "<<k2<<"  "<<val_/(_BASIS.Length*_BASIS.Length)<<endl;
+         }
+     }
+
+
+    }
+
     if (model_name=="3_orb_Hubbard_chain") {
         MODEL_3_orb_Hubb_chain _MODEL;
         BASIS_3_orb_Hubb_chain _BASIS;
@@ -1790,7 +1885,7 @@ int main(int argc, char** argv){
 
         cout<<"Size of Hilbert space = "<<_MODEL.Hamil.nrows<<endl;
         cout<<scientific<<setprecision(8);
-        //Print_Matrix_COO(_MODEL.Hamil);
+        Print_Matrix_COO(_MODEL.Hamil);
 
         double EG;
         Mat_1_doub vecG;

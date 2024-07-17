@@ -24,6 +24,9 @@
 
 
 
+
+
+void Perform_SVD(Matrix<double> & A_, Matrix<double> & VT_, Matrix<double> & U_, vector<double> & Sigma_);
 int partition(Mat_1_int &a, int s, int e);
 void quicksort(Mat_1_int &a, int s, int e);
 //Use quicksort(a, 0, a.size() -1);

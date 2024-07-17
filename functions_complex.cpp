@@ -10,6 +10,64 @@ extern "C" void zheev_(char *,char *,int *, complex<double> *, int *, double *,
 //extern "C" void dsyev_(char * , char * , int * , double * , int *, double *, double *, int *, int *);
 
 
+extern "C" void zgesdd_ (char *, int *, int *, std::complex<double> *, int *, double *, std::complex<double> *, int *, std::complex<double> *, int*,
+                         std::complex<double> *, int *, double * , int *, int *);
+
+
+
+
+void Perform_SVD(Matrix<complex<double>> & A_, Matrix<complex<double>> & VT_, Matrix<complex<double>> & U_, vector<double> & Sigma_){
+
+
+    char jobz='A'; //A,S,O,N
+
+    int m=A_.n_row();
+    int n=A_.n_col();
+    int lda=A_.n_row();
+    int ldu=A_.n_row();
+    int ldvt=n;
+
+    Sigma_.clear();
+    Sigma_.resize(min(m,n));
+
+    U_.resize(ldu,m);
+
+    VT_.resize(ldvt,n);
+
+
+    vector<complex<double>> work(3);
+    int info;
+    int lwork= -1;
+    vector<int> iwork(8*min(m,n));
+    int lrwork = max( (5*min(m,n)*min(m,n)) + 5*min(m,n), (2*max(m,n)*min(m,n)) + (2*min(m,n)*min(m,n)) + min(m,n) );
+    vector<double> rwork(lrwork);
+
+    // query:
+    zgesdd_(&jobz, &m, &n, &(A_(0,0)),&lda, &(Sigma_[0]),&(U_(0,0)), &ldu, &(VT_(0,0)), &ldvt,
+            &(work[0]), &lwork, &(rwork[0]), &(iwork[0]), &info);
+    //lwork = int(real(work[0]))+1;
+    lwork = int((work[0]).real());
+    work.resize(lwork);
+    // real work:
+    zgesdd_(&jobz, &m, &n, &(A_(0,0)),&lda, &(Sigma_[0]),&(U_(0,0)), &ldu, &(VT_(0,0)), &ldvt,
+            &(work[0]), &lwork, &(rwork[0]), &(iwork[0]), &info);
+    if (info!=0) {
+        if(info>0){
+            std::cerr<<"info="<<info<<"\n";
+            perror("diag: zheev: failed with info>0.\n");}
+        if(info<0){
+            std::cerr<<"info="<<info<<"\n";
+            perror("diag: zheev: failed with info<0.\n");
+        }
+    }
+
+    // Ham_.print();
+
+
+
+}
+
+
 
 int Find_int_in_part_of_intarray(ulli num, Mat_1_ullint &array, int min_i, int max_i){
 
@@ -346,7 +404,7 @@ void Print_Matrix_COO_in_file(Matrix_COO &A, string filename){
     }
 
     for(int i=0;i<A.value.size();i++){
-        B[A.rows[i]][A.columns[i]]=A.value[i];
+        B[A.rows[i]][A.columns[i]] +=A.value[i];
     }
 
     for(int i=0;i<B.size();i++){
@@ -778,6 +836,19 @@ int Find_int_in_intarray_smartly(int num, Mat_1_int &array, Mat_1_int &partition
 
 }
 
+
+void Print_Matrix_COO_format(Matrix_COO &A){
+
+
+    cout<<"--------------------PRINTING THE MATRIX COO FORMAT:--------------------"<<endl;
+    for(int i=0;i<A.rows.size();i++){
+            cout<<A.rows[i]<<"  "<<A.columns[i]<<"  "<<A.value[i]<<endl;
+    }
+    cout<<"-------------------------------------------------------------"<<endl;
+
+
+}
+
 void Print_Matrix_COO(Matrix_COO &A){
 
     Mat_2_doub B;
@@ -790,7 +861,7 @@ void Print_Matrix_COO(Matrix_COO &A){
     }
 
     for(int i=0;i<A.value.size();i++){
-        B[A.rows[i]][A.columns[i]]=A.value[i];
+        B[A.rows[i]][A.columns[i]] +=A.value[i];
     }
 
     cout<<"--------------------PRINTING THE MATRIX:--------------------"<<endl;

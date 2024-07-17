@@ -21,6 +21,7 @@
 //#include <bits/stdc++.h>
 #include "Matrix.h"
 
+void Perform_SVD(Matrix<complex<double>> & A_, Matrix<complex<double>> & VT_, Matrix<complex<double>> & U_, vector<double> & Sigma_);
 int partition(Mat_1_int &a, int s, int e);
 void quicksort(Mat_1_int &a, int s, int e);
 void Remove_repetitions(Mat_1_ullint & index_array, Mat_1_doub & val_array, Mat_1_ullint & index_new_array, Mat_1_doub & val_new_array);
@@ -42,6 +43,7 @@ int Find_int_in_intarray_smartly(int num,Mat_1_int &array,Mat_1_int &partition_i
 int Find_int_in_part_of_intarray(int num, Mat_1_int &array, int min_i, int max_i);
 int Find_int_in_part_of_intarray(ulli num, Mat_1_ullint &array, int min_i, int max_i);
 void Print_Matrix_COO(Matrix_COO &A);
+void Print_Matrix_COO_format(Matrix_COO &A);
 void Print_Matrix_COO_in_file(Matrix_COO &A, string filename);
 void Print_Matrix(Mat_2_doub &A);
 void Print_Matrix(Mat_2_real &A);

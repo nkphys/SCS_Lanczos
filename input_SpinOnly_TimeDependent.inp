@@ -4,23 +4,25 @@ Evolution_Type = WithConstModelType
 
 #later on add WithDiffModelTypes (if needed someday)
 
-
-TimeMax = 10.0
+TimeMax = 40.0
 Time_slice_width = 0.01
 Time_otoc = 5.0
 
 NoOfColors = 2
-AnnealingTimes = 10 100
+AnnealingTimes = 4.0 40.0
+ColorScalings = 1.0 1.0
 ColorOfQubits = Color.txt
- 
 
+Theta_in_pi = 0.5
+ 
 M_EigStates = 40
 KrylovStepsForTimeEvo = 40
 
 SiteV = 3
 SiteW = 0
 
-Scheduler_File = dmrg_sched.txt
+Scheduler_File = Schedule.txt
+#qa_schedule_230429.csv
 Use_Scheduler = true
 
 
@@ -32,10 +34,7 @@ TwoTimesSpin = 1
 
 #in format "site Hx Hy Hz"
 MagFieldVectorFile = Hmag_2.txt
-
-
-D_anisotropy = 0 0 0.00
-
+D_anisotropy = 0 0
 LongRangeExchangeZZ file = Jzz_longrange_2.txt
 LongRangeExchangePM file = Jpm_longrange_2.txt
 

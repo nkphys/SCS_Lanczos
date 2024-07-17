@@ -52,11 +52,16 @@ public:
     int No_of_colors;
     Mat_1_int QubitColors;
     Mat_1_real ColorResolvedAnnealingTimes;
+    Mat_1_real ColorScalings;
 
     int Sites;
 
     Mat_1_doub Psi0;
 
+    Mat_1_doub InitState_ED;
+    double Theta_;
+
+    void Get_TimeDependentEigenSpectrum();
     void Constructing_InitialState();
     void Constructing_State_T0_via_HamiltonianGS();
     void Constructing_State_T0_via_GivenAnsatz();

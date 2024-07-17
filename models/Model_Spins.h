@@ -57,10 +57,11 @@ public:
     string Extenstion_to_FilePaths="";
 
 
+void Get_BipartiteEntanglement(BASIS_Spins &basis, Mat_1_int &Sys1_, Mat_1_int &Sys2_, Mat_1_doub &Vec_, double & VonNuemannEntropy);
 void Read_parameters(BASIS_Spins &basis, string filename);
 void MeasureEnergy(BASIS_Spins &basis, Mat_1_doub &Vec, double_type &Energy_);
-void MeasureTwoPointOprs(BASIS_Spins &basis, Mat_1_doub &Vec);
-void MeasureLocalOprs(BASIS_Spins &basis, Mat_1_doub &Vec);
+void MeasureTwoPointOprs(BASIS_Spins &basis, Mat_1_doub &Vec, string tag);
+void MeasureLocalOprs(BASIS_Spins &basis, Mat_1_doub &Vec, string tag);
 void Act_Operator(BASIS_Spins &basis, Mat_1_doub &Vec_in, Mat_1_doub &Vec_out, string opr_str, int opr_site);
 void Update_Hamiltonian_Params(BASIS_Spins &basis, double Hx_factor,double Hz_factor, double Jpm_factor, double Jzz_factor);
 void Update_Hamiltonian_Params_with_multicolors(BASIS_Spins &basis, Mat_1_real& A_factor, Mat_1_real& B_factor);

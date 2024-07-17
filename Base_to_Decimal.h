@@ -65,7 +65,7 @@ int Count_bits_in_bw(int site_i, string type_i,int site_j, string type_j, Mat_1_
 template <typename T> T toDeci(char *str, int base, T)
 {
     int len = strlen(str);
-    int power = 1; // Initialize power of base
+    T power = 1; // Initialize power of base
     T num = 0;  // Initialize result
     int i;
 
@@ -251,7 +251,7 @@ template <typename T>
 void fromDeci_to_Vecint(Mat_1_int &Vec_out, int base, T inputNum, int sites)
 {
 
-    assert( inputNum < (pow(base,sites) - 1));
+    assert( inputNum <= (pow(base,sites) - 1));
     Vec_out.clear();
     Vec_out.resize(sites);
     for(int i=0;i<sites;i++){

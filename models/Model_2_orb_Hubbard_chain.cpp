@@ -1129,7 +1129,6 @@ void MODEL_2_orb_Hubb_chain::Check_orbital_symmetry(BASIS_2_orb_Hubb_chain &basi
 
 }
 
-
 Mat_1_doub MODEL_2_orb_Hubb_chain::Act_Translational_operator(BASIS_2_orb_Hubb_chain &basis, Mat_1_doub vec_){
 
 

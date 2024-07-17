@@ -252,8 +252,8 @@ void MODEL_Spins::Update_Hamiltonian_Params_with_multicolors(BASIS_Spins &basis,
 
     for(int site_p=0;site_p<basis.Length ;site_p++){
         for(int site=0;site<basis.Length ;site++){
-        assert(B_factor[site]>0.0);
-        assert(B_factor[site_p]>0.0);
+        assert(B_factor[site]>=0.0);
+        assert(B_factor[site_p]>=0.0);
         Jzz_Exchange_mat[site_p][site] = Jzz_Exchange_mat_const[site_p][site]*
                                          sqrt(B_factor[site]*B_factor[site_p]);
         }}
@@ -261,6 +261,78 @@ void MODEL_Spins::Update_Hamiltonian_Params_with_multicolors(BASIS_Spins &basis,
 
 
 }
+
+
+void MODEL_Spins::Get_BipartiteEntanglement(BASIS_Spins &basis, Mat_1_int &Sys1_, Mat_1_int &Sys2_, Mat_1_doub &Vec_, double & VonNuemannEntropy){
+
+
+double VonNuemannEntropy_temp;
+BASIS_Spins basis_sys1;
+BASIS_Spins basis_sys2;
+
+Matrix<double_type> Psi_LB;
+
+/*
+    int Length;
+    int TwoTimesSpin;
+    double SPIN;
+    int BASE;
+    int basis_size;
+*/
+
+basis_sys1.Length=Sys1_.size();
+basis_sys1.TwoTimesSpin=basis.TwoTimesSpin;
+basis_sys1.Construct_basis();
+
+basis_sys2.Length=Sys2_.size();
+basis_sys2.TwoTimesSpin=basis.TwoTimesSpin;
+basis_sys2.Construct_basis();
+
+assert( (basis_sys1.Length+basis_sys2.Length) == basis.Length);
+//also check mutually exclusive systems
+
+
+Psi_LB.resize(basis_sys1.basis_size, basis_sys2.basis_size);
+
+Mat_1_int State_Full, State_Sys1_, State_Sys2_;
+
+int dec1_, dec2_;
+for(int i=basis.D_min;i<basis.D_max+1;i++){
+fromDeci_to_Vecint(State_Full, basis.BASE, i, basis.Length);
+State_Sys1_.clear();
+State_Sys2_.clear();
+for(int i1_=0;i1_<basis_sys1.Length;i1_++){
+State_Sys1_.push_back(State_Full[Sys1_[i1_]]);
+}
+for(int i2_=0;i2_<basis_sys2.Length;i2_++){
+State_Sys2_.push_back(State_Full[Sys2_[i2_]]);
+}
+fromVecint_to_Deci(State_Sys1_, basis_sys1.BASE , dec1_, basis_sys1.Length);
+fromVecint_to_Deci(State_Sys2_, basis_sys2.BASE , dec2_, basis_sys1.Length);
+Psi_LB(dec1_,dec2_) = Vec_[i];
+}
+
+
+
+//Perform SVD
+int r_;
+r_=min(basis_sys1.basis_size,basis_sys2.basis_size);
+Matrix<double_type> VT_; //mxm
+Matrix<double_type> U_;  //nxn
+vector<double> Sigma_; //atmost non-zero min(n,m) values
+
+Perform_SVD(Psi_LB,VT_,U_,Sigma_);
+
+VonNuemannEntropy_temp=0.0;
+for(int n=0;n<r_;n++){
+VonNuemannEntropy_temp += -1.0*Sigma_[n]*Sigma_[n]*(log2(Sigma_[n]*Sigma_[n]));
+}
+
+
+VonNuemannEntropy=VonNuemannEntropy_temp;
+
+}
+
 
 void MODEL_Spins::Add_diagonal_terms(BASIS_Spins &basis){
 
@@ -553,16 +625,22 @@ void MODEL_Spins::MeasureEnergy(BASIS_Spins &basis, Mat_1_doub &Vec, double_type
 
 
 
-void MODEL_Spins::MeasureTwoPointOprs(BASIS_Spins &basis, Mat_1_doub &Vec){
+void MODEL_Spins::MeasureTwoPointOprs(BASIS_Spins &basis, Mat_1_doub &Vec, string tag){
 
 assert(Vec.size()==basis.basis_size);
 
+
+double_type CHSH_std_01;
+CHSH_std_01=0.0;
+
+double_type CHSH_std_12;
+CHSH_std_12=0.0;
 
 //SzSz
 double_type temp_obs;
 double_type Sz2_total;
 Sz2_total=0;
-cout<<" SzSz[site1][site2]--------------------"<<endl;
+cout<<" SzSz["<<tag<<"][site1][site2]--------------------"<<endl;
 for(int site1=0;site1<basis.Length;site1++){
 for(int site2=0;site2<basis.Length;site2++){
 temp_obs=0.0;
@@ -573,21 +651,226 @@ for (unsigned long long int i=basis.D_min;i<basis.D_max+1;i++){
  }
 cout<<temp_obs<<"  ";
 Sz2_total +=temp_obs;
+
+if(site1==0 &&site2==1){
+    CHSH_std_01 = CHSH_std_01 - temp_obs*4.0;
+}
+if(site1==1 &&site2==2){
+    CHSH_std_12 = CHSH_std_12 - temp_obs*4.0;
+}
     }
 cout<<endl;
 }
 
-cout<<"Sz2_Total : "<<Sz2_total<<endl;
+cout<<"Sz2_Total ["<<tag<<"] : "<<Sz2_total<<endl;
+cout<<"---------------------------"<<endl<<endl;
+
+
+
+cout<<" SzSm["<<tag<<"][site1][site2]--------------------"<<endl;
+int Val_site1, Val_site2;
+int Val_site1_new, Val_site2_new;
+int i_new, i_new_temp;
+double Factor;
+for(int site1=0;site1<basis.Length;site1++){
+for(int site2=0;site2<basis.Length;site2++){
+temp_obs=0.0;
+for (unsigned long long int i=basis.D_min;i<basis.D_max+1;i++){
+Val_site1 = value_at_pos(i, site1, basis.BASE);
+Val_site2 = value_at_pos(i, site2, basis.BASE);
+if(Val_site2 != 0){
+
+        Val_site2_new = Val_site2 - 1;
+        i_new = Updated_decimal_with_value_at_pos<unsigned long long int>(i, site2, basis.BASE, Val_site2_new);
+
+        Factor = ( (1.0*value_at_pos(i, site1, basis.BASE)) - (0.5*basis.TwoTimesSpin));
+        Factor = Factor*sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                       ((Val_site2 - (0.5*basis.TwoTimesSpin))*
+                        (Val_site2_new - (0.5*basis.TwoTimesSpin))  ) );
+
+        temp_obs+=Vec[i]*conjugate(Vec[i_new])*Factor;
+
 }
 
-void MODEL_Spins::MeasureLocalOprs(BASIS_Spins &basis, Mat_1_doub &Vec){
+ }
+cout<<temp_obs<<"  ";
+ }
+cout<<endl;
+}
+
+
+
+cout<<" SzSp["<<tag<<"][site1][site2]--------------------"<<endl;
+for(int site1=0;site1<basis.Length;site1++){
+for(int site2=0;site2<basis.Length;site2++){
+temp_obs=0.0;
+for (unsigned long long int i=basis.D_min;i<basis.D_max+1;i++){
+Val_site1 = value_at_pos(i, site1, basis.BASE);
+Val_site2 = value_at_pos(i, site2, basis.BASE);
+if(Val_site2 != (basis.BASE - 1)){
+
+        Val_site2_new = Val_site2 + 1;
+        i_new = Updated_decimal_with_value_at_pos<unsigned long long int>(i, site2, basis.BASE, Val_site2_new);
+
+        Factor = ( (1.0*value_at_pos(i, site1, basis.BASE)) - (0.5*basis.TwoTimesSpin));
+        Factor = Factor*sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                       ((Val_site2 - (0.5*basis.TwoTimesSpin))*
+                        (Val_site2_new - (0.5*basis.TwoTimesSpin))  ) );
+
+        temp_obs+=Vec[i]*conjugate(Vec[i_new])*Factor;
+
+}
+
+ }
+cout<<temp_obs<<"  ";
+ }
+cout<<endl;
+}
+
+
+
+bool allowed;
+cout<<" SpSm["<<tag<<"][site1][site2]--------------------"<<endl;
+for(int site1=0;site1<basis.Length;site1++){
+for(int site2=0;site2<basis.Length;site2++){
+temp_obs=0.0;
+for (unsigned long long int i=basis.D_min;i<basis.D_max+1;i++){
+Val_site1 = value_at_pos(i, site1, basis.BASE);
+Val_site2 = value_at_pos(i, site2, basis.BASE);
+
+if(site1!=site2){
+allowed = ((Val_site1 != (basis.BASE - 1))) && (Val_site2 != 0);
+}
+else{
+//allowed = ((Val_site1 != (basis.BASE - 1))) && (Val_site2 != 0);
+assert(site1==site2);
+allowed = (Val_site2 != 0);
+}
+
+    if(allowed){
+
+        Val_site2_new = Val_site2 - 1;
+        i_new_temp = Updated_decimal_with_value_at_pos<unsigned long long int>(i, site2, basis.BASE, Val_site2_new);
+
+        if(site1==site2){
+        Val_site1=Val_site2_new;
+        }
+
+        Val_site1_new = Val_site1 + 1;
+        i_new = Updated_decimal_with_value_at_pos<unsigned long long int>(i_new_temp, site1, basis.BASE, Val_site1_new);
+
+        Factor = sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                       ((Val_site1 - (0.5*basis.TwoTimesSpin))*
+                        (Val_site1_new - (0.5*basis.TwoTimesSpin))  ) );
+        Factor = Factor*sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                       ((Val_site2 - (0.5*basis.TwoTimesSpin))*
+                        (Val_site2_new - (0.5*basis.TwoTimesSpin))  ) );
+
+        temp_obs+=Vec[i]*conjugate(Vec[i_new])*Factor;
+
+}
+}
+cout<<temp_obs<<"  ";
+if(site1==0 &&site2==1){
+    CHSH_std_01 = CHSH_std_01 - temp_obs*1.0;
+}
+if(site2==0 &&site1==1){
+    CHSH_std_01 = CHSH_std_01 - temp_obs*1.0;
+}
+if(site1==1 &&site2==2){
+    CHSH_std_12 = CHSH_std_12 - temp_obs*1.0;
+}
+if(site2==1 &&site1==2){
+    CHSH_std_12 = CHSH_std_12 - temp_obs*1.0;
+}
+
+}
+cout<<endl;
+}
+
+
+cout<<" SpSp["<<tag<<"][site1][site2]--------------------"<<endl;
+for(int site1=0;site1<basis.Length;site1++){
+for(int site2=0;site2<basis.Length;site2++){
+temp_obs=0.0;
+for (unsigned long long int i=basis.D_min;i<basis.D_max+1;i++){
+Val_site1 = value_at_pos(i, site1, basis.BASE);
+Val_site2 = value_at_pos(i, site2, basis.BASE);
+if(Val_site1 != (basis.BASE - 1)){
+    if(Val_site2 != (basis.BASE - 1)){
+
+        if(site1!=site2){
+        Val_site1_new = Val_site1 + 1;
+        i_new_temp = Updated_decimal_with_value_at_pos<unsigned long long int>(i, site1, basis.BASE, Val_site1_new);
+
+        Val_site2_new = Val_site2 + 1;
+        i_new = Updated_decimal_with_value_at_pos<unsigned long long int>(i_new_temp, site2, basis.BASE, Val_site2_new);
+
+        Factor = sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                       ((Val_site1 - (0.5*basis.TwoTimesSpin))*
+                        (Val_site1_new - (0.5*basis.TwoTimesSpin))  ) );
+        Factor = Factor*sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                       ((Val_site2 - (0.5*basis.TwoTimesSpin))*
+                        (Val_site2_new - (0.5*basis.TwoTimesSpin))  ) );
+
+        temp_obs+=Vec[i]*conjugate(Vec[i_new])*Factor;
+
+        }
+        else{
+            assert(site1==site2);
+            Val_site1_new = Val_site1 + 1;
+            i_new_temp = Updated_decimal_with_value_at_pos<unsigned long long int>(i, site1, basis.BASE, Val_site1_new);
+            Val_site1_new = Val_site1_new + 1;
+           if(Val_site1_new<=(basis.BASE - 1)){
+            i_new = Updated_decimal_with_value_at_pos<unsigned long long int>(i_new_temp, site1, basis.BASE, Val_site1_new);
+
+            Factor = sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                           ((Val_site1 - (0.5*basis.TwoTimesSpin))*
+                            (Val_site1_new - (0.5*basis.TwoTimesSpin))  ) );
+            Factor = Factor*sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                           ((Val_site2 - (0.5*basis.TwoTimesSpin))*
+                            (Val_site2_new - (0.5*basis.TwoTimesSpin))  ) );
+
+            temp_obs+=Vec[i]*conjugate(Vec[i_new])*Factor;
+           }
+        }
+
+
+
+}}
+
+ }
+cout<<temp_obs<<"  ";
+if(site1==0 &&site2==1){
+    CHSH_std_01 = CHSH_std_01 - temp_obs*1.0 - conj(temp_obs)*1.0;
+}
+if(site1==1 &&site2==2){
+    CHSH_std_12 = CHSH_std_12 - temp_obs*1.0 - conj(temp_obs)*1.0;
+}
+}
+cout<<endl;
+}
+
+
+CHSH_std_01= CHSH_std_01*sqrt(2.0);
+cout<< "CHSH_std_01 : "<<CHSH_std_01<<endl;
+
+CHSH_std_12= CHSH_std_12*sqrt(2.0);
+cout<< "CHSH_std_12 : "<<CHSH_std_12<<endl;
+
+//HERE SxSz
+
+
+}
+
+void MODEL_Spins::MeasureLocalOprs(BASIS_Spins &basis, Mat_1_doub &Vec, string tag){
 
 assert(Vec.size()==basis.basis_size);
 
 
 //Sz
 double_type temp_obs;
-cout<<" Local Sz : site  value--------------------"<<endl;
+cout<<" Local Sz ("<<tag<<"): site  value--------------------"<<endl;
 for(int site=0;site<basis.Length;site++){
 temp_obs=0.0;
 for (unsigned long long int i=basis.D_min;i<basis.D_max+1;i++){
@@ -595,7 +878,7 @@ for (unsigned long long int i=basis.D_min;i<basis.D_max+1;i++){
      ( (1.0*value_at_pos(i, site, basis.BASE)) - (0.5*basis.TwoTimesSpin));
  }
 
-cout<<"Sz local : "<<site<<"  "<<temp_obs<<endl;
+cout<<"Sz local ["<<tag<<"] : "<<site<<"  "<<temp_obs<<endl;
 
 }
 
@@ -623,7 +906,7 @@ if(Val_site != (basis.BASE - 1)){
 
  }
 
-cout<<"Splus local : "<<site<<"  "<<temp_obs<<endl;
+cout<<"Splus local ["<<tag<<"] : "<<site<<"  "<<temp_obs<<endl;
 
 }
 
@@ -727,13 +1010,14 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
     basis.Length=atoi(length.c_str());
     basis.TwoTimesSpin=atoi(twotimesspin.c_str());
 
+
     No_of_onepoint_obs=atoi(no_of_onepoint_obs_.c_str());
 
 
 
     MagFieldVectorfilepath = MagFieldVectorfilepath;// + Extenstion_to_FilePaths;
 
-    cout<<"Reading Magnetic field :"<<endl;
+    //cout<<"Reading Magnetic field :"<<endl;
     ifstream inMagfile(MagFieldVectorfilepath.c_str());
     double temp_hx, temp_hy , temp_hz;
     int temp_site;
@@ -743,9 +1027,9 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
         inMagfile >> temp_site >> temp_hx >> temp_hy >> temp_hz ;
         Hx_field_const[i]=temp_hx;Hy_field_const[i]=temp_hy;Hz_field_const[i]=temp_hz;
         assert(i==temp_site);
-        cout<<i<<"  "<<Hx_field_const[i]<<"  "<<Hy_field_const[i]<<"  "<<Hz_field_const[i]<<endl;
+        //cout<<i<<"  "<<Hx_field_const[i]<<"  "<<Hy_field_const[i]<<"  "<<Hz_field_const[i]<<endl;
     }
-    cout<<endl;
+    //cout<<endl;
 
     Hx_field = Hx_field_const;
     Hy_field = Hy_field_const;

@@ -6,10 +6,64 @@
 //                         std::complex<double> *,int *, double *, int *);
 extern "C" void dsyev_(char * , char * , int * , double * , int *, double *, double *, int *, int *);
 
+
+
+extern "C" void dgesdd_ (char *, int *, int *, double *, int *, double *, double *, int *, double *, int*,
+                         double *, int *, int *, int *);
+
+
+
 #ifndef USE_COMPLEX
 
 
+void Perform_SVD(Matrix<double> & A_, Matrix<double> & VT_, Matrix<double> & U_, vector<double> & Sigma_){
 
+
+    char jobz='A'; //A,S,O,N
+
+    int m=A_.n_row();
+    int n=A_.n_col();
+    int lda=A_.n_row();
+    int ldu=A_.n_row();
+    int ldvt=n;
+
+    Sigma_.clear();
+    Sigma_.resize(min(m,n));
+
+    U_.resize(ldu,m);
+
+    VT_.resize(ldvt,n);
+
+
+    vector<double> work(3);
+    int info;
+    int lwork= -1;
+    vector<int> iwork(8*min(m,n));
+
+    // query:
+    dgesdd_(&jobz, &m, &n, &(A_(0,0)),&lda, &(Sigma_[0]),&(U_(0,0)), &ldu, &(VT_(0,0)), &ldvt,
+            &(work[0]), &lwork, &(iwork[0]), &info);
+    //lwork = int(real(work[0]))+1;
+    lwork = int((work[0]));
+    work.resize(lwork);
+    // real work:
+    dgesdd_(&jobz, &m, &n, &(A_(0,0)),&lda, &(Sigma_[0]),&(U_(0,0)), &ldu, &(VT_(0,0)), &ldvt,
+            &(work[0]), &lwork, &(iwork[0]), &info);
+    if (info!=0) {
+        if(info>0){
+            std::cerr<<"info="<<info<<"\n";
+            perror("diag: zheev: failed with info>0.\n");}
+        if(info<0){
+            std::cerr<<"info="<<info<<"\n";
+            perror("diag: zheev: failed with info<0.\n");
+        }
+    }
+
+    // Ham_.print();
+
+
+
+}
 
 void Sort_vector_in_decreasing_order_in_file(Mat_1_doub vec, Mat_1_doub &Vec_new, Mat_1_int &Index_old){
 
@@ -796,7 +850,7 @@ void Print_Matrix_COO(Matrix_COO &A){
     }
 
     for(int i=0;i<A.value.size();i++){
-        B[A.rows[i]][A.columns[i]]=A.value[i];
+        B[A.rows[i]][A.columns[i]] +=A.value[i];
     }
 
     cout<<"--------------------PRINTING THE MATRIX:--------------------"<<endl;

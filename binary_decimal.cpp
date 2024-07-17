@@ -122,18 +122,6 @@ void print_binary_of_decimal(int n){
     cout<<endl;
 }
 
-int bit_value(int n, int pos){
-    unsigned i;
-    i=1<<pos;
-
-    if((n & i) !=0){
-        return 1;
-    }
-    else{
-        return 0;
-    }
-}
-
 Mat_1_int decimal_to_binary(int n){
 
     Mat_1_int Dec;

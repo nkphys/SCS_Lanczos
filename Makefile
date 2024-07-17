@@ -1,8 +1,8 @@
-OBJS =  functions_real.o functions_complex.o binary_decimal.o Base_to_Decimal.o reading_input.o Basis_KondoModel.o Basis_2_orb_Hubbard_chain.o Basis_2_orb_Hubbard_chain_KSector.o Basis_1_orb_Hubbard_2D_KSector.o Basis_3_orb_Hubbard_chain.o Basis_3_orb_Hubbard_chain_two_SzSectors.o Basis_3_orb_Hubbard_chain_GC.o Basis_multi_orb_Hubbard_chain_GC.o Basis_1_orb_Hubbard_GC.o  Basis_3_orb_Hubbard_chain_GC_restricted.o Basis_SpinlessFermionsFockSpace.o Model_SpinlessFermionsFockSpace.o Model_2_orb_Hubbard_chain.o Model_2_orb_Hubbard_chain_KSector.o Model_3_orb_Hubbard_chain.o Model_3_orb_Hubbard_chain_GC.o Model_multi_orb_Hubbard_chain_GC.o Model_1_orb_Hubbard_GC.o Model_3_orb_Hubbard_chain_two_SzSectors.o Model_3_orb_Hubbard_chain_two_SzSectors_complex.o Model_3_orb_Hubbard_chain_complex.o Basis_1_orb_Hubbard_chain.o Basis_1_orb_tJ.o Basis_Spins.o Model_Spins.o Basis_Spins_Target_Sz.o Model_Spins_Target_Sz.o  Model_1_orb_Hubbard_chain.o Model_1_orb_Hubbard_chain_complex.o Model_1_orb_Hubbard_2D_KSector.o Model_1_orb_tJ.o Model_KondoModel.o Model_1_orb_tJ_complex.o Lanczos_engine.o FTLM_Static.o LTLM_Static.o FTLM_Dynamics.o LTLM_Dynamics.o main.o 
+OBJS =  functions_real.o functions_complex.o binary_decimal.o Base_to_Decimal.o reading_input.o Basis_KondoModel.o Basis_2_orb_Hubbard_chain.o Basis_2_orb_Hubbard_chain_KSector.o Basis_1_orb_Hubbard_2D_KSector.o Basis_3_orb_Hubbard_chain.o Basis_3_orb_Hubbard_chain_two_SzSectors.o Basis_3_orb_Hubbard_chain_GC.o Basis_multi_orb_Hubbard_chain_GC.o Basis_1_orb_Hubbard_GC.o  Basis_3_orb_Hubbard_chain_GC_restricted.o Basis_SpinlessFermionsFockSpace.o Model_SpinlessFermionsFockSpace.o Model_2_orb_Hubbard_chain.o Model_2_orb_Hubbard_chain_KSector.o Model_3_orb_Hubbard_chain.o Model_3_orb_Hubbard_chain_GC.o Model_multi_orb_Hubbard_chain_GC.o Model_1_orb_Hubbard_GC.o Model_3_orb_Hubbard_chain_two_SzSectors.o Model_3_orb_Hubbard_chain_two_SzSectors_complex.o Model_3_orb_Hubbard_chain_complex.o Basis_1_orb_Hubbard_chain.o Basis_1_orb_tJ.o Basis_Spins.o Model_Spins.o Basis_Spins_Target_Sz.o Model_Spins_Target_Sz.o  Model_1_orb_Hubbard_chain.o Model_1_orb_Hubbard_chain_complex.o Model_1_orb_Hubbard_2D_KSector.o Model_1_orb_tJ.o Model_KondoModel.o Model_1_orb_tJ_complex.o Model_Moire_Kspace.o Basis_Moire_Kspace.o Lanczos_engine.o FTLM_Static.o LTLM_Static.o FTLM_Dynamics.o LTLM_Dynamics.o main.o 
 #DEBUG = -g3
 OPTFLAG = -O3
 CC = g++ $(OPTFLAG) -std=c++11
-CFLAGS = -c $(DEBUG) #-DUSE_COMPLEX
+CFLAGS = -c $(DEBUG) -DUSE_COMPLEX
 LFLAGS = $(DEBUG)
 MKL_LIB = #/opt/intel/mkl/lib/libmkl_core.a  /opt/intel/mkl/lib/libmkl_intel_lp64.a /opt/intel/mkl/lib/libmkl_sequential.a
 MKL_LIB += -llapack -lblas #-ldl -lpthread -lm
@@ -14,7 +14,7 @@ LIBS_1 = -fopenmp #-L$(OPENMP)
 LIBS_1 += #-liomp5 #-qopenmp
  
 
-all : clean $(OBJS) 
+all : $(OBJS) 
 	$(CC) $(LFLAGS) $(OBJS) -o lanczos $(MKL_include) $(MKL_LIB2) $(MKL_LIB) $(LIBS_1)
 
 functions_real.o : functions_real.cpp
@@ -64,6 +64,9 @@ Basis_3_orb_Hubbard_chain_GC_restricted.o : basis/Basis_3_orb_Hubbard_chain_GC_r
 
 Basis_KondoModel.o : basis/Basis_KondoModel.cpp
 	$(CC) $(CFLAGS) basis/Basis_KondoModel.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Basis_Moire_Kspace.o : basis/Basis_Moire_Kspace.cpp
+	$(CC) $(CFLAGS) basis/Basis_Moire_Kspace.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
 
 Model_SpinlessFermionsFockSpace.o : models/Model_SpinlessFermionsFockSpace.cpp
 	$(CC) $(CFLAGS) models/Model_SpinlessFermionsFockSpace.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
@@ -129,6 +132,9 @@ Model_1_orb_tJ_complex.o : models/Model_1_orb_tJ_complex.cpp
 
 Model_1_orb_tJ.o : models/Model_1_orb_tJ.cpp
 	$(CC) $(CFLAGS) models/Model_1_orb_tJ.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
+
+Model_Moire_Kspace.o : models/Model_Moire_Kspace.cpp
+	$(CC) $(CFLAGS) models/Model_Moire_Kspace.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
 
 Model_1_orb_Hubbard_chain_complex.o : models/Model_1_orb_Hubbard_chain_complex.cpp
 	$(CC) $(CFLAGS) models/Model_1_orb_Hubbard_chain_complex.cpp $(MKL_include) $(MKL_LIB) $(LIBS_1)
