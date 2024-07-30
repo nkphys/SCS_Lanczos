@@ -998,7 +998,7 @@ void Matrix_COO_vector_multiplication(string COO_type, Matrix_COO & A,Mat_1_doub
     v.resize(A.nrows);
     assert(A.ncols==u.size());
 
-    //#ifndef _OPENMP
+    #ifndef _OPENMP
     for (int i=0;i<v.size();i++){
         v[i]=zero;}
 
@@ -1022,10 +1022,10 @@ void Matrix_COO_vector_multiplication(string COO_type, Matrix_COO & A,Mat_1_doub
             v[A.rows[n]] = v[A.rows[n]] + u[A.columns[n]]*A.value[n];
         }
     }
-    //#endif
+    #endif
 
 
-    /*
+
 #ifdef _OPENMP
     Mat_2_doub v_temp;
     int thread_id;
@@ -1113,7 +1113,7 @@ void Matrix_COO_vector_multiplication(string COO_type, Matrix_COO & A,Mat_1_doub
     //cout<<"here 4"<<endl;
 
 #endif
-    */
+
 
     //  assert(false);
 }

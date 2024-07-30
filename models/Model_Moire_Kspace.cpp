@@ -5,6 +5,10 @@ This class includes the Model for which Lanczos is being done
 #include <stdlib.h>
 using namespace std;
 #define PI 3.14159265
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 /*convention for basis:
 
 1)  for "up-spin" basis
@@ -30,10 +34,58 @@ void MODEL_Moire_Kspace::Add_Dispersion_term(BASIS_Moire_Kspace &basis){
     Hamil.nrows = basis.basis_size;
     Hamil.ncols = Hamil.nrows;
 
-    int SPIN_UP=0;
-    int SPIN_DN=1;
 
+
+    int no_of_proc;
+    no_of_proc=1;
+
+#ifdef _OPENMP
+    int temp_int;
+    temp_int = basis.D_up_basis.size();
+    no_of_proc=min(temp_int, NProcessors_);
+    omp_set_num_threads(no_of_proc);
+    cout<<"Dispersion term adding: "<<no_of_proc<<" processors"<<endl;
+#endif
+
+
+
+
+//#ifdef _OPENMP
+//#pragma omp parallel
+//    {
+//#endif
+//#ifdef _OPENMP
+//#pragma omp for
+//#endif
+//    for (int m=0;m<basis.D_up_basis.size();m++){
+//        cout <<"m = "<<m<<endl;
+//    }
+
+//#ifdef _OPENMP
+//    }
+//#endif
+
+
+
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+        Matrix_COO Hamil_parallel;
+        Hamil_parallel.nrows = basis.basis_size;
+        Hamil_parallel.ncols = Hamil_parallel.nrows;
+#endif
+
+
+
+#ifdef _OPENMP
+#pragma omp for nowait
+#endif
     for (int m=0;m<basis.D_up_basis.size();m++){
+       // cout<<"m = "<< m<<endl;
+         assert(m< basis.D_up_basis.size());
+
+        int SPIN_UP=0;
+        int SPIN_DN=1;
 
     for(int k1_1=0;k1_1<Length1;k1_1++){
     for(int k1_2=0;k1_2<Length2;k1_2++){
@@ -54,10 +106,16 @@ void MODEL_Moire_Kspace::Add_Dispersion_term(BASIS_Moire_Kspace &basis){
 
          if(electron_in_k1_spin_orb){
 
+#ifdef _OPENMP
+        Hamil_parallel.value.push_back(Ek_dispersion[spin][orb][k1_]*one);
+        Hamil_parallel.rows.push_back(m);
+        Hamil_parallel.columns.push_back(m);
+#endif
+#ifndef _OPENMP
              Hamil.value.push_back(Ek_dispersion[spin][orb][k1_]*one);
              Hamil.rows.push_back(m);
              Hamil.columns.push_back(m);
-
+#endif
          }
 
 
@@ -69,6 +127,19 @@ void MODEL_Moire_Kspace::Add_Dispersion_term(BASIS_Moire_Kspace &basis){
 
 
     }
+    cout<<"done"<<endl;
+#ifdef _OPENMP
+#pragma omp critical
+    {
+Hamil.value.insert(Hamil.value.end(), Hamil_parallel.value.begin(), Hamil_parallel.value.end());
+Hamil.rows.insert(Hamil.rows.end(), Hamil_parallel.rows.begin(), Hamil_parallel.rows.end());
+Hamil.columns.insert(Hamil.columns.end(), Hamil_parallel.columns.begin(), Hamil_parallel.columns.end());
+  }
+}
+#endif
+
+
+
 
 }
 
@@ -77,22 +148,37 @@ void MODEL_Moire_Kspace::Add_Interaction_terms(BASIS_Moire_Kspace &basis){
 
 
 
+#ifdef _OPENMP
+#pragma omp parallel
+    {
 
-    int SPIN_UP=0;
-    int SPIN_DN=1;
-    double EnergyEps=0.00000001;
-    complex<double> value;
-    ulli D_up_0,D_dn_0;
-    ulli D_up_1,D_dn_1;
-    ulli D_up_2,D_dn_2;
-    ulli D_up_3,D_dn_3;
-    ulli D_up_4,D_dn_4;
-    int i_new,j_new_min, j_new_max;
-    int m_new;
-    double sign_FM ;
-    int sign_pow_up, sign_pow_dn ;
+        Matrix_COO Hamil_parallel;
+        Hamil_parallel.nrows = basis.basis_size;
+        Hamil_parallel.ncols = Hamil_parallel.nrows;
+#endif
+
+
+#ifdef _OPENMP
+#pragma omp for nowait
+#endif
 
     for (int m=0;m<basis.D_up_basis.size();m++){
+        //cout<< "m = "<<m<<endl;
+        assert(m < basis.D_up_basis.size());
+        int SPIN_UP=0;
+        int SPIN_DN=1;
+        double EnergyEps=0.00000001;
+        complex<double> value;
+        ulli D_up_0,D_dn_0;
+        ulli D_up_1,D_dn_1;
+        ulli D_up_2,D_dn_2;
+        ulli D_up_3,D_dn_3;
+        ulli D_up_4,D_dn_4;
+        int i_new,j_new_min, j_new_max;
+        int m_new;
+        double sign_FM ;
+        int sign_pow_up, sign_pow_dn ;
+
      D_up_0=basis.D_up_basis[m];
      D_dn_0=basis.D_dn_basis[m];
 
@@ -308,9 +394,19 @@ void MODEL_Moire_Kspace::Add_Interaction_terms(BASIS_Moire_Kspace &basis){
                     if(m==m_new){
                     value = complex<double>(value.real(),0.0);
                     }
-                Hamil.value.push_back(value);
-                Hamil.rows.push_back(m_new);
-                Hamil.columns.push_back(m);
+
+#ifdef _OPENMP
+                    Hamil_parallel.value.push_back(value);
+                    Hamil_parallel.rows.push_back(m_new);
+                    Hamil_parallel.columns.push_back(m);
+#endif
+#ifndef _OPENMP
+        Hamil.value.push_back(value);
+        Hamil.rows.push_back(m_new);
+        Hamil.columns.push_back(m);
+#endif
+
+
                     }
 
 
@@ -344,8 +440,21 @@ void MODEL_Moire_Kspace::Add_Interaction_terms(BASIS_Moire_Kspace &basis){
      } // "m" i.e decimal for up and dn both
 
 
+#ifdef _OPENMP
+#pragma omp critical
+    {
+Hamil.value.insert(Hamil.value.end(), Hamil_parallel.value.begin(), Hamil_parallel.value.end());
+Hamil.rows.insert(Hamil.rows.end(), Hamil_parallel.rows.begin(), Hamil_parallel.rows.end());
+Hamil.columns.insert(Hamil.columns.end(), Hamil_parallel.columns.begin(), Hamil_parallel.columns.end());
+    }
+    }
+#endif
+
 
 }
+
+
+
 
 
 void MODEL_Moire_Kspace::Initialize_Sk_opr(BASIS_Moire_Kspace &basis, Matrix_COO &OPR_, int q_1, int q_2, string alpha, string beta){
@@ -386,25 +495,7 @@ void MODEL_Moire_Kspace::Initialize_Sk_opr(BASIS_Moire_Kspace &basis, Matrix_COO
 
 
     assert(n_orb==1);
-    int SPIN_UP=0;
-    int SPIN_DN=1;
-    double EnergyEps=0.00000001;
-    complex<double> value;
-    ulli D_up_0,D_dn_0;
-    ulli D_up_1,D_dn_1;
-    ulli D_up_2,D_dn_2;
-    ulli D_up_3,D_dn_3;
-    ulli D_up_4,D_dn_4;
-    int i_new,j_new_min, j_new_max;
-    int m_new;
-    double sign_FM;
-    int sign_pow_up, sign_pow_dn;
-    int q_ =  q_1 + q_2*Length1;
 
-    int n1_orb=0;
-    int n2_orb=0;
-    int n3_orb=0;
-    int n4_orb=0;
 
 
     OPR_.columns.clear();
@@ -414,7 +505,43 @@ void MODEL_Moire_Kspace::Initialize_Sk_opr(BASIS_Moire_Kspace &basis, Matrix_COO
     OPR_.nrows = basis.basis_size;
     OPR_.ncols = OPR_.nrows;
 
+
+
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+
+        Matrix_COO OPR_parallel;
+        OPR_parallel.nrows = basis.basis_size;
+        OPR_parallel.ncols = OPR_parallel.nrows;
+#endif
+
+
+#ifdef _OPENMP
+#pragma omp for nowait
+#endif
     for (int m=0;m<basis.D_up_basis.size();m++){
+
+        int SPIN_UP=0;
+        int SPIN_DN=1;
+        double EnergyEps=0.00000001;
+        complex<double> value;
+        ulli D_up_0,D_dn_0;
+        ulli D_up_1,D_dn_1;
+        ulli D_up_2,D_dn_2;
+        ulli D_up_3,D_dn_3;
+        ulli D_up_4,D_dn_4;
+        int i_new,j_new_min, j_new_max;
+        int m_new;
+        double sign_FM;
+        int sign_pow_up, sign_pow_dn;
+        int q_ =  q_1 + q_2*Length1;
+
+        int n1_orb=0;
+        int n2_orb=0;
+        int n3_orb=0;
+        int n4_orb=0;
+
      D_up_0=basis.D_up_basis[m];
      D_dn_0=basis.D_dn_basis[m];
 
@@ -620,9 +747,20 @@ void MODEL_Moire_Kspace::Initialize_Sk_opr(BASIS_Moire_Kspace &basis, Matrix_COO
 //                    if(m==m_new){
 //                    value = complex<double>(value.real(),0.0);
 //                    }
-                OPR_.value.push_back(value);
-                OPR_.rows.push_back(m_new);
-                OPR_.columns.push_back(m);
+
+
+#ifdef _OPENMP
+                    OPR_parallel.value.push_back(value);
+                    OPR_parallel.rows.push_back(m_new);
+                    OPR_parallel.columns.push_back(m);
+#endif
+#ifndef _OPENMP
+                    OPR_.value.push_back(value);
+                    OPR_.rows.push_back(m_new);
+                    OPR_.columns.push_back(m);
+#endif
+
+
                     //}
 
 
@@ -652,6 +790,15 @@ void MODEL_Moire_Kspace::Initialize_Sk_opr(BASIS_Moire_Kspace &basis, Matrix_COO
      } // "m" i.e decimal for up and dn both
 
 
+#ifdef _OPENMP
+#pragma omp critical
+    {
+OPR_.value.insert(OPR_.value.end(), OPR_parallel.value.begin(), OPR_parallel.value.end());
+OPR_.rows.insert(OPR_.rows.end(), OPR_parallel.rows.begin(), OPR_parallel.rows.end());
+OPR_.columns.insert(OPR_.columns.end(), OPR_parallel.columns.begin(), OPR_parallel.columns.end());
+  }
+}
+#endif
 
 
 }
@@ -795,6 +942,8 @@ void MODEL_Moire_Kspace::Read_parameters(BASIS_Moire_Kspace &basis, string filen
     string dispersionfile, DispersionFile = "DispersionFiles = ";
     string interactionfile, InteractionFile = "InteractionFile = ";
 
+    string processors_, Processors_ = "Processors = ";
+
     int offset;
     string line;
     ifstream inputfile(filepath.c_str());
@@ -835,6 +984,10 @@ void MODEL_Moire_Kspace::Read_parameters(BASIS_Moire_Kspace &basis, string filen
 
             if ((offset = line.find(InteractionFile, 0)) != string::npos) {
                 interactionfile = line.substr (offset + InteractionFile.length());		}
+
+            if ((offset = line.find(Processors_ , 0)) != string::npos) {
+                processors_ = line.substr (offset+Processors_ .length());	}
+
         }
         inputfile.close();
     }
@@ -871,6 +1024,7 @@ void MODEL_Moire_Kspace::Read_parameters(BASIS_Moire_Kspace &basis, string filen
 
     InteractionFilepath = interactionfile;
 
+    NProcessors_=atoi(processors_.c_str());
 
 }
 

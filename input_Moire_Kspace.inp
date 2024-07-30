@@ -3,8 +3,8 @@ Model = Moire_Kspace
 
 Length1 = 4
 Length2 = 3
-Ndown = 7
-Nup = 5
+Ndown = 6
+Nup = 6
 
 Norbitals = 1
 
@@ -22,7 +22,6 @@ InteractionFile = HF_Band_projected_Interaction_bands_2_3_TR_and_Inversion_impos
 #HF_Band_projected_Interaction_bands_2_3_TR_and_Inversion_imposed.txt
 #HF_Band_projected_Interaction_bands_2_3_L1_4_L2_3_zeros.txt
 -------------------------------
-
 
 Saving_Hamiltonian_and_Oprs = true
 
@@ -70,4 +69,4 @@ Light_polarization_in = 0 1 0
 Incident_energy = 0.1
 ----------------------------------------
 
-
+Processors = 8

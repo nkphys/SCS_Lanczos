@@ -1836,7 +1836,7 @@ int main(int argc, char** argv){
              OPR_.value.clear();
      _MODEL.Initialize_Sk_opr(_BASIS, OPR_, k1, k2, "z", "z");
       val_=_LANCZOS.Measure_observable(OPR_, 0);
-      cout<<k1<<"  "<<k2<<"  "<<val_/(_BASIS.Length*_BASIS.Length)<<endl;
+      cout<<k1<<"  "<<k2<<"  "<<val_*(1.0/(_BASIS.Length*_BASIS.Length))<<endl;
          }
      }
 
@@ -1848,7 +1848,7 @@ int main(int argc, char** argv){
              OPR_.value.clear();
      _MODEL.Initialize_Sk_opr(_BASIS, OPR_, k1, k2, "plus", "minus");
       val_=_LANCZOS.Measure_observable(OPR_, 0);
-      cout<<k1<<"  "<<k2<<"  "<<val_/(_BASIS.Length*_BASIS.Length)<<endl;
+      cout<<k1<<"  "<<k2<<"  "<<val_*(1.0/(_BASIS.Length*_BASIS.Length))<<endl;
          }
      }
 
@@ -1860,7 +1860,7 @@ int main(int argc, char** argv){
              OPR_.value.clear();
      _MODEL.Initialize_Sk_opr(_BASIS, OPR_, k1, k2, "minus", "plus");
       val_=_LANCZOS.Measure_observable(OPR_, 0);
-      cout<<k1<<"  "<<k2<<"  "<<val_/(_BASIS.Length*_BASIS.Length)<<endl;
+      cout<<k1<<"  "<<k2<<"  "<<val_*(1.0/(_BASIS.Length*_BASIS.Length))<<endl;
          }
      }
 

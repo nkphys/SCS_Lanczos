@@ -20,6 +20,8 @@ public:
 
     Matrix_COO Hamil;
 
+    int NProcessors_;
+
 void Read_parameters(BASIS_Moire_Kspace &basis, string filename);
 void Read_Interations(BASIS_Moire_Kspace &basis);
 void Read_Dispersion(BASIS_Moire_Kspace &basis);
