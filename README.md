@@ -1,4 +1,4 @@
-# SCS_Lanczos*
+# SCS_Lanczos
 1) This code is written by Nitin Kaushal(kaushalnitin002@gmail.com)
 This solves Strongly correlated systems
 using the Lanczos Algorithm.
