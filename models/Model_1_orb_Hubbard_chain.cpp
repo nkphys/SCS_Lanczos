@@ -37,8 +37,14 @@ void MODEL_1_orb_Hubb_chain::Add_diagonal_terms(BASIS_1_orb_Hubb_chain &basis){
 
             value=0;
             //coulomb repulsion:
-            value+=U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
-
+            //value+=U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
+            for(int site=0;site<basis.Length;site++){
+                value+=1.0*(Onsite_U[site])*
+                         ( ( bit_value(basis.D_up_basis[i],site)*
+                           bit_value(basis.D_dn_basis[j],site) )
+                          );
+                //  cout<<"site = "<<site<<" : "<<Onsite_Energy[site]<<endl;
+            }
 
 
             //magnetic Field
@@ -1555,8 +1561,14 @@ void MODEL_1_orb_Hubb_chain::Act_diagonal_terms(BASIS_1_orb_Hubb_chain &basis, M
 
             value=0;
             //coulomb repulsion:
-            value+=U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
-
+            //value+=U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
+            for(int site=0;site<basis.Length;site++){
+                value+=1.0*(Onsite_U[site])*
+                         ( ( bit_value(basis.D_up_basis[i],site)*
+                           bit_value(basis.D_dn_basis[j],site) )
+                          );
+                //  cout<<"site = "<<site<<" : "<<Onsite_Energy[site]<<endl;
+            }
 
 
             //magnetic Field
@@ -1638,6 +1650,7 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
 
     string geometry_, Geometry_ = "Geometry = ";
 
+    string file_onsite_u_, File_Onsite_U_ = "File_Onsite_U = ";
     string file_onsite_energies_, File_Onsite_Energies_ = "File_Onsite_Energies = ";
     string file_hopping_connections_, File_Hopping_Connections_ = "File_Hopping_Connections = ";
     string file_nonlocal_int_connections_, File_NonLocal_Int_Connections_ = "File_NonLocal_Int_Connections = ";
@@ -1654,6 +1667,7 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
     string processors_, Processors_ = "Processors = ";
 
     string read_onsite_energies;
+    string read_onsite_u;
 
 
 
@@ -1706,6 +1720,9 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
 
             if ((offset = line.find(File_Three_Point_Interaction_, 0)) != string::npos) {
                 file_three_point_interaction_ = line.substr (offset+File_Three_Point_Interaction_.length());}
+
+            if ((offset = line.find(File_Onsite_U_, 0)) != string::npos) {
+                file_onsite_u_ = line.substr (offset+File_Onsite_U_.length());          }
 
             if ((offset = line.find(File_Onsite_Energies_, 0)) != string::npos) {
                 file_onsite_energies_ = line.substr (offset+File_Onsite_Energies_.length());				}
@@ -1853,6 +1870,49 @@ void MODEL_1_orb_Hubb_chain::Read_parameters(BASIS_1_orb_Hubb_chain &basis, stri
 
 
     U=atof(ucoul.c_str());
+    stringstream _file_onsite_u_(file_onsite_u_);
+    _file_onsite_u_ >> read_onsite_u;
+    Onsite_U.resize(basis.Length);
+    string filename_Onsite_U;
+
+    // string temp_x_, temp_y_, temp_site_, Ener_val_ ;
+    double U_val_temp;
+
+    if(read_onsite_u == "true"){
+        _file_onsite_u_ >> filename_Onsite_U;
+
+        cout<<"reading Onsite Coulomb U from '"<<filename_Onsite_U<<"'"<<endl;
+        ifstream inputfile_Onsite_U(filename_Onsite_U.c_str());
+        //getline(inputfile_Onsite_Energy,line_temp);
+
+        //for(int iy=0;iy<Length_Y_int;iy++){
+        //for(int ix=0;ix<Length_X_int;ix++){
+        for(int i=0;i<basis.Length;i++){
+            //inputfile_Onsite_Energy >> temp_x_ >> temp_y_ >> temp_site_ >> Ener_val_;
+            //temp_x = atoi(temp_x_.c_str());
+            //temp_y = atoi(temp_y_.c_str());
+            //temp_site = atoi(temp_site_.c_str());
+            //Ener_val = atof(Ener_val_.c_str());
+
+            inputfile_Onsite_U >> temp_site >> U_val_temp;
+            cout<<temp_site<<"  "<<U_val_temp<<endl;
+            assert(temp_site==i);
+            Onsite_U[temp_site]=U_val_temp;
+        }
+        //}
+
+    }
+    else{
+        for(int i=0;i<basis.Length;i++){
+            Onsite_U[i]=U;
+        }
+    }
+
+
+
+
+
+
 
 
     double h;

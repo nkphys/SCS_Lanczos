@@ -4,16 +4,16 @@ Model = 1_orb_Hubbard_chain
 PBC = false
 Length_X = 1
 Length_Y = 1
-Total_Sites = 4
-Ndown = 2
-Nup = 2
+Total_Sites = 12
+Ndown = 4
+Nup = 4
  
 Hopping = 0.0
 Hopping_NN = 0.0
 U = 0.0
-H_mag = 4 0 0 0 0
+H_mag = 12 0 0 0 0 0 0 0 0 0 0 0 0 
 File_Onsite_U = true Local_U.txt
-File_Onsite_Energies = false pinning_ener.txt
+File_Onsite_Energies = true pinning_ener.txt
 File_Hopping_Connections = Hopping.txt
 File_NonLocal_Int_Connections = Interactions.txt
 File_Direct_Exchange_Connections = DirectExchange.txt
@@ -26,7 +26,7 @@ File_Three_Point_Observation = ThreePointOprs.txt
 File_Three_Point_Interaction = ThreePointIntrs.txt
 ----------------------------------------
 -------------------------------------
-Saving_Hamiltonian_and_Oprs = true
+Saving_Hamiltonian_and_Oprs = truee
 Random_seed_generator = 564
 ---------------------------------------------
 Lanc_Error = 10e-12

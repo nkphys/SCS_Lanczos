@@ -842,10 +842,10 @@ if(Val_site1 != (basis.BASE - 1)){
  }
 cout<<temp_obs<<"  ";
 if(site1==0 &&site2==1){
-    CHSH_std_01 = CHSH_std_01 - temp_obs*1.0 - conj(temp_obs)*1.0;
+    CHSH_std_01 = CHSH_std_01 - temp_obs*1.0 - conjugate(temp_obs)*1.0;
 }
 if(site1==1 &&site2==2){
-    CHSH_std_12 = CHSH_std_12 - temp_obs*1.0 - conj(temp_obs)*1.0;
+    CHSH_std_12 = CHSH_std_12 - temp_obs*1.0 - conjugate(temp_obs)*1.0;
 }
 }
 cout<<endl;

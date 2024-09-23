@@ -168,7 +168,7 @@ void MODEL_Moire_Kspace::Add_Interaction_terms(BASIS_Moire_Kspace &basis){
         int SPIN_UP=0;
         int SPIN_DN=1;
         double EnergyEps=0.00000001;
-        complex<double> value;
+        double_type value;
         ulli D_up_0,D_dn_0;
         ulli D_up_1,D_dn_1;
         ulli D_up_2,D_dn_2;
@@ -392,7 +392,9 @@ void MODEL_Moire_Kspace::Add_Interaction_terms(BASIS_Moire_Kspace &basis){
                 if(m>=m_new){
                  value = sign_FM*((W_int[spins_dof][orbs_dof][kkq_dof]))*one;
                     if(m==m_new){
+#ifdef USE_COMPLEX
                     value = complex<double>(value.real(),0.0);
+#endif
                     }
 
 #ifdef _OPENMP
@@ -525,7 +527,7 @@ void MODEL_Moire_Kspace::Initialize_Sk_opr(BASIS_Moire_Kspace &basis, Matrix_COO
         int SPIN_UP=0;
         int SPIN_DN=1;
         double EnergyEps=0.00000001;
-        complex<double> value;
+        double_type value;
         ulli D_up_0,D_dn_0;
         ulli D_up_1,D_dn_1;
         ulli D_up_2,D_dn_2;
@@ -743,7 +745,12 @@ void MODEL_Moire_Kspace::Initialize_Sk_opr(BASIS_Moire_Kspace &basis, Matrix_COO
 
                 //append to Hamil(m_new,m)
                 //if(m>=m_new){
+#ifdef USE_COMPLEX
                  value = 0.25*sign_FM*(Pauli_alpha(tau,tau_p)*Pauli_beta(s_,s_p_))*one;
+#else
+                cout<<"COMPILE WITH FLAG USE_COMPLEX"<<endl;
+                assert(false);
+#endif
 //                    if(m==m_new){
 //                    value = complex<double>(value.real(),0.0);
 //                    }
@@ -894,11 +901,16 @@ void MODEL_Moire_Kspace::Read_Interations(BASIS_Moire_Kspace &basis){
     int m1, m2 ,m3, m4, spin, spin_p, k1, k2, q;
     double WReal, WImag;
 
-    complex<double> W_temp;
+    double_type W_temp;
     while(getline(InteractionFileStream, line_temp)){
     stringstream line_temp_stream(line_temp);
     line_temp_stream>>m1>>m2>>m3>>m4>>spin>>spin_p>>k1>>k2>>q>>WReal>>WImag;
+#ifdef USE_COMPLEX
     W_temp = complex<double> (WReal, WImag);
+#else
+    cout<<"CALCULATION ABORTED, COMPILE WITH USE_COMPLEX FLAG"<<endl;
+    assert(false);
+#endif
 
     int kkq = k1 + Length*k2  + Length*Length*q;
 
