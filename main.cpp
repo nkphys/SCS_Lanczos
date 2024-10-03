@@ -4184,7 +4184,7 @@ int main(int argc, char** argv){
         Null_int_vec.resize(1);
 
 
-        bool Dynamics_SPDOS = false;
+        bool Dynamics_SPDOS = true;
         bool Above_mu = true;
         bool Below_mu= true;
         bool Cheaper_observables=true;

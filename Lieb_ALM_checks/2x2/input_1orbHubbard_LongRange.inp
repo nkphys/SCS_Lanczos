@@ -11,7 +11,7 @@ Nup = 4
 Hopping = 0.0
 Hopping_NN = 0.0
 U = 0.0
-H_mag = 12 0 0 0 0 0 0 0 0 0 0 0 0 
+H_mag = 12 0 0.05 0 0 0 0 0 0 0 0 0 0 
 File_Onsite_U = true Local_U.txt
 File_Onsite_Energies = true pinning_ener.txt
 File_Hopping_Connections = Hopping.txt
@@ -26,7 +26,7 @@ File_Three_Point_Observation = ThreePointOprs.txt
 File_Three_Point_Interaction = ThreePointIntrs.txt
 ----------------------------------------
 -------------------------------------
-Saving_Hamiltonian_and_Oprs = truee
+Saving_Hamiltonian_and_Oprs = true
 Random_seed_generator = 564
 ---------------------------------------------
 Lanc_Error = 10e-12
@@ -49,19 +49,20 @@ file_out_local_obs_for_states_to_look = local_obs_for_state_no
 --------------------------------------
 
 ----------------------------------
-Perform_Dynamics = false
+Perform_Dynamics = true
 eta = 0.2
 check_omega = 0.05
-omega_max = 20.0
-omega_min = -20.0
+omega_max = 40.0
+omega_min = -40.0
 d_omega = 0.001
 Opr_for_Dynamics = J
 Momentum_resolved = false
 k = 0.4
-file_dynamics_out = orb0_up_site1
-Dynamics_dos_operators = 1 1.0 0.0 0 1 1
+file_dynamics_out = VBS_orb0_dn_SubLtBplusC_K_x0_yPi
+Dynamics_dos_operators = 8 1.0 0 0 2 1.0 0 0 5 -1.0 0 0 8 -1.0 0 0 11 1.0 0 0 1 1.0 0 0 4 -1.0 0 0 7 -1.0 0 0 10
 ---------------------------------
 
+# K_x0_yPI  DN : 4 1.0 0 0 1 1.0 0 0 4 -1.0 0 0 7 -1.0 0 0 10
 ---------------------------------------------------
 #2 1.654 0 0 1 0.0321 0 1 1
 #no_of_orps real orb spin site ...

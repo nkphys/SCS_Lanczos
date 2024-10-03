@@ -1,14 +1,14 @@
 Model = SpinOnlyTargetSz
 ------------------------------------------
 PBC = true
-Length = 18
+Length = 16
 TwoTimesSpin = 1
 TwoTimesTotalSzTarget = 0
 H_mag = 0 0 -0.00
 D_anisotropy = 0 0 0.00
-LongRangeJ1_file = J1file_L4.dat
-LongRangeJ2_file = J2file_L4.dat
-LongRangeJ3_file = J3file_L4.dat
+LongRangeJ1_file = J1file.dat
+LongRangeJ2_file = J2file.dat
+LongRangeJ3_file = J3file.dat
 
 ----------------------------------------
 
@@ -25,9 +25,9 @@ Lanc_Error = 10e-12
 max_steps = 100
 Random_seed_generator = 3
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = true
+save_all_Krylov_space_vecs = truee
 get_overlap_bw_eigstates_and_K_vecs = true
-lanczos_reorthogonalization = true
+lanczos_reorthogonalization = truee
 Get_Full_Spectrum = true
 need_few_eig_vecs = truee
 few = 1
@@ -63,4 +63,4 @@ k = 0.1
 file_dynamics_out = Dyn_MzMz
 ---------------------------------
 
-Processors = 4
+Processors = 1

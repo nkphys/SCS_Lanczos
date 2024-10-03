@@ -48,7 +48,7 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
         if(!read_basis){
             cout<<"Basis are constructed directly in the targetted Sz sector"<<endl;
 
-            if(TwoTimesSpin > 1){
+            if(TwoTimesSpin > 0){
             int BASE_new = Length+1;
             int Length_new = BASE;
             int index_max = pow(BASE_new,Length_new) - 1;

@@ -965,6 +965,7 @@ void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string
     while(getline(inputJ1, line_temp)){
         stringstream line_temp_ss(line_temp);
         line_temp_ss >> i1 >> i2 >> value_temp;
+        cout<<i1<<" "<<i2<<" "<<value_temp<<endl;
         J1_mat[i1][i2]=value_temp;
     }
 
