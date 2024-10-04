@@ -66,6 +66,161 @@ void MODEL_Spins_Target_Sz::Add_non_diagonal_terms(BASIS_Spins_Target_Sz &basis)
 }
 
 
+void MODEL_Spins_Target_Sz::Add_connections_strictly2point(BASIS_Spins_Target_Sz &basis){
+
+    Hamil.value.clear();
+    Hamil.nrows = basis.basis_size;
+    Hamil.ncols = Hamil.nrows;
+
+    Mat_1_doub J1_vals, J2_vals, J3_vals;
+    Mat_1_tetra_int J2_sites,J3_sites;
+    Mat_1_intpair J1_sites;
+    pair_int temp_pair_int;
+    tetra_int temp_tetra_int;
+
+    //TERM J1: J1[k][l] x Svec[k].Svec[l] |m>
+    for(int site_k=0;site_k<basis.Length;site_k++){
+        for(int site_l=0;site_l<basis.Length;site_l++){
+            if(J1_mat[site_k][site_l]!=0.0){
+                J1_vals.push_back(one*J1_mat[site_k][site_l]);
+                temp_pair_int.first=site_k;
+                temp_pair_int.second=site_l;
+                J1_sites.push_back(temp_pair_int);
+            }
+        }
+    }
+
+
+    //TERM J2 and J3
+    for(int site_i=0;site_i<basis.Length;site_i++){
+        for(int site_j=0;site_j<basis.Length;site_j++){
+            for(int site_k=0;site_k<basis.Length;site_k++){
+                for(int site_l=0;site_l<basis.Length;site_l++){
+
+                    if(J2_mat[site_i][site_j][site_k][site_l]!=0.0){
+                        J2_vals.push_back(one*J2_mat[site_i][site_j][site_k][site_l]);
+                        temp_tetra_int.first=site_i;
+                        temp_tetra_int.second=site_j;
+                        temp_tetra_int.third=site_k;
+                        temp_tetra_int.fourth=site_l;
+                        J2_sites.push_back(temp_tetra_int);
+                    }
+
+                    if(J3_mat[site_i][site_j][site_k][site_l]!=0.0){
+                        J3_vals.push_back(one*J3_mat[site_i][site_j][site_k][site_l]);
+                        temp_tetra_int.first=site_i;
+                        temp_tetra_int.second=site_j;
+                        temp_tetra_int.third=site_k;
+                        temp_tetra_int.fourth=site_l;
+                        J3_sites.push_back(temp_tetra_int);
+                    }
+
+                }
+            }
+        }
+    }
+
+
+    assert(J3_sites.size()==0);
+    assert(J2_sites.size()==0);
+
+
+    ulli dec_new, dec_new_temp;
+    ulli dec_m;
+    ulli dec_max;
+    int m_new;
+    int n_index;
+    Mat_1_int state_vec;
+    double_type value;
+    int val_site_k, val_site_l;
+    int val_site_k_new, val_site_l_new;
+
+    for (int m=0;m<basis.D_basis.size();m++){
+
+        dec_m = basis.D_basis[m];
+
+        //Sz(i)Sz(j)----------------------------------------------------------------
+        value=0.0;
+        for(int site_k=0;site_k<basis.Length;site_k++){
+            for(int site_l=0;site_l<basis.Length;site_l++){
+
+                if(J1_mat[site_k][site_l]!=0.0){
+                    value += J1_mat[site_k][site_l]*((1.0*value_at_pos(dec_m, site_k, basis.BASE)) - (0.5*basis.TwoTimesSpin))*
+                            ((1.0*value_at_pos(dec_m, site_l, basis.BASE)) - (0.5*basis.TwoTimesSpin));
+                }
+
+        }}
+
+        Hamil.value.push_back(value*one);
+        Hamil.rows.push_back(m);
+        Hamil.columns.push_back(m);
+
+
+        //0.5*S+(k)S-(l)---------------------------------------------------
+        value=0.0;
+
+        for(int site_k=0;site_k<basis.Length;site_k++){
+            for(int site_l=0;site_l<basis.Length;site_l++){
+                val_site_k = value_at_pos(dec_m, site_k, basis.BASE);
+                val_site_l = value_at_pos(dec_m, site_l, basis.BASE);
+                if(J1_mat[site_k][site_l]!=0.0){
+                assert(site_k!=site_l);
+                bool allowed = ((val_site_l != 0) && (val_site_k != (basis.BASE - 1)));
+                    if(allowed){
+                    val_site_k_new = val_site_k + 1;
+                    val_site_l_new = val_site_l - 1;
+
+                    dec_new_temp = Updated_decimal_with_value_at_pos(dec_m, site_k, basis.BASE, val_site_k_new);
+                    dec_new = Updated_decimal_with_value_at_pos(dec_new_temp, site_l, basis.BASE, val_site_l_new);
+
+                    value = one*sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                                       ((val_site_k - (0.5*basis.TwoTimesSpin))*
+                                        (val_site_k_new - (0.5*basis.TwoTimesSpin))  ) );
+                    value = J1_mat[site_k][site_l]*value*0.5*sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                                               ((val_site_l - (0.5*basis.TwoTimesSpin))*
+                                                (val_site_l_new - (0.5*basis.TwoTimesSpin))  ) );
+
+
+
+
+                    //m_new = Find_int_in_intarray(dec_new, basis.D_basis);
+                    //m_new = Find_int_in_intarray_using_bisection(dec_new, basis.D_basis);
+                    m_new = Find_int_in_intarray_using_multisections(dec_new, basis.D_basis, MultisectionSearch_int);
+
+
+                    /*
+                    fromDeci_to_Vecint(state_vec, basis.BASE, dec_new , basis.Length);
+                    quicksort(state_vec, 0, state_vec.size() -1);
+                    fromVecint_to_Deci(state_vec, basis.BASE, dec_max, basis.Length);
+                    n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
+                    m_new = Find_int_in_part_of_intarray(dec_new, basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
+                    */
+
+                    assert(m_new>m);
+                    if(m_new>m){
+                        Hamil.value.push_back(value*one);
+                        Hamil.rows.push_back(m);
+                        Hamil.columns.push_back(m_new);
+                    }
+
+                    }
+
+
+                    }
+        }}
+
+
+        if(m%500==0){
+            cout<<m<<" basis done in Hamil construction "<<endl;
+        }
+
+    }
+
+
+
+}
+
+
 void MODEL_Spins_Target_Sz::Add_connections_new(BASIS_Spins_Target_Sz &basis){
 
 
@@ -753,12 +908,17 @@ void MODEL_Spins_Target_Sz::Initialize_two_point_operator_sites_specific(string 
 
             for(int j=0;j<m_connected_final.size();j++){
 
+                //m_new = Find_int_in_intarray_using_bisection(m_connected_final[j], basis.D_basis);
+                m_new = Find_int_in_intarray_using_multisections(m_connected_final[j], basis.D_basis, MultisectionSearch_int);
+
+                //or
                 // m_new = Find_int_in_intarray(m_connected_final[j], basis.D_basis);
-                fromDeci_to_Vecint(state_vec, basis.BASE,m_connected_final[j] , basis.Length);
-                quicksort(state_vec, 0, state_vec.size() -1);
-                fromVecint_to_Deci(state_vec, basis.BASE, dec_max, basis.Length);
-                n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
-                m_new = Find_int_in_part_of_intarray(m_connected_final[j], basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
+                //or
+                // fromDeci_to_Vecint(state_vec, basis.BASE,m_connected_final[j] , basis.Length);
+                // quicksort(state_vec, 0, state_vec.size() -1);
+                // fromVecint_to_Deci(state_vec, basis.BASE, dec_max, basis.Length);
+                // n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
+                // m_new = Find_int_in_part_of_intarray(m_connected_final[j], basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
 
                 OPR_.value.push_back(coeffs_final[j]*one);
                 OPR_.rows.push_back(m_new);
@@ -790,6 +950,7 @@ void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string
     string Write_Basis_File_= "Write_Basis_File = ";
 
 
+    string multisectionsearchint_, MultiSectionSearchInt_ = "MultiSectionBasisSearchInt = ";
     string pbc_,PBC_ ="PBC = ";
     string length, Length = "Length = ";
     string twotimesspin, TwoTimesSpin = "TwoTimesSpin = ";
@@ -851,6 +1012,9 @@ void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string
                 basis.write_basis_file = line.substr (offset+Write_Basis_File_.length());				}
 
 
+            if ((offset = line.find(MultiSectionSearchInt_, 0)) != string::npos) {
+                multisectionsearchint_ = line.substr (offset + MultiSectionSearchInt_.length());		}
+
             if ((offset = line.find(Length, 0)) != string::npos) {
                 length = line.substr (offset + Length.length());		}
 
@@ -898,6 +1062,8 @@ void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string
     basis.Length=atoi(length.c_str());
     basis.Target_Total_Sz = 0.5*(atof(twotimestotalsztarget.c_str()));
     basis.TwoTimesSpin=atoi(twotimesspin.c_str());
+
+    MultisectionSearch_int = atoi(multisectionsearchint_.c_str());
 
     No_of_onepoint_obs=atoi(no_of_onepoint_obs_.c_str());
 

@@ -10,7 +10,7 @@
 int main(){
 
 double J1_exc=1.0;
-double J2_exc=1.5;
+double J2_exc=1.0;
 
 int L1=4;
 int L2=4;

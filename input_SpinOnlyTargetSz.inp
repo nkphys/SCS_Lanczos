@@ -10,6 +10,7 @@ LongRangeJ1_file = J1file.dat
 LongRangeJ2_file = J2file.dat
 LongRangeJ3_file = J3file.dat
 
+MultiSectionBasisSearchInt = 10
 ----------------------------------------
 
 Saving_Hamiltonian_and_Oprs = true
@@ -63,4 +64,7 @@ k = 0.1
 file_dynamics_out = Dyn_MzMz
 ---------------------------------
 
-Processors = 1
+Processors = 4
+
+Write_Basis = false
+Write_Basis_File = Basis_used.txt

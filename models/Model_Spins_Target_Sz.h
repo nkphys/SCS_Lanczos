@@ -51,11 +51,14 @@ public:
     Mat_4_doub J3_mat;
 
 
+    int MultisectionSearch_int;
+
 void Read_parameters(BASIS_Spins_Target_Sz &basis, string filename);
 void Add_diagonal_terms(BASIS_Spins_Target_Sz &basis);
 void Add_non_diagonal_terms(BASIS_Spins_Target_Sz &basis);
 void Add_connections(BASIS_Spins_Target_Sz &basis);
 void Add_connections_new(BASIS_Spins_Target_Sz &basis);
+void Add_connections_strictly2point(BASIS_Spins_Target_Sz &basis);
 void Read_parameters_for_dynamics(string filename);
 void Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &basis);
 void Initialize_State_for_Dynamics(BASIS_Spins_Target_Sz &basis_new, BASIS_Spins_Target_Sz &basis, Mat_1_doub &Vec_, Mat_1_doub &Vec_Dyn);

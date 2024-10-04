@@ -686,6 +686,99 @@ int Find_int_in_intarray(int num, Mat_1_int &array){
     return pos;
 }
 
+int Find_int_in_intarray_using_multisections(ulli num, Mat_1_ullint &array, int Nsections){
+
+    int pos;
+    bool not_found=true;
+    int ind=0;
+    int l_sect;
+    int m_min, m_max;
+    m_min=0;m_max=array.size()-1;
+    Mat_1_int SectionIndices;
+    SectionIndices.resize(Nsections);
+
+    l_sect = max(1,( (((m_max - m_min + 1))/(Nsections))));
+    for(int i=0;i<Nsections;i++){
+        SectionIndices[i]=min(m_min + i*l_sect, m_max);
+    }
+
+    //int relevant_section_index;
+    while(not_found){
+
+
+        for(int i=0;i<Nsections;i++){
+            if(num==array[SectionIndices[i]]){
+                pos=SectionIndices[i];
+                not_found =false;
+                break;
+            }
+        }
+        if(num==array[m_max]){
+            pos=m_max;
+            not_found =false;
+        }
+
+        for(int i=0;i<(Nsections-1);i++){
+            if(num<=array[SectionIndices[i]] && num>array[SectionIndices[i+1]]){
+                //relevant_section_index=i;
+                m_min = SectionIndices[i];
+                m_max = SectionIndices[i+1];
+                //break;
+            }
+        }
+        if(num<=array[SectionIndices[Nsections-1]] && num>=array[m_max]){
+            //relevant_section_index=Nsections-1;
+            m_min = SectionIndices[Nsections-1];
+        }
+
+
+        // l_sect = (m_max - m_min + 1)/Nsections;
+        // for(int i=0;i<Nsections;i++){
+        //     SectionIndices[i]=m_min + i*l_sect;
+        // }
+
+        l_sect = max(1,( (((m_max - m_min + 1))/(Nsections))));
+        for(int i=0;i<Nsections;i++){
+            SectionIndices[i]=min(m_min + i*l_sect, m_max);
+        }
+
+        //ind++;
+    }
+
+    return pos;
+}
+
+
+int Find_int_in_intarray_using_bisection(ulli num, Mat_1_ullint &array){
+
+    int pos;
+    bool not_found=true;
+    int ind=0;
+    int m_min, m_max;
+    m_min=0;m_max=array.size();
+
+    while(not_found){
+
+        ind=(m_min+m_max)/2;
+        assert(ind<array.size());
+        if(num==array[ind]){
+            pos=ind;
+            not_found = false;
+        }
+
+        if(num>array[ind]){
+            m_max=ind;
+        }
+        if(num<array[ind]){
+            m_min=ind;
+        }
+
+        //ind++;
+    }
+
+    return pos;
+}
+
 int Find_int_in_intarray(ulli num, Mat_1_ullint &array){
 
     int pos;

@@ -242,7 +242,7 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
                 D_basis.push_back(d);
 
                 // if((D_basis.size()%100000)==0){
-                if((d%1000000)==0){
+                if((d%5000)==0){
                     cout<<"Basis creation in progress : "<<((d*1.0)/(1.0*D_max))*100.0<< "% checked, d="<<d<<endl;
                 }
 

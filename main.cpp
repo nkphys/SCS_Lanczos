@@ -1037,7 +1037,9 @@ int main(int argc, char** argv){
         _BASIS.Construct_basis();
 
         _MODEL.no_of_proc = no_of_processors;
-        _MODEL.Add_connections_new(_BASIS);
+        //_MODEL.Add_connections_new(_BASIS);
+        //_MODEL.MultisectionSearch_int =2;
+        _MODEL.Add_connections_strictly2point(_BASIS);
         //Print_Matrix_COO(_MODEL.Hamil);
 
 

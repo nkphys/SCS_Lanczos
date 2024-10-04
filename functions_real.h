@@ -53,6 +53,8 @@ int Find_intpair_in_intarraypair(int num1, int num2 ,Mat_1_int &array1, Mat_1_in
 int Find_intpair_in_intarraypair(int num1, int num2 ,Mat_1_int &array1, Mat_1_int &array2);
 int Find_int_in_intarray(int num, Mat_1_int &array);
 int Find_int_in_intarray(ulli num, Mat_1_ullint &array);
+int Find_int_in_intarray_using_bisection(ulli num, Mat_1_ullint &array);
+int Find_int_in_intarray_using_multisections(ulli num, Mat_1_ullint &array, int Nsections);
 int Find_int_in_part_of_intarray(int num, Mat_1_int &array, int min_i, int max_i);
 int Find_int_in_part_of_intarray(ulli num, Mat_1_ullint &array, int min_i, int max_i);
 
