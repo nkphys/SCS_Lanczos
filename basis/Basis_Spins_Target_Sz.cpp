@@ -17,6 +17,7 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
     //---------------------------------//
 
 
+    bool USE_LIN_TABLE=true;
     bool Basis_direclty_in_TotalSz=true;
 
     SPIN = ((1.0*TwoTimesSpin)/2.0);
@@ -48,7 +49,7 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
         if(!read_basis){
             cout<<"Basis are constructed directly in the targetted Sz sector"<<endl;
 
-            if(TwoTimesSpin > 0){
+            if(TwoTimesSpin > 0 && (!USE_LIN_TABLE)){
             int BASE_new = Length+1;
             int Length_new = BASE;
             int index_max = pow(BASE_new,Length_new) - 1;
@@ -158,8 +159,106 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
 
             }
 
-            else{ //For spin 1/2, faster basis construction
+            else{ //For spin 1/2, faster basis construct
 
+            Mat_1_int Vec_temp;
+            ulli Dec_temp;
+            Mat_1_ullint Dec_vec;
+            char state_str[500];
+            int length_state_str;
+
+            assert(TwoTimesSpin==1);
+            assert(USE_LIN_TABLE);
+             //Using Lin tables
+            int No_of_partitions=2;
+            Partition_Length.resize(No_of_partitions);
+            int length_so_far=0;
+            for(int i=0;i<(No_of_partitions-1);i++){
+                Partition_Length[i]=int(Length/No_of_partitions);
+                length_so_far += Partition_Length[i];
+            }
+            Partition_Length[No_of_partitions-1]=Length-length_so_far;
+
+            assert(No_of_partitions==2);
+
+            ulli Dmin_part0_ = 0;
+            ulli Dmax_part0_ = pow(BASE,Partition_Length[0]) - 1;
+
+            ulli Dmin_part1_ = 0;
+            ulli Dmax_part1_ = pow(BASE,Partition_Length[1]) - 1;
+
+            int Value1_, Value0_;
+
+            Index_to_Dec_part0_.clear();Index_to_Dec_part1_.clear();
+            Dec_to_Index_part0_.clear();Dec_to_Index_part1_.clear();
+            MainIndex_to_Dec_part0_.clear(); MainIndex_to_Dec_part1_.clear();
+            Dec_to_Index_part0_.resize(Dmax_part0_+1);
+            Dec_to_Index_part1_.resize(Dmax_part1_+1);
+
+            int index0_, index1_;
+
+            ulli d_temp1_old=Dmin_part1_;
+            int index0_old;
+            index0_old=-1;
+            index1_=0;
+            for(ulli d_temp1=Dmin_part1_;d_temp1<=Dmax_part1_;d_temp1++){
+                 Value1_ =Sum_of_Values(d_temp1, BASE);
+
+            Dec_vec.clear();
+            Vec_temp.resize(Partition_Length[0]);
+            Value0_ = Target_Total_Value - Value1_;
+            assert(Value0_<=Vec_temp.size());
+            for(int i=0;i<Vec_temp.size();i++){
+                if(i<Value0_){
+                    Vec_temp[i]=1;
+                }
+                else{
+                    Vec_temp[i]=0;
+                }
+            }
+
+            fromVecint_to_Deci(Vec_temp, BASE, Dec_temp, Partition_Length[0]);
+            fromDeci(state_str, BASE, Dec_temp, Partition_Length[0]);
+            length_state_str = strlen(state_str);
+            findPermutations(state_str, 0, length_state_str, Dec_vec, BASE);
+
+            index0_=0;
+            for(int d_temp0_index=0;d_temp0_index<Dec_vec.size();d_temp0_index++){
+            ulli d_temp0 = Dec_vec[d_temp0_index];
+            assert(d_temp0<=Dmax_part0_);
+
+
+            MainIndex_to_Dec_part0_.push_back(d_temp0);
+            MainIndex_to_Dec_part1_.push_back(d_temp1);
+
+
+                if(d_temp1!=d_temp1_old ||
+                     (MainIndex_to_Dec_part0_.size()==1) ){
+                    //Index_to_Dec_part1_.push_back(d_temp1);
+                    //cout<<"HERE 1"<<endl;
+                    Dec_to_Index_part1_[d_temp1]=index0_old+index1_+1;
+                    index1_ = Dec_to_Index_part1_[d_temp1];
+                    d_temp1_old = d_temp1;
+                }
+                //Index_to_Dec_part0_.push_back(d_temp0);
+                Dec_to_Index_part0_[d_temp0]=index0_;
+                index0_old = index0_;
+                index0_ +=1;
+
+                assert((Dec_to_Index_part0_[d_temp0] + Dec_to_Index_part1_[d_temp1])==(MainIndex_to_Dec_part0_.size()-1));
+
+
+
+                }
+
+            if((d_temp1%1000) == 0){
+            cout<<"Partition-2 Hilbert space scanned : "<< d_temp1<<"("<<Dmax_part1_<<")"<<endl;
+            }
+
+            }
+
+
+            cout<<"Basis Size [constructed using Lin Table] : "<<MainIndex_to_Dec_part0_.size()<<endl;
             }
 
 
@@ -252,9 +351,9 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
 
 
 
-    basis_size = (unsigned long long int)D_basis.size();
+   // basis_size = (unsigned long long int)D_basis.size();
 
-
+    basis_size = MainIndex_to_Dec_part0_.size();
     cout<<endl;
     cout<<"-----------------------------------------------"<<endl;
     cout<<"Total basis = "<< D_max + (unsigned long long int)1<<endl;

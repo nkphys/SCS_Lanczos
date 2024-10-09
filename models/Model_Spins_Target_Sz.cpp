@@ -125,9 +125,25 @@ void MODEL_Spins_Target_Sz::Add_connections_strictly2point(BASIS_Spins_Target_Sz
     assert(J2_sites.size()==0);
 
 
+
+    Hamiltonian_1_COO Hamil_private;
+    int N_threads=1;
+#ifdef _OPENMP
+    N_threads=no_of_proc;
+#endif
+
+    Hamil_private.resize(N_threads);
+
+
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+#endif
+    int thread_id;
     ulli dec_new, dec_new_temp;
     ulli dec_m;
     ulli dec_max;
+    ulli dec_part0_, dec_part1_;
     int m_new;
     int n_index;
     Mat_1_int state_vec;
@@ -135,9 +151,20 @@ void MODEL_Spins_Target_Sz::Add_connections_strictly2point(BASIS_Spins_Target_Sz
     int val_site_k, val_site_l;
     int val_site_k_new, val_site_l_new;
 
-    for (int m=0;m<basis.D_basis.size();m++){
 
-        dec_m = basis.D_basis[m];
+#ifdef _OPENMP
+#pragma omp for
+#endif
+    for (int m=0;m<basis.MainIndex_to_Dec_part0_.size();m++){
+
+        thread_id=0;
+#ifdef _OPENMP
+        thread_id = omp_get_thread_num();
+#endif
+
+        //dec_m = basis.D_basis[m];
+        dec_m = basis.MainIndex_to_Dec_part0_[m] +  pow(basis.BASE, basis.Partition_Length[0])*basis.MainIndex_to_Dec_part1_[m];
+
 
         //Sz(i)Sz(j)----------------------------------------------------------------
         value=0.0;
@@ -151,10 +178,12 @@ void MODEL_Spins_Target_Sz::Add_connections_strictly2point(BASIS_Spins_Target_Sz
 
         }}
 
-        Hamil.value.push_back(value*one);
-        Hamil.rows.push_back(m);
-        Hamil.columns.push_back(m);
-
+        // Hamil.value.push_back(value*one);
+        // Hamil.rows.push_back(m);
+        // Hamil.columns.push_back(m);
+        Hamil_private[thread_id].value.push_back(value*one);
+        Hamil_private[thread_id].rows.push_back(m);
+        Hamil_private[thread_id].columns.push_back(m);
 
         //0.5*S+(k)S-(l)---------------------------------------------------
         value=0.0;
@@ -185,8 +214,13 @@ void MODEL_Spins_Target_Sz::Add_connections_strictly2point(BASIS_Spins_Target_Sz
 
                     //m_new = Find_int_in_intarray(dec_new, basis.D_basis);
                     //m_new = Find_int_in_intarray_using_bisection(dec_new, basis.D_basis);
-                    m_new = Find_int_in_intarray_using_multisections(dec_new, basis.D_basis, MultisectionSearch_int);
 
+                    //m_new = Find_int_in_intarray_using_multisections(dec_new, basis.D_basis, MultisectionSearch_int);
+
+
+                    dec_part1_ = dec_new/pow(basis.BASE, basis.Partition_Length[0]);
+                    dec_part0_ = dec_new - (dec_part1_*pow(basis.BASE, basis.Partition_Length[0]));
+                    m_new = basis.Dec_to_Index_part0_[dec_part0_] + basis.Dec_to_Index_part1_[dec_part1_];
 
                     /*
                     fromDeci_to_Vecint(state_vec, basis.BASE, dec_new , basis.Length);
@@ -196,11 +230,14 @@ void MODEL_Spins_Target_Sz::Add_connections_strictly2point(BASIS_Spins_Target_Sz
                     m_new = Find_int_in_part_of_intarray(dec_new, basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
                     */
 
-                    assert(m_new>m);
-                    if(m_new>m){
-                        Hamil.value.push_back(value*one);
-                        Hamil.rows.push_back(m);
-                        Hamil.columns.push_back(m_new);
+                    assert(m_new<m);
+                    if(m_new<m){
+                        Hamil_private[thread_id].value.push_back(value*one);
+                        Hamil_private[thread_id].rows.push_back(m_new);
+                        Hamil_private[thread_id].columns.push_back(m);
+                        // Hamil.value.push_back(value*one);
+                        // Hamil.rows.push_back(m);
+                        // Hamil.columns.push_back(m_new);
                     }
 
                     }
@@ -210,11 +247,22 @@ void MODEL_Spins_Target_Sz::Add_connections_strictly2point(BASIS_Spins_Target_Sz
         }}
 
 
-        if(m%500==0){
-            cout<<m<<" basis done in Hamil construction "<<endl;
+        if(m%1000==0){
+            cout<<m<<" basis done in Hamil construction by thread "<< thread_id <<endl;
         }
 
     }
+#ifdef _OPENMP
+        }
+#endif
+
+
+        // cout<<"HERE"<<endl;
+        for(int thread=0;thread<N_threads;thread++){
+            Hamil.value.insert(Hamil.value.end(),Hamil_private[thread].value.begin(), Hamil_private[thread].value.end() );
+            Hamil.rows.insert(Hamil.rows.end(),Hamil_private[thread].rows.begin(), Hamil_private[thread].rows.end() );
+            Hamil.columns.insert(Hamil.columns.end(),Hamil_private[thread].columns.begin(), Hamil_private[thread].columns.end() );
+        }
 
 
 
@@ -879,14 +927,18 @@ void MODEL_Spins_Target_Sz::Initialize_two_point_operator_sites_specific(string 
         Mat_1_doub coeffs_temp;
 
         ulli dec_m, dec_max;
+        ulli dec_part1_, dec_part0_;
         int m_new;
         int n_index;
         Mat_1_int state_vec;
         int site_i, site_j;
 
 
-        for (int m=0;m<basis.D_basis.size();m++){
-            dec_m = basis.D_basis[m];
+        for (int m=0;m<basis.MainIndex_to_Dec_part0_.size();m++){
+
+            //dec_m = basis.D_basis[m];
+            dec_m = basis.MainIndex_to_Dec_part0_[m] +  pow(basis.BASE, basis.Partition_Length[0])*basis.MainIndex_to_Dec_part1_[m];
+
             m_connected.clear();
             coeffs.clear();
 
@@ -908,8 +960,13 @@ void MODEL_Spins_Target_Sz::Initialize_two_point_operator_sites_specific(string 
 
             for(int j=0;j<m_connected_final.size();j++){
 
+                dec_part1_ = m_connected_final[j]/pow(basis.BASE, basis.Partition_Length[0]);
+                dec_part0_ = m_connected_final[j] - (dec_part1_*pow(basis.BASE, basis.Partition_Length[0]));
+                m_new = basis.Dec_to_Index_part0_[dec_part0_] + basis.Dec_to_Index_part1_[dec_part1_];
+
                 //m_new = Find_int_in_intarray_using_bisection(m_connected_final[j], basis.D_basis);
-                m_new = Find_int_in_intarray_using_multisections(m_connected_final[j], basis.D_basis, MultisectionSearch_int);
+                //or
+                // m_new = Find_int_in_intarray_using_multisections(m_connected_final[j], basis.D_basis, MultisectionSearch_int);
 
                 //or
                 // m_new = Find_int_in_intarray(m_connected_final[j], basis.D_basis);
@@ -1092,8 +1149,6 @@ void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string
         anis_stream >> site_temp>>value_temp_;
         Dz_anisotropy[site_temp]=value_temp_;
     }
-
-
 
 
 

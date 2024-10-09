@@ -31,6 +31,13 @@ public:
     string read_basis_file, write_basis_file;
 
 
+    //Using Lin tables
+    Mat_1_int Partition_Length;
+    Mat_1_int Dec_to_Index_part0_, Dec_to_Index_part1_;
+    Mat_1_ullint Index_to_Dec_part0_, Index_to_Dec_part1_;
+    Mat_1_ullint MainIndex_to_Dec_part0_, MainIndex_to_Dec_part1_;
+
+
 void Construct_basis();
 void clear();
 };

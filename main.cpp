@@ -1036,6 +1036,7 @@ int main(int argc, char** argv){
         _MODEL.Read_parameters(_BASIS, inp_filename);
         _BASIS.Construct_basis();
 
+        //assert(false);
         _MODEL.no_of_proc = no_of_processors;
         //_MODEL.Add_connections_new(_BASIS);
         //_MODEL.MultisectionSearch_int =2;

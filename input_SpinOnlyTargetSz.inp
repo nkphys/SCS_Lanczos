@@ -1,16 +1,16 @@
 Model = SpinOnlyTargetSz
 ------------------------------------------
 PBC = true
-Length = 16
+Length = 32
 TwoTimesSpin = 1
 TwoTimesTotalSzTarget = 0
 H_mag = 0 0 -0.00
-D_anisotropy = 0 0 0.00
+Dz_anisotropy = 0 0 0.00
 LongRangeJ1_file = J1file.dat
 LongRangeJ2_file = J2file.dat
 LongRangeJ3_file = J3file.dat
 
-MultiSectionBasisSearchInt = 10
+MultiSectionBasisSearchInt = 2
 ----------------------------------------
 
 Saving_Hamiltonian_and_Oprs = true
@@ -64,7 +64,7 @@ k = 0.1
 file_dynamics_out = Dyn_MzMz
 ---------------------------------
 
-Processors = 4
+Processors = 8
 
 Write_Basis = false
 Write_Basis_File = Basis_used.txt

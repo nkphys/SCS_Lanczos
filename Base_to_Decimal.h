@@ -202,6 +202,44 @@ void strev(char *str);
 // Function to convert a given decimal number
 // to a base 'base' and
 template <typename T>
+char* fromDeci(char res[], int base, T inputNum, int Length)
+{
+    int index = 0;  // Initialize index of result
+
+    if(inputNum==0){
+        res[0]='0';
+        for(int i=1;i<Length;i++){
+        res[i] = '0';
+        }
+        res[Length] = '\0';
+        strev(res);
+    }
+    else{
+        // Convert input number is given base by repeatedly
+        // dividing it by base and taking remainder
+        while (inputNum > 0)
+        {
+            res[index++] = reVal(inputNum % base);
+            inputNum /= base;
+        }
+        for(int i=index;i<Length;i++){
+            res[i]='0';
+        }
+        res[Length] = '\0';
+
+        // Reverse the result
+        strev(res);
+    }
+
+    return res;
+
+}
+
+
+
+// Function to convert a given decimal number
+// to a base 'base' and
+template <typename T>
 char* fromDeci(char res[], int base, T inputNum)
 {
     int index = 0;  // Initialize index of result
