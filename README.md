@@ -1,8 +1,11 @@
 # SCS_Lanczos
-1) This code is written by Nitin Kaushal(kaushalnitin002@gmail.com)
-This solves Strongly correlated systems
-using the Lanczos Algorithm.
-This code also does ED(without Lanczos) for "small enough" systems.
+-1) The development of this branch was stopped on Oct-13/2024.
+
++0) Another branch ( better/optimized one :) ) of this code will be developed regularly. If you are interested in using the latest code, please contact the author.
+
++1) This code is written by Nitin Kaushal(kaushalnitin002@gmail.com)
+    This solves various Strongly correlated systems using the Lanczos Algorithm.
+    This code also performs ED(without Lanczos) for "small enough" systems.
 
 *SCS  stands for Strongly correlated systems.
 
