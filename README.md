@@ -1,11 +1,17 @@
 # SCS_Lanczos
--1) The development of this branch was stopped on Oct-13/2024.
++0) This code is developed regularly. If you are interested in using this code, please contact the author. Unless the author is contacted, responsibility of getting "accurate" results lies solely on the user.
 
-+0) Another branch ( better/optimized one :) ) of this code will be developed regularly. If you are interested in using the latest code, please contact the author.
-
-+1) This code is written by Nitin Kaushal(kaushalnitin002@gmail.com)
++1) This code is written by Nitin Kaushal (kaushalnitin002@gmail.com)
     This solves various Strongly correlated systems using the Lanczos Algorithm.
-    This code also performs ED(without Lanczos) for "small enough" systems.
+    This code also performs ED (without Lanczos) for "small enough" systems.
+
++2) Author's affiliations when code is/was being developed :
+    University of Tennessee, Knoxville, USA
+    Oak Ridge National Lab, USA
+    University of British Columbia, Canada
+     
+
+
 
 *SCS  stands for Strongly correlated systems.
 
@@ -17,3 +23,4 @@ NOTES for input script:
 3) "States_to_look = 10 0 y r d r.....", it makes "few_ = 10" as well.
 4) remember in "States_to_look = 10 0 y r d r.....", the first state should be always zero.
 5) DUSE_COMPLEX flag should be used to do calculations in complex space.
+6) .. many other things :(
