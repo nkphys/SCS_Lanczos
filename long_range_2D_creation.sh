@@ -1,15 +1,15 @@
-Lx=4
+Lx=6
 Ly=4
 
 for iy in {0..3}
 do
-for ix in {0..3}
+for ix in {0..5}
 do
 
 
 for jy in {0..3}
 do
-for jx in {0..3}
+for jx in {0..5}
 do
 
 val=0.0
@@ -29,7 +29,7 @@ if [ ${dis_y} -eq 1 ] || [ ${dis_y} -eq 3 ]
 then
 dis_y=1
 fi
-if [ ${dis_x} -eq 1 ] || [ ${dis_x} -eq 3 ]
+if [ ${dis_x} -eq 1 ] || [ ${dis_x} -eq 5 ]
 then
 dis_x=1
 fi
@@ -39,6 +39,14 @@ dis=$(echo "${dis_y}+${dis_x}" | bc -l)
 if [ ${dis} -eq 1 ]
 then
 val="tval"
+i=$(echo "${ix} + ${iy}*${Lx}" | bc -l)
+j=$(echo "${jx} + ${jy}*${Lx}" | bc -l)
+
+if [ ${j} -gt ${i} ]
+then
+echo "${i}  ${j}  ${val}"
+fi
+
 fi
 
 i=$(echo "${ix} + ${iy}*${Lx}" | bc -l)
@@ -49,12 +57,12 @@ then
 val=0.0
 fi
 
-printf "${val} "
+#printf "${val} "
 
 done
 done
 
 
-echo ""
+#echo ""
 done
 done

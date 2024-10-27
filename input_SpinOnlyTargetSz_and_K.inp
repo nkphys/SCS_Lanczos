@@ -1,4 +1,4 @@
-Model = SpinOnlyTargetSz
+Model = SpinOnlyTargetSzAndK
 ------------------------------------------
 PBC = true
 Length = 24
@@ -11,10 +11,24 @@ LongRangeJ2_file = J2file.dat
 LongRangeJ3_file = J3file.dat
 
 MultiSectionBasisSearchInt = 2
+
+-----------------------------------------
+#Generators of the cyclic groups in the files
+LatticeSymmetryTransformationFiles = 2 Translation_x.txt Translation_y.txt
+
+#Translation_y_4x4.txt
+# Reflection_y_6x4.txt
+#Translation_y_4x4.txt Inversion_4x4.txt Reflection_through_y_4x4.txt Reflection_through_x_4x4.txt
+#Reflection_12x1.txt
+# Translation_y_4x2.txt Reflection_4x2.txt
+#Reflection_6x1.txt
+
+LatticeSymmetryTransformationCardinalities = 3 4
+EigenvaluesTargeted = 0 0
+
 ----------------------------------------
 
 Saving_Hamiltonian_and_Oprs = true
-
 No_of_onepoint_obs = 1
 One_point_oprt_path_1 = Sz.txt
 One_point_oprt_path_2 = Sm.txt
@@ -23,21 +37,21 @@ One_point_oprt_path_2 = Sm.txt
 FourPointObservablesSites file = fourpoint.txt
 -------------------------------------
 Lanc_Error = 10e-12
-max_steps = 600
+max_steps = 100
 Random_seed_generator = 3
-file_eval_spectrum = out_eval.txt
+file_eval_spectrum = out0.txt
 save_all_Krylov_space_vecs = truee
-get_overlap_bw_eigstates_and_K_vecs = truee
+get_overlap_bw_eigstates_and_K_vecs = true
 lanczos_reorthogonalization = truee
-Get_Full_Spectrum = truee
+Get_Full_Spectrum = true
 need_few_eig_vecs = truee
-few = 10
+few = 1
 ----------------------------------------
 Get_overlap_with_basis = false
-States_to_look = 60 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59
-overlap_out_file = out_overlap.txt
-calculate_local_obs_for_states_to_look = false
-calculate_local_obs_for_states_to_look_for_first_n_basis = 10
+States_to_look = 3 0 1 2
+overlap_out_file = out0.txt
+calculate_local_obs_for_states_to_look = true
+calculate_local_obs_for_states_to_look_for_first_n_basis = 100
 file_out_local_obs_for_states_to_look = local_obs_for_state_no
 --------------------------------------
 
@@ -64,7 +78,7 @@ k = 0.1
 file_dynamics_out = Dyn_MzMz
 ---------------------------------
 
-Processors = 1
+Processors = 8
 
 Write_Basis = false
 Write_Basis_File = Basis_used.txt

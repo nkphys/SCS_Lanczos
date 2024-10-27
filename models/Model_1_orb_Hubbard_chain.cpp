@@ -26,11 +26,11 @@ void MODEL_1_orb_Hubb_chain::Add_diagonal_terms(BASIS_1_orb_Hubb_chain &basis){
     Hamil.nrows = basis.D_up_basis.size()*basis.D_dn_basis.size();
     Hamil.ncols = Hamil.nrows;
 
-
+    double EPS_=0.0000001;
 
     //Remember H[l][m]=<l|H|m>
     int m;
-    double value;
+    double_type value;
     for (int i=0;i<basis.D_up_basis.size();i++){
         for (int j=0;j<basis.D_dn_basis.size();j++){
             m=basis.D_dn_basis.size()*i + j;
@@ -40,7 +40,7 @@ void MODEL_1_orb_Hubb_chain::Add_diagonal_terms(BASIS_1_orb_Hubb_chain &basis){
             //value+=U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
             for(int site=0;site<basis.Length;site++){
                 value+=1.0*(Onsite_U[site])*
-                         ( ( bit_value(basis.D_up_basis[i],site)*
+                         ( 1.0*( bit_value(basis.D_up_basis[i],site)*
                            bit_value(basis.D_dn_basis[j],site) )
                           );
                 //  cout<<"site = "<<site<<" : "<<Onsite_Energy[site]<<endl;
@@ -97,7 +97,7 @@ void MODEL_1_orb_Hubb_chain::Add_diagonal_terms(BASIS_1_orb_Hubb_chain &basis){
 
 
 
-            if(value!=0){
+            if(abs(value)>EPS_){
                 Hamil.value.push_back(value*one);
                 Hamil.rows.push_back(m);
                 Hamil.columns.push_back(m);
@@ -1544,6 +1544,7 @@ if(true){
 void MODEL_1_orb_Hubb_chain::Act_diagonal_terms(BASIS_1_orb_Hubb_chain &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
 
 
+    double EPS_=0.00000001;
     assert (Vec_out.size() == basis.D_up_basis.size()*basis.D_dn_basis.size());
     assert (Vec_in.size() == Vec_out.size());
 
@@ -1556,7 +1557,7 @@ void MODEL_1_orb_Hubb_chain::Act_diagonal_terms(BASIS_1_orb_Hubb_chain &basis, M
     for (int i=0;i<basis.D_up_basis.size();i++){
         for (int j=0;j<basis.D_dn_basis.size();j++){
             int m;
-            double value;
+            double_type value;
             m=basis.D_dn_basis.size()*i + j;
 
             value=0;
@@ -1564,7 +1565,7 @@ void MODEL_1_orb_Hubb_chain::Act_diagonal_terms(BASIS_1_orb_Hubb_chain &basis, M
             //value+=U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
             for(int site=0;site<basis.Length;site++){
                 value+=1.0*(Onsite_U[site])*
-                         ( ( bit_value(basis.D_up_basis[i],site)*
+                         ( 1.0*( bit_value(basis.D_up_basis[i],site)*
                            bit_value(basis.D_dn_basis[j],site) )
                           );
                 //  cout<<"site = "<<site<<" : "<<Onsite_Energy[site]<<endl;
@@ -1621,7 +1622,7 @@ void MODEL_1_orb_Hubb_chain::Act_diagonal_terms(BASIS_1_orb_Hubb_chain &basis, M
 
 
 
-            if(value!=0){
+            if(abs(value)>EPS_){
                 Vec_out[m] +=value*one*Vec_in[m];
             }
         }

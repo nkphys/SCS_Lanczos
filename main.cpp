@@ -1026,6 +1026,152 @@ int main(int argc, char** argv){
 
     }
 
+
+
+    if(model_name=="SpinOnlyTargetSzAndK"){
+
+        cout<<"Model :" <<model_name<<endl;
+        MODEL_Spins_Target_Sz_and_K _MODEL;
+        BASIS_Spins_Target_Sz_and_K _BASIS;
+
+        _MODEL.Read_parameters(_BASIS, inp_filename);
+        _BASIS.Check_Commutation_and_Inversion_bw_LatticeSymmetry_Oprs();
+        _BASIS.Construct_basis();
+
+        _MODEL.no_of_proc = no_of_processors;
+        _MODEL.Add_connections_strictly2point(_BASIS);
+
+        // cout<<"---PRINTING HAMIL----"<<endl;
+        // Print_Matrix_COO(_MODEL.Hamil);
+        // cout<<"---------------------"<<endl;
+
+        LANCZOS<BASIS_Spins_Target_Sz_and_K, MODEL_Spins_Target_Sz_and_K> _LANCZOS(_BASIS, _MODEL);
+        _LANCZOS.Dynamics_performed=false;
+        _LANCZOS.Read_Lanczos_parameters(inp_filename);
+
+
+        Mat_1_real Eigen_ED;
+        Mat_2_doub vecs;
+        DO_FULL_DIAGONALIZATION=true;
+        if(_MODEL.Hamil.nrows>1200){
+            DO_FULL_DIAGONALIZATION=false;
+        }
+        if(DO_FULL_DIAGONALIZATION){
+
+            string fl_ED_out = "EXACT_RESULTS.txt";
+            ofstream file_ED_out(fl_ED_out.c_str());
+            cout<<"-----------------------------------------------------------------------"<<endl;
+            cout<<"AFTER THIS EXACT DIAGONALIZATION RESULTS ARE WRITTEN IN EXACT_RESULTS.txt-------------------"<<endl;
+
+            file_ED_out<<"//*****************Exact Diagonalization Energies**************//"<<endl;
+            file_ED_out<<"//------------------------------------------------------------//"<<endl;
+            Diagonalize(_MODEL.Hamil, Eigen_ED, vecs);
+            for(int i=0;i<Eigen_ED.size();i++){
+                file_ED_out<<i<<"   "<<scientific<<setprecision(6)<<Eigen_ED[i]<<endl;
+            }
+        }
+
+
+        if( !(Dynamics_Finite_Temp || Static_Finite_Temp) ){
+            _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
+            _LANCZOS.Write_full_spectrum();
+            Print_vector_in_file(_LANCZOS.Eig_vec,"seed_GS.txt");
+        }
+
+
+        bool Cheaper_SpinSpincorr=true;
+        if(Cheaper_SpinSpincorr){
+
+            Mat_1_doub Vec_translated;
+            complex<double> phase_trnsl;
+            for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
+
+
+                //SS corrsXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                cout<<"Spin-Spin correlations for state = "<<state_<<endl;
+
+                double_type sum_;
+
+                Mat_1_string opr_type_;
+                opr_type_.push_back("Szvec.Szvec");
+
+                Mat_2_doub Corr_;
+                Corr_.resize(_BASIS.Length);
+                for(int site1=0;site1<_BASIS.Length;site1++){
+                    Corr_[site1].resize(_BASIS.Length);
+                }
+
+                for(int type=0;type<opr_type_.size();type++){
+                    sum_=0.0;
+                    cout<<opr_type_[type]<<": "<<endl;
+
+                    Mat_1_intpair Sites_pair;
+                    Sites_pair.clear();
+                    for(int site1=0;site1<2;site1++){
+                        for(int site2=site1;site2<_BASIS.Length;site2++){
+                            pair_int sites_;
+                            sites_.first=site1;
+                            sites_.second=site2;
+                            Sites_pair.push_back(sites_);
+                        }
+                    }
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
+                    for(int sites_=0;sites_<Sites_pair.size();sites_++){
+                        int thread_id=0;
+#ifdef _OPENMP
+                        thread_id = omp_get_thread_num();
+#endif
+                        int site1_, site2_;
+                        site1_=Sites_pair[sites_].first;
+                        site2_=Sites_pair[sites_].second;
+                        Matrix_COO OPR_;
+                        OPR_.columns.clear();
+                        OPR_.rows.clear();
+                        OPR_.value.clear();
+                        _MODEL.Initialize_two_point_operator_sites_specific(opr_type_[type] , OPR_, site1_, site2_, _BASIS);
+
+                        Corr_[site1_][site2_]=_LANCZOS.Measure_observable(OPR_, state_);
+                        if(site2_>site1_){
+                        Corr_[site2_][site1_] = Corr_[site1_][site2_];
+                        }
+                        //                                if(site1 != site2){
+                        //                                    Corr_[site2][site1]=Corr_[site1][site2];
+                        //                                }
+                        vector< int >().swap( OPR_.columns );
+                        vector< int >().swap( OPR_.rows );
+                        vector< double_type >().swap( OPR_.value );
+
+                        cout <<opr_type_[type]<<" for sites = "<<site1_<<", "<<site2_<<" done by thread ="<<thread_id<<endl;
+
+                    }
+                    // for(int site1=0;site1<_;site1++){
+                    //     for(int site2=site1+1;site2<_BASIS.Length;site2++){
+                    //         Corr_[site2][site1]=Corr_[site1][site2];
+                    //     }}
+
+                    cout<<scientific<<setprecision(4);
+                    for(int site1=0;site1<2;site1++){
+                        for(int site2=0;site2<_BASIS.Length;site2++){
+
+                            cout<< Corr_[site1][site2]<<" ";
+                            sum_ +=Corr_[site1][site2];
+                        }
+                        cout<<endl;
+                    }
+                    cout<<"sum of "<<opr_type_[type]<<"= "<<sum_*(1.0*(_BASIS.Length/2))<<endl;
+                }
+                //SS corrs xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+            }
+        }
+
+
+
+    }
+
     if(model_name=="SpinOnlyTargetSz"){
 
         bool Cheaper_SpinSpincorr=true;
@@ -1042,6 +1188,30 @@ int main(int argc, char** argv){
         //_MODEL.MultisectionSearch_int =2;
         _MODEL.Add_connections_strictly2point(_BASIS);
         //Print_Matrix_COO(_MODEL.Hamil);
+
+
+
+        Mat_1_real Eigen_ED;
+        Mat_2_doub vecs;
+        DO_FULL_DIAGONALIZATION=false;
+        if(_MODEL.Hamil.nrows>1200){
+            DO_FULL_DIAGONALIZATION=false;
+        }
+        if(DO_FULL_DIAGONALIZATION){
+
+            string fl_ED_out = "EXACT_RESULTS_JUST_SZ.txt";
+            ofstream file_ED_out(fl_ED_out.c_str());
+            cout<<"-----------------------------------------------------------------------"<<endl;
+            cout<<"AFTER THIS EXACT DIAGONALIZATION RESULTS ARE WRITTEN IN EXACT_RESULTS.txt-------------------"<<endl;
+
+            file_ED_out<<"//*****************Exact Diagonalization Energies**************//"<<endl;
+            file_ED_out<<"//------------------------------------------------------------//"<<endl;
+            Diagonalize(_MODEL.Hamil, Eigen_ED, vecs);
+            for(int i=0;i<Eigen_ED.size();i++){
+                file_ED_out<<i<<"   "<<scientific<<setprecision(6)<<Eigen_ED[i]<<endl;
+            }
+        }
+
 
 
         LANCZOS<BASIS_Spins_Target_Sz, MODEL_Spins_Target_Sz> _LANCZOS(_BASIS, _MODEL);

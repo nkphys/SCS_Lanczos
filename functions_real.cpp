@@ -16,6 +16,85 @@ extern "C" void dgesdd_ (char *, int *, int *, double *, int *, double *, double
 #ifndef USE_COMPLEX
 
 
+
+//TempState=[0,0,0.....] with size of no. of vecs
+//VecSizes=[S1,S2,...] i.e. sizes of each vector
+//Total_no_elements=0 should be initialized when this routine is called
+//IndicesSet should be empty.
+
+void DirectProduct_IndicesSet_by_recursion(Mat_1_int &TempState, Mat_1_int &VecSizes, int & Total_no_elements ,Mat_2_int &IndicesSet){
+
+
+    Mat_1_int Diff;
+    Total_no_elements +=1;
+    int size = TempState.size();
+
+    if(Total_no_elements==0){
+        for(int i=0;i<TempState.size();i++){
+            assert(TempState[i]==0);
+        }
+    }
+
+    /*
+for(int i=0;i<TempState.size();i++){
+cout<<TempState[i]<<" ";
+}
+cout<<endl;
+*/
+
+    IndicesSet.push_back(TempState);
+
+    //TempState[size-1] +=1;
+
+    Diff.resize(TempState.size());
+    for(int i=0;i<TempState.size();i++){
+        Diff[i] = (VecSizes[i]-1)-TempState[i];
+    }
+
+    int Sum_diff=0;
+    int n_to_grow;
+    for(int n=(size-1);n>=0;n--){
+        Sum_diff +=Diff[n];
+        if(Sum_diff!=0){
+            n_to_grow=n;
+            break;
+        }
+    }
+
+    bool proceed=(Sum_diff!=0);
+    for(int n=0;n<size;n++){
+        proceed = proceed && (TempState[n]<VecSizes[n]);
+    }
+
+    if(proceed){
+        TempState[n_to_grow] +=1;
+
+        for(int n=n_to_grow+1; n<size;n++){
+            TempState[n] = 0;
+        }
+
+        DirectProduct_IndicesSet_by_recursion(TempState, VecSizes, Total_no_elements, IndicesSet);
+    }
+
+}
+
+
+
+void Matrix_vector_multiplication(Mat_2_int &A, Mat_1_int &u, Mat_1_int &v){
+
+    v.resize(A.size());
+
+    for(int i=0;i<v.size();i++){
+        v[i]=0;
+        assert(A[i].size()==u.size());
+        for(int j=0;j<u.size();j++){
+            v[i] += A[i][j]*u[j];
+        }
+    }
+
+}
+
+
 void Perform_SVD(Matrix<double> & A_, Matrix<double> & VT_, Matrix<double> & U_, vector<double> & Sigma_){
 
 
@@ -669,6 +748,26 @@ double sign_of_double(double val){
     return val_return;
 }
 
+int Find_int_in_intarray(bool &found, ulli num, Mat_1_ullint &array){
+
+    int pos;
+    bool not_found=true;
+    int ind=0;
+    while(not_found){
+        assert(ind<array.size());
+        if(num==array[ind]){
+            pos=ind;
+            not_found = false;
+        }
+        if(ind==(array.size()-1)){
+            break;
+        }
+        ind++;
+    }
+    found = !not_found;
+    return pos;
+}
+
 int Find_int_in_intarray(int num, Mat_1_int &array){
 
     int pos;
@@ -748,14 +847,60 @@ int Find_int_in_intarray_using_multisections(ulli num, Mat_1_ullint &array, int 
     return pos;
 }
 
+int Find_int_in_intarray_using_bisection_(bool &found_, ulli num, Mat_1_ullint &array){
+
+    //assuming increasing order array
+
+    int pos;
+    bool not_found=true;
+    int ind=0;
+    int ind_old=-1000;
+    int m_min, m_max;
+    m_min=0;m_max=array.size();
+
+
+
+    while(not_found){
+
+        ind=(m_min+m_max)/2;
+        if(ind==ind_old){
+            break;
+        }
+
+        assert(ind<array.size());
+        if(num==array[ind]){
+            pos=ind;
+            not_found = false;
+        }
+
+        if(num<array[ind]){
+            m_max=ind;
+        }
+        if(num>array[ind]){
+            m_min=ind;
+        }
+
+
+        ind_old=ind;
+        //ind++;
+    }
+
+    found_ = (!not_found);
+    return pos;
+}
+
 
 int Find_int_in_intarray_using_bisection(ulli num, Mat_1_ullint &array){
+
+    //assuming increasing order array
 
     int pos;
     bool not_found=true;
     int ind=0;
     int m_min, m_max;
     m_min=0;m_max=array.size();
+
+
 
     while(not_found){
 
@@ -766,12 +911,13 @@ int Find_int_in_intarray_using_bisection(ulli num, Mat_1_ullint &array){
             not_found = false;
         }
 
-        if(num>array[ind]){
+        if(num<array[ind]){
             m_max=ind;
         }
-        if(num<array[ind]){
+        if(num>array[ind]){
             m_min=ind;
         }
+
 
         //ind++;
     }

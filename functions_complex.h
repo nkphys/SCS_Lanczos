@@ -39,6 +39,9 @@ int Find_intpair_in_intarraypair(int num1, int num2 ,Mat_1_int &array1, Mat_1_in
 int Find_intpair_in_intarraypair(int num1, int num2 ,Mat_1_int &array1, Mat_1_int &array2);
 int Find_int_in_intarray(int num, Mat_1_int &array);
 int Find_int_in_intarray(ulli num, Mat_1_ullint &array);
+int Find_int_in_intarray(bool &found, ulli num, Mat_1_ullint &array);
+int Find_int_in_intarray_using_bisection_(bool &found_, ulli num, Mat_1_ullint &array);
+int Find_int_in_intarray_using_bisection(ulli num, Mat_1_ullint &array);
 int Find_int_in_intarray_smartly(int num,Mat_1_int &array,Mat_1_int &partition_indices,Mat_1_int &vals_at_partitions);
 int Find_int_in_part_of_intarray(int num, Mat_1_int &array, int min_i, int max_i);
 int Find_int_in_part_of_intarray(ulli num, Mat_1_ullint &array, int min_i, int max_i);
@@ -55,6 +58,8 @@ void Print_file_in_vector(Mat_1_doub &vec, string filename , int rows);
 void Diagonalize(Matrix_COO &X, double & EG, Mat_1_doub & vecG);
 void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_1_doub & vecG);
 void Diagonalize(Matrix_COO &X, Mat_1_real & EVALS, Mat_2_doub & vecs);
+void Matrix_vector_multiplication(Mat_2_int &A, Mat_1_int &u, Mat_1_int &v);
+void DirectProduct_IndicesSet_by_recursion(Mat_1_int &TempState, Mat_1_int &VecSizes, int & Total_no_elements ,Mat_2_int &IndicesSet);
 void Matrix_COO_vector_multiplication(string COO_type, Matrix_COO &A,Mat_1_doub &u,Mat_1_doub &v);
 Matrix_COO Dagger(Matrix_COO &A);
 int minSwaps(vector<int> &arr, int n);

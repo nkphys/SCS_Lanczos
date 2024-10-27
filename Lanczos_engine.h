@@ -30,6 +30,8 @@
 #include "models/Model_KondoModel.h"
 #include "basis/Basis_Spins_Target_Sz.h"
 #include "models/Model_Spins_Target_Sz.h"
+#include "basis/Basis_Spins_Target_Sz_and_K.h"
+#include "models/Model_Spins_Target_Sz_and_K.h"
 #include "models/Model_3_orb_Hubbard_chain_GC.h"
 #include "models/Model_multi_orb_Hubbard_chain_GC.h"
 #include "models/Model_1_orb_Hubbard_GC.h"
