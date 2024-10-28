@@ -1082,6 +1082,99 @@ int main(int argc, char** argv){
         bool Cheaper_SpinSpincorr=true;
         if(Cheaper_SpinSpincorr){
 
+            for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
+
+
+                //SS corrsXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                cout<<"Spin-Spin correlations for state = "<<state_<<endl;
+
+                double_type sum_;
+
+                Mat_1_string opr_type_;
+                opr_type_.push_back("Szvec.Szvec");
+
+                Mat_2_doub Corr_;
+                Corr_.resize(_BASIS.Length);
+                for(int site1=0;site1<_BASIS.Length;site1++){
+                    Corr_[site1].resize(_BASIS.Length);
+                }
+
+                for(int type=0;type<opr_type_.size();type++){
+                    sum_=0.0;
+                    cout<<opr_type_[type]<<": "<<endl;
+
+                    Mat_1_intpair Sites_pair;
+                    Sites_pair.clear();
+                    for(int site1=0;site1<2;site1++){
+                        for(int site2=site1;site2<_BASIS.Length;site2++){
+                            pair_int sites_;
+                            sites_.first=site1;
+                            sites_.second=site2;
+                            Sites_pair.push_back(sites_);
+                        }
+                    }
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
+                    for(int sites_=0;sites_<Sites_pair.size();sites_++){
+                        int thread_id=0;
+#ifdef _OPENMP
+                        thread_id = omp_get_thread_num();
+#endif
+                        int site1_, site2_;
+                        site1_=Sites_pair[sites_].first;
+                        site2_=Sites_pair[sites_].second;
+
+                        /*
+                        Matrix_COO OPR_;
+                        OPR_.columns.clear();
+                        OPR_.rows.clear();
+                        OPR_.value.clear();
+                        _MODEL.Initialize_two_point_operator_sites_specific(opr_type_[type] , OPR_, site1_, site2_, _BASIS);
+                        Corr_[site1_][site2_]=_LANCZOS.Measure_observable(OPR_, state_);
+                        */
+
+                        Corr_[site1_][site2_]=_MODEL.Get_SzSz(site1_, site2_, _LANCZOS.Eig_vecs[state_], _BASIS);
+
+
+
+                        if(site2_>site1_){
+                        Corr_[site2_][site1_] = Corr_[site1_][site2_];
+                        }
+                        //                                if(site1 != site2){
+                        //                                    Corr_[site2][site1]=Corr_[site1][site2];
+                        //                                }
+                        // vector< int >().swap( OPR_.columns );
+                        // vector< int >().swap( OPR_.rows );
+                        // vector< double_type >().swap( OPR_.value );
+
+                        cout <<opr_type_[type]<<" for sites = "<<site1_<<", "<<site2_<<" done by thread ="<<thread_id<<endl;
+
+                    }
+                    // for(int site1=0;site1<_;site1++){
+                    //     for(int site2=site1+1;site2<_BASIS.Length;site2++){
+                    //         Corr_[site2][site1]=Corr_[site1][site2];
+                    //     }}
+
+                    cout<<scientific<<setprecision(4);
+                    for(int site1=0;site1<2;site1++){
+                        for(int site2=0;site2<_BASIS.Length;site2++){
+
+                            cout<< Corr_[site1][site2]<<" ";
+                            sum_ +=Corr_[site1][site2];
+                        }
+                        cout<<endl;
+                    }
+                    cout<<"sum of "<<opr_type_[type]<<"= "<<sum_*(1.0*(_BASIS.Length/2))<<endl;
+                }
+                //SS corrs xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+            }
+
+        }
+        if(!Cheaper_SpinSpincorr){
+
             Mat_1_doub Vec_translated;
             complex<double> phase_trnsl;
             for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
