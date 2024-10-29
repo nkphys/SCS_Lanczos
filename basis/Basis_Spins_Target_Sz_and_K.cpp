@@ -256,7 +256,7 @@ void BASIS_Spins_Target_Sz_and_K::Construct_basis(){
 
     //indexB_count +=1;
 
-    if(d_tempB%(Dmax_partB_/10) == 0){
+    if(d_tempB%(Dmax_partB_/1) == 0){
     cout<<"Basis fraction done :"<<((1.0*d_tempB)/(1.0*Dmax_partB_))<<endl;
     }
     }

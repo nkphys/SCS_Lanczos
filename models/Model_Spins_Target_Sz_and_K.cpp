@@ -514,7 +514,7 @@ void MODEL_Spins_Target_Sz_and_K::Act_SiSj(int &site_i, int &site_j, int &m, Mat
 
     //Sz(i)Sz(j)----------------------------------------------------------------
     value = ((1.0*value_at_pos(dec_old, site_i, basis.BASE)) - (0.5*basis.TwoTimesSpin))*
-           ( (1.0*value_at_pos(dec_old, site_j, basis.BASE)) - (0.5*basis.TwoTimesSpin));
+            ( (1.0*value_at_pos(dec_old, site_j, basis.BASE)) - (0.5*basis.TwoTimesSpin));
 
     m_out_array.push_back(m);
     Coeff_out_Array.push_back(value);
@@ -540,8 +540,8 @@ void MODEL_Spins_Target_Sz_and_K::Act_SiSj(int &site_i, int &site_j, int &m, Mat
                                 (val_site_i_new - (0.5*basis.TwoTimesSpin))  ) );
 
             value = value*0.5*sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
-                                                                ((val_site_j - (0.5*basis.TwoTimesSpin))*
-                                                                 (val_site_j_new - (0.5*basis.TwoTimesSpin))  ) );
+                                       ((val_site_j - (0.5*basis.TwoTimesSpin))*
+                                        (val_site_j_new - (0.5*basis.TwoTimesSpin))  ) );
 
 
             //Start HERE
@@ -959,7 +959,7 @@ double_type MODEL_Spins_Target_Sz_and_K::Get_SzSz(int site1, int site2, Mat_1_do
 
             //Sz(i)Sz(j)----------------------------------------------------------------
             value_m += ((1.0*value_at_pos(dec_old, site_i, basis.BASE)) - (0.5*basis.TwoTimesSpin))*
-                    ((1.0*value_at_pos(dec_old, site_j, basis.BASE)) - (0.5*basis.TwoTimesSpin));
+                       ((1.0*value_at_pos(dec_old, site_j, basis.BASE)) - (0.5*basis.TwoTimesSpin));
 
         }//offset site
 
@@ -1163,79 +1163,79 @@ void MODEL_Spins_Target_Sz_and_K::Initialize_two_point_operator_sites_specific(s
 
 
 
-        //-----------------------
+    //-----------------------
 
-        Mat_1_ullint m_connected;
-        Mat_1_doub coeffs;
-        Mat_1_ullint m_connected_final;
-        Mat_1_doub coeffs_final;
+    Mat_1_ullint m_connected;
+    Mat_1_doub coeffs;
+    Mat_1_ullint m_connected_final;
+    Mat_1_doub coeffs_final;
 
-        Mat_1_int m_connected_temp;
-        Mat_1_doub coeffs_temp;
+    Mat_1_int m_connected_temp;
+    Mat_1_doub coeffs_temp;
 
-        ulli dec_m, dec_max;
-        ulli dec_part1_, dec_part0_;
-        int m_new;
-        int n_index;
-        Mat_1_int state_vec;
-        int site_i, site_j;
+    ulli dec_m, dec_max;
+    ulli dec_part1_, dec_part0_;
+    int m_new;
+    int n_index;
+    Mat_1_int state_vec;
+    int site_i, site_j;
 
-        ulli dec_partB_new_, dec_partA_new_;
-        int indexB_, indexA_, SectionIndex;
-        double norm_a, norm_b;
-        double_type value;
-        complex<double> exponents;
-
-
+    ulli dec_partB_new_, dec_partA_new_;
+    int indexB_, indexA_, SectionIndex;
+    double norm_a, norm_b;
+    double_type value;
+    complex<double> exponents;
 
 
 
-        for (int m=0;m<basis.MainIndex_to_Dec_partA_.size();m++){
 
 
-            //dec_m = basis.D_basis[m];
-            //dec_m = basis.MainIndex_to_Dec_partA_[m] +  pow(basis.BASE, basis.Length_A)*basis.MainIndex_to_Dec_partB_[m];
-
-            m_connected.clear();
-            coeffs.clear();
+    for (int m=0;m<basis.MainIndex_to_Dec_partA_.size();m++){
 
 
-            //TERM  Svec[i].Svec[j] |m>
-            for(int transformation_index=0;transformation_index<site1_transformed_set.size();transformation_index++){
+        //dec_m = basis.D_basis[m];
+        //dec_m = basis.MainIndex_to_Dec_partA_[m] +  pow(basis.BASE, basis.Length_A)*basis.MainIndex_to_Dec_partB_[m];
 
-                site_i=site1_transformed_set[transformation_index];
-                site_j=site2_transformed_set[transformation_index];
+        m_connected.clear();
+        coeffs.clear();
 
-                if(opr_type=="Svec.Svec"){
+
+        //TERM  Svec[i].Svec[j] |m>
+        for(int transformation_index=0;transformation_index<site1_transformed_set.size();transformation_index++){
+
+            site_i=site1_transformed_set[transformation_index];
+            site_j=site2_transformed_set[transformation_index];
+
+            if(opr_type=="Svec.Svec"){
                 Act_SiSj(site_i, site_j, m, m_connected_temp, coeffs_temp, basis);
-                }
-                if(opr_type=="Szvec.Szvec"){
-                Act_SziSzj(site_i, site_j, m, m_connected_temp, coeffs_temp, basis);
-                }
-                value_multiply_vector(one, coeffs_temp);
-                m_connected.insert(m_connected.end(), m_connected_temp.begin(), m_connected_temp.end());
-                coeffs.insert(coeffs.end(), coeffs_temp.begin(), coeffs_temp.end());
-
-            }//offset site
-
-            //remove_repetitions
-            Remove_repetitions(m_connected, coeffs, m_connected_final, coeffs_final);
-
-
-            for(int j=0;j<m_connected_final.size();j++){
-                m_new=m_connected_final[j];
-
-                OPR_.value.push_back(coeffs_final[j]*one*(1.0/(1.0*site1_transformed_set.size())));
-                OPR_.rows.push_back(m_new);
-                OPR_.columns.push_back(m);
-
             }
+            if(opr_type=="Szvec.Szvec"){
+                Act_SziSzj(site_i, site_j, m, m_connected_temp, coeffs_temp, basis);
+            }
+            value_multiply_vector(one, coeffs_temp);
+            m_connected.insert(m_connected.end(), m_connected_temp.begin(), m_connected_temp.end());
+            coeffs.insert(coeffs.end(), coeffs_temp.begin(), coeffs_temp.end());
+
+        }//offset site
+
+        //remove_repetitions
+        Remove_repetitions(m_connected, coeffs, m_connected_final, coeffs_final);
 
 
-        } // m i.e. basis index, columns of H
+        for(int j=0;j<m_connected_final.size();j++){
+            m_new=m_connected_final[j];
+
+            OPR_.value.push_back(coeffs_final[j]*one*(1.0/(1.0*site1_transformed_set.size())));
+            OPR_.rows.push_back(m_new);
+            OPR_.columns.push_back(m);
+
+        }
 
 
-        //----------------------
+    } // m i.e. basis index, columns of H
+
+
+    //----------------------
 
 
 
@@ -1591,8 +1591,10 @@ void MODEL_Spins_Target_Sz_and_K::Read_parameters(BASIS_Spins_Target_Sz_and_K &b
 
 
 
-void MODEL_Spins_Target_Sz_and_K::Read_parameters_for_dynamics(string filename){
+void MODEL_Spins_Target_Sz_and_K::Read_parameters_for_dynamics(BASIS_Spins_Target_Sz_and_K &basis, string filename){
 
+
+    string EIGVALUES_DYN, eigvalues_dyn_string_ = "EigenvaluesTargetedDynamics = ";
 
     string DYN_STRING, Dyn_opr_string_  = "Opr_for_Dynamics = ";
     int No_of_oprts;
@@ -1611,6 +1613,9 @@ void MODEL_Spins_Target_Sz_and_K::Read_parameters_for_dynamics(string filename){
 
             if ((offset = line.find(Dyn_opr_string_, 0)) != string::npos) {
                 DYN_STRING = line.substr (offset + Dyn_opr_string_.length());		}
+
+            if ((offset = line.find(eigvalues_dyn_string_, 0)) != string::npos) {
+                EIGVALUES_DYN = line.substr (offset+eigvalues_dyn_string_.length());				}
 
         }
         inputfile.close();
@@ -1632,8 +1637,78 @@ void MODEL_Spins_Target_Sz_and_K::Read_parameters_for_dynamics(string filename){
     }
 
 
+    stringstream Eig_targeted_dyn_stream(EIGVALUES_DYN);
+    int temp_int;
+    for(int i=0;i<No_of_symmetry_trans;i++){
+        Eig_targeted_dyn_stream >> temp_int;
+        basis.EigenvaluesTargeted[i] = temp_int;
+    }
+
+
 }
 
+
+
+void MODEL_Spins_Target_Sz_and_K::Initialize_Seed_for_Dynamics(BASIS_Spins_Target_Sz_and_K &basis, BASIS_Spins_Target_Sz_and_K &basis_dyn, Mat_1_doub &VecDyn, Mat_1_doub &VecGS){
+
+    VecDyn.clear();
+    VecDyn.resize(basis_dyn.basis_size);
+
+    assert(VecGS.size()==basis.basis_size);
+    double_type value_szq_m;
+
+    ulli dec_;
+    ulli dec_partB_, dec_partA_;
+    int indexB_dyn, indexA_dyn, SectionIndex_dyn;
+    int m_new_dyn;
+    double norm_dyn, norm_gs;
+    double_type value;
+    for(int m=0;m<basis.basis_size;m++){
+        norm_gs=basis.Norm_vals_basis[m];
+        dec_ = basis.MainIndex_to_Dec_partA_[m] +  pow(basis.BASE, basis.Length_A)*basis.MainIndex_to_Dec_partB_[m];
+
+        dec_partB_ = dec_/pow(basis.BASE, basis.Length_A);
+        dec_partA_ = dec_ - (dec_partB_*pow(basis.BASE, basis.Length_A));
+
+        indexB_dyn = basis_dyn.DecB_to_Index_partB_[dec_partB_];
+        SectionIndex_dyn = basis_dyn.DecB_to_Sections[dec_partB_];
+
+        if(SectionIndex_dyn!=-100){
+            bool found_;
+
+            indexA_dyn=Find_int_in_intarray_using_bisection_(found_, dec_partA_, basis_dyn.Index_partA_to_DecA_in_givenSection[SectionIndex_dyn]);
+            if(found_){
+                m_new_dyn= indexA_dyn + indexB_dyn;
+                norm_dyn=basis.Norm_vals_basis[m_new_dyn];
+
+                //Calculate S_z(q)
+                value_szq_m=0.0;
+                for(int opr_no=0;opr_no<Dyn_opr_int.size();opr_no++){
+                    value_szq_m += Dyn_opr_coeffs[opr_no]*(
+                                       ((1.0*value_at_pos(dec_, Dyn_opr_int[opr_no], basis.BASE)) - (0.5*basis.TwoTimesSpin))
+                                       );
+                }
+                value_szq_m = value_szq_m*(1.0/(sqrt(1.0*Dyn_opr_int.size())));
+                value = value_szq_m*sqrt(norm_dyn/norm_gs);
+                VecDyn[m_new_dyn] += value*VecGS[m];
+            }
+        }
+
+    }
+
+
+    //Normalize
+    double norm_temp=0.0;
+    for(int m=0;m<basis_dyn.basis_size;m++){
+        norm_temp += abs(VecDyn[m])*abs(VecDyn[m]);
+    }
+    assert(norm_temp>0.00000001);
+
+    for(int m=0;m<basis_dyn.basis_size;m++){
+        VecDyn[m] = (1.0/sqrt(norm_temp))*(VecDyn[m]);
+    }
+
+}
 
 void MODEL_Spins_Target_Sz_and_K::Direct_product_of_localJ_Ansatz(Mat_1_pair_realInt JJzBasis_state, Mat_1_real &Coefficients, Mat_1_int &m_basis, BASIS_Spins_Target_Sz_and_K &basis){
 

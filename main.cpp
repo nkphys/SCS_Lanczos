@@ -1138,7 +1138,6 @@ int main(int argc, char** argv){
                         Corr_[site1_][site2_]=_MODEL.Get_SzSz(site1_, site2_, _LANCZOS.Eig_vecs[state_], _BASIS);
 
 
-
                         if(site2_>site1_){
                         Corr_[site2_][site1_] = Corr_[site1_][site2_];
                         }
@@ -1260,6 +1259,81 @@ int main(int argc, char** argv){
 
             }
         }
+
+
+
+
+        if(Do_Dynamics){
+
+            cout<<"----------------------------------------------------------------"<<endl;
+            cout<<"-----Dynamical structure factor calculation has started---------"<<endl;
+            cout<<"----------------------------------------------------------------"<<endl;
+
+
+            MODEL_Spins_Target_Sz_and_K _MODEL_Dyn;
+            BASIS_Spins_Target_Sz_and_K _BASIS_Dyn;
+
+            _MODEL_Dyn.Read_parameters(_BASIS_Dyn, inp_filename);
+
+            //this overwrites the symmetry sector quantum numbers targeted too
+            _MODEL_Dyn.Read_parameters_for_dynamics(_BASIS_Dyn, inp_filename);
+
+            _BASIS_Dyn.Construct_basis();
+
+            _MODEL_Dyn.no_of_proc = no_of_processors;
+            _MODEL_Dyn.Add_connections_strictly2point(_BASIS_Dyn);
+
+            LANCZOS<BASIS_Spins_Target_Sz_and_K, MODEL_Spins_Target_Sz_and_K> _LANCZOS_Dynamics(_BASIS_Dyn, _MODEL_Dyn);
+            _LANCZOS_Dynamics.Dynamics_performed=true;
+            _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
+            _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
+            _LANCZOS_Dynamics.GS_energy=_LANCZOS.GS_energy;
+
+
+            cout<<"initializing dynamics operator xxxxxxxxxxxxxxxxxxxxxxx"<<endl;
+            _MODEL_Dyn.Initialize_Seed_for_Dynamics(_BASIS, _BASIS_Dyn, _LANCZOS_Dynamics.Dynamics_seed, _LANCZOS.Eig_vec);
+            _LANCZOS_Dynamics.Numerator_Dynamics=1.0;
+            cout<<"Dyn_opr created xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"<<endl;
+
+            //_LANCZOS_Dynamics.Get_Dynamics_seed(_MODEL_Dyn.Dyn_opr);
+
+
+            //cout<<"XXXXXXXXXXXXXXXXX REMOVING ELASTIC PART : Opr_new = Opr - <Opr> XXXXXXXXXXXXXXXXXXXXXXX"<<endl;
+            //-ELASTIC PART-----------
+            /*
+            double_type Opr_val;
+            Mat_1_doub Vec_Temp;
+
+            Matrix_COO_vector_multiplication("FULL", _MODEL.Dyn_opr, _LANCZOS.Eig_vec, Vec_Temp);
+            Opr_val = dot_product(Vec_Temp, _LANCZOS.Eig_vec);
+            cout<<_MODEL.Dyn_Momentum_x<<"pi"<<"   "<<_MODEL.Dyn_Momentum_y<<"pi"<<" =  "<<Opr_val<<endl;
+
+            vector< double_type >().swap(Vec_Temp);
+            */
+
+            /*
+            Matrix_COO Iden;
+            Iden.ncols=_MODEL.Dyn_opr.ncols;
+            Iden.nrows=_MODEL.Dyn_opr.nrows;
+            for(int i=0;i<Iden.ncols;i++){
+                Iden.columns.push_back(i);
+                Iden.rows.push_back(i);
+                Iden.value.push_back(-1.0*Opr_val);
+            }
+            Sum(_MODEL.Dyn_opr, Iden, _MODEL.Dyn_opr, 1.0, 1.0);
+            */
+
+            //-----------------------
+
+
+            cout<<"size of seed = "<<_LANCZOS_Dynamics.Dynamics_seed.size()<<endl;
+            //_LANCZOS_Dynamics.omega_sign=1.0;
+            _LANCZOS_Dynamics.file_dynamics_out = _LANCZOS_Dynamics.file_dynamics_out +".txt";
+            _LANCZOS_Dynamics.Perform_LANCZOS(_MODEL_Dyn.Hamil);
+
+        }
+
+
 
 
 

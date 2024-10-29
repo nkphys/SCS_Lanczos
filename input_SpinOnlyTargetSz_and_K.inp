@@ -6,7 +6,7 @@ TwoTimesSpin = 1
 TwoTimesTotalSzTarget = 0
 H_mag = 0 0 -0.00
 Dz_anisotropy = 0 0 0.00
-LongRangeJ1_file = J1file.dat
+LongRangeJ1_file = J1file_L24_1d.dat
 LongRangeJ2_file = J2file.dat
 LongRangeJ3_file = J3file.dat
 
@@ -14,7 +14,8 @@ MultiSectionBasisSearchInt = 2
 
 -----------------------------------------
 #Generators of the cyclic groups in the files
-LatticeSymmetryTransformationFiles = 2 Translation_x.txt Translation_y.txt
+LatticeSymmetryTransformationFiles = 1 Translation_L24_x.txt
+#Translation_y.txt
 
 #Translation_y_4x4.txt
 # Reflection_y_6x4.txt
@@ -23,8 +24,12 @@ LatticeSymmetryTransformationFiles = 2 Translation_x.txt Translation_y.txt
 # Translation_y_4x2.txt Reflection_4x2.txt
 #Reflection_6x1.txt
 
-LatticeSymmetryTransformationCardinalities = 3 4
-EigenvaluesTargeted = 0 0
+LatticeSymmetryTransformationCardinalities = 24
+EigenvaluesTargeted = 0
+
+
+
+
 
 ----------------------------------------
 
@@ -41,14 +46,14 @@ max_steps = 100
 Random_seed_generator = 3
 file_eval_spectrum = out0.txt
 save_all_Krylov_space_vecs = truee
-get_overlap_bw_eigstates_and_K_vecs = true
+get_overlap_bw_eigstates_and_K_vecs = truee
 lanczos_reorthogonalization = truee
-Get_Full_Spectrum = true
+Get_Full_Spectrum = truee
 need_few_eig_vecs = truee
 few = 1
 ----------------------------------------
 Get_overlap_with_basis = false
-States_to_look = 3 0 1 2
+States_to_look = 1 0
 overlap_out_file = out0.txt
 calculate_local_obs_for_states_to_look = true
 calculate_local_obs_for_states_to_look_for_first_n_basis = 100
@@ -66,19 +71,39 @@ Temperature_LTLM_Dynamics = 0.91
 
 
 ----------------------------------
-Perform_Dynamics = false
+Perform_Dynamics = true
 eta = 0.02
-check_omega = 0.3
-omega_max = 1.0
+check_omega = 1.0
+omega_max = 10.0
 omega_min = 0.0
 d_omega = 0.005
-Opr_for_Dynamics = 2 Sz (2.0,0.0) 4 (-1.0,0.0) 5
-Momentum_resolved = true
-k = 0.1
-file_dynamics_out = Dyn_MzMz
+
+Opr_for_Dynamics = 24 Sz (1.0,0.0) 0 (-1.0,0.0) 1 (1.0,0.0) 2 (-1.0,0.0) 3 (1.0,0.0) 4 (-1.0,0.0) 5 (1.0,0.0) 6 (-1.0,0.0) 7 (1.0,0.0) 8 (-1.0,0.0) 9 (1.0,0.0) 10 (-1.0,0.0) 11 (1.0,0.0) 12 (-1.0,0.0) 13 (1.0,0.0) 14 (-1.0,0.0) 15 (1.0,0.0) 16 (-1.0,0.0) 17 (1.0,0.0) 18 (-1.0,0.0) 19 (1.0,0.0) 20 (-1.0,0.0) 21 (1.0,0.0) 22 (-1.0,0.0) 23
+
+#6 Sz (1.0,0.0) 0 (-0.5,0.866) 1 (-0.5,-0.866) 2 (1.0,0.0) 3 (-0.5,0.866) 4 (-0.5,-0.866) 5
+
+
+#6 Sz (1.0,0.0) 0 (0.5,-0.866) 1 (-0.5,-0.866) 2 (-1.0,0.0) 3 (-0.5,0.866) 4 (0.5,0.866) 5
+
+
+#q=pi/2
+#16 Sz (1.0,0.0) 0 (0.0,1.0) 1 (-1.0,0.0) 2 (0.0,-1.0) 3 (1.0,0.0) 4 (0.0,1.0) 5 (-1.0,0.0) 6 (0.0,-1.0) 7 (1.0,0.0) 8 (0.0,1.0) 9 (-1.0,0.0) 10 (0.0,-1.0) 11 (1.0,0.0) 12 (0.0,1.0) 13 (-1.0,0.0) 14 (0.0,-1.0) 15
+
+#q=0
+#16 Sz (1.0,0.0) 0 (1.0,0.0) 1 (1.0,0.0) 2 (1.0,0.0) 3 (1.0,0.0) 4 (1.0,0.0) 5 (1.0,0.0) 6 (1.0,0.0) 7 (1.0,0.0) 8 (1.0,0.0) 9 (1.0,0.0) 10 (1.0,0.0) 11 (1.0,0.0) 12 (1.0,0.0) 13 (1.0,0.0) 14 (1.0,0.0) 15
+
+#2 Sz (1,0) 0 (-1,0) 1
+
+#q=pi
+#16 Sz (1.0,0.0) 0 (-1.0,0.0) 1 (1.0,0.0) 2 (-1.0,0.0) 3 (1.0,0.0) 4 (-1.0,0.0) 5 (1.0,0.0) 6 (-1.0,0.0) 7 (1.0,0.0) 8 (-1.0,0.0) 9 (1.0,0.0) 10 (-1.0,0.0) 11 (1.0,0.0) 12 (-1.0,0.0) 13 (1.0,0.0) 14 (-1.0,0.0) 15
+
+
+EigenvaluesTargetedDynamics = 12
+
+file_dynamics_out = Dyn_SzSz_0
 ---------------------------------
 
-Processors = 8
+Processors = 1
 
 Write_Basis = false
 Write_Basis_File = Basis_used.txt
