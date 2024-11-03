@@ -63,7 +63,7 @@ void Add_connections_strictly2point(BASIS_Spins_Target_Sz_and_K &basis);
 void Read_parameters_for_dynamics(BASIS_Spins_Target_Sz_and_K &basis, string filename);
 void Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz_and_K &basis);
 void Initialize_State_for_Dynamics(BASIS_Spins_Target_Sz_and_K &basis_new, BASIS_Spins_Target_Sz_and_K &basis, Mat_1_doub &Vec_, Mat_1_doub &Vec_Dyn);
-void Initialize_Seed_for_Dynamics(BASIS_Spins_Target_Sz_and_K &basis, BASIS_Spins_Target_Sz_and_K &basis_dyn, Mat_1_doub &VecDyn, Mat_1_doub &VecGS);
+void Initialize_Seed_for_Dynamics(BASIS_Spins_Target_Sz_and_K &basis, BASIS_Spins_Target_Sz_and_K &basis_dyn, Mat_1_doub &VecDyn, double & Num_val,  Mat_1_doub &VecGS);
 void Initialize_one_point_to_calculate_from_file(BASIS_Spins_Target_Sz_and_K &basis);
 void Act_SziSzj(int &site_i, int &site_j, int &m, Mat_1_int &m_out_array, Mat_1_doub &Coeff_out_Array, BASIS_Spins_Target_Sz_and_K &basis);
 void Act_SiSj(int &site_i, int &site_j, int &m, Mat_1_int &m_out_array, Mat_1_doub &Coeff_out_Array, BASIS_Spins_Target_Sz_and_K &basis);

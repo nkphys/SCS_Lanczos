@@ -1694,16 +1694,18 @@ void MODEL_Spins_Target_Sz::Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &b
     Dyn_opr.value.clear();
     Dyn_opr.rows.clear();
     Dyn_opr.columns.clear();
-    Dyn_opr.nrows = basis.D_basis.size();
-    Dyn_opr.ncols = basis.D_basis.size();
+    Dyn_opr.nrows = basis.MainIndex_to_Dec_part0_.size();//basis.D_basis.size();
+    Dyn_opr.ncols = basis.MainIndex_to_Dec_part0_.size();
 
 
     double_type value_;
     int dec_;
 
     if(Dyn_opr_string=="Sz"){
-        for (int m=0;m<basis.D_basis.size();m++){
-            dec_ = basis.D_basis[m];
+        for (int m=0;m<basis.MainIndex_to_Dec_part0_.size();m++){
+            dec_ = basis.MainIndex_to_Dec_part0_[m] +  pow(basis.BASE, basis.Partition_Length[0])*basis.MainIndex_to_Dec_part1_[m];
+
+            //dec_ = basis.D_basis[m];
             value_ =0.0;
             for(int opr_no=0;opr_no<Dyn_opr_int.size();opr_no++){
                 value_ += Dyn_opr_coeffs[opr_no]*(
@@ -1711,6 +1713,7 @@ void MODEL_Spins_Target_Sz::Initialize_Opr_for_Dynamics(BASIS_Spins_Target_Sz &b
                             );
 
             }
+            value_ = value_*(1.0/(sqrt(1.0*Dyn_opr_int.size())));
             Dyn_opr.value.push_back(value_);
             Dyn_opr.rows.push_back(m);
             Dyn_opr.columns.push_back(m);

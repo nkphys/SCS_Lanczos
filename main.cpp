@@ -1291,8 +1291,10 @@ int main(int argc, char** argv){
 
 
             cout<<"initializing dynamics operator xxxxxxxxxxxxxxxxxxxxxxx"<<endl;
-            _MODEL_Dyn.Initialize_Seed_for_Dynamics(_BASIS, _BASIS_Dyn, _LANCZOS_Dynamics.Dynamics_seed, _LANCZOS.Eig_vec);
-            _LANCZOS_Dynamics.Numerator_Dynamics=1.0;
+            _MODEL_Dyn.Initialize_Seed_for_Dynamics(_BASIS, _BASIS_Dyn, _LANCZOS_Dynamics.Dynamics_seed, _LANCZOS_Dynamics.Numerator_Dynamics, _LANCZOS.Eig_vec);
+
+            //Get_Dynamics_seed();
+            //_LANCZOS_Dynamics.Numerator_Dynamics=1.0;
             cout<<"Dyn_opr created xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"<<endl;
 
             //_LANCZOS_Dynamics.Get_Dynamics_seed(_MODEL_Dyn.Dyn_opr);

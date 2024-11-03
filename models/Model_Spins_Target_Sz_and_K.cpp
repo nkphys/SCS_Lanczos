@@ -1649,7 +1649,7 @@ void MODEL_Spins_Target_Sz_and_K::Read_parameters_for_dynamics(BASIS_Spins_Targe
 
 
 
-void MODEL_Spins_Target_Sz_and_K::Initialize_Seed_for_Dynamics(BASIS_Spins_Target_Sz_and_K &basis, BASIS_Spins_Target_Sz_and_K &basis_dyn, Mat_1_doub &VecDyn, Mat_1_doub &VecGS){
+void MODEL_Spins_Target_Sz_and_K::Initialize_Seed_for_Dynamics(BASIS_Spins_Target_Sz_and_K &basis, BASIS_Spins_Target_Sz_and_K &basis_dyn, Mat_1_doub &VecDyn, double & Num_val, Mat_1_doub &VecGS){
 
     VecDyn.clear();
     VecDyn.resize(basis_dyn.basis_size);
@@ -1704,6 +1704,7 @@ void MODEL_Spins_Target_Sz_and_K::Initialize_Seed_for_Dynamics(BASIS_Spins_Targe
     }
     assert(norm_temp>0.00000001);
 
+    Num_val = norm_temp;
     for(int m=0;m<basis_dyn.basis_size;m++){
         VecDyn[m] = (1.0/sqrt(norm_temp))*(VecDyn[m]);
     }

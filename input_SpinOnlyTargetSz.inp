@@ -1,7 +1,7 @@
 Model = SpinOnlyTargetSz
 ------------------------------------------
 PBC = true
-Length = 24
+Length = 4
 TwoTimesSpin = 1
 TwoTimesTotalSzTarget = 0
 H_mag = 0 0 -0.00
@@ -22,7 +22,7 @@ One_point_oprt_path_2 = Sm.txt
 --------------------------------------
 FourPointObservablesSites file = fourpoint.txt
 -------------------------------------
-Lanc_Error = 10e-12
+Lanc_Error = -10e-12
 max_steps = 600
 Random_seed_generator = 3
 file_eval_spectrum = out_eval.txt
@@ -52,16 +52,19 @@ Temperature_LTLM_Dynamics = 0.91
 
 
 ----------------------------------
-Perform_Dynamics = false
+Perform_Dynamics = true
 eta = 0.02
 check_omega = 0.3
-omega_max = 1.0
+omega_max = 8.0
 omega_min = 0.0
 d_omega = 0.005
-Opr_for_Dynamics = 2 Sz (2.0,0.0) 4 (-1.0,0.0) 5
+Opr_for_Dynamics = 4 Sz (1.0,0.0) 0 (0.0,1.0) 1 (-1.0,0.0) 2 (0.0,-1.0) 3
+#(1.00000,0.00000) 0 (-1.00000,0.00000) 1 (1.00000,0.00000) 2 (-1.00000,0.00000) 3
+
+# (-1.00000,-0.00000) 4 (-0.70711,0.70711) 5 (-0.00000,1.00000) 6 (0.70711,0.70711) 7 
 Momentum_resolved = true
 k = 0.1
-file_dynamics_out = Dyn_MzMz
+file_dynamics_out = Dyn_SzSz_kn1_L4.txt
 ---------------------------------
 
 Processors = 1
