@@ -1047,6 +1047,7 @@ int main(int argc, char** argv){
 
         LANCZOS<BASIS_Spins_Target_Sz_and_K, MODEL_Spins_Target_Sz_and_K> _LANCZOS(_BASIS, _MODEL);
         _LANCZOS.Dynamics_performed=false;
+        _LANCZOS.TimeEvoPerformed=false;
         _LANCZOS.Read_Lanczos_parameters(inp_filename);
 
 
@@ -1285,6 +1286,7 @@ int main(int argc, char** argv){
 
             LANCZOS<BASIS_Spins_Target_Sz_and_K, MODEL_Spins_Target_Sz_and_K> _LANCZOS_Dynamics(_BASIS_Dyn, _MODEL_Dyn);
             _LANCZOS_Dynamics.Dynamics_performed=true;
+            _LANCZOS_Dynamics.TimeEvoPerformed=false;
             _LANCZOS_Dynamics.Read_Lanczos_parameters(inp_filename);
             _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
             _LANCZOS_Dynamics.GS_energy=_LANCZOS.GS_energy;

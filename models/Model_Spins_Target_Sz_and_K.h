@@ -42,11 +42,11 @@ public:
     string LongRangeExchangeZZfilepath;
     string LongRangeExchangePMfilepath;
 
-    string LongRangeJ1_filepath, LongRangeJ2_filepath, LongRangeJ3_filepath  ;
+    string LongRangeJ1zz_filepath, LongRangeJ1pm_filepath, LongRangeJ2_filepath, LongRangeJ3_filepath  ;
 
     Mat_2_doub Jzz_Exchange_mat;
     Mat_2_doub Jpm_Exchange_mat;
-    Mat_2_doub J1_mat;
+    Mat_2_doub J1zz_mat, J1pm_mat;
     Mat_4_doub J2_mat;
     Mat_4_doub J3_mat;
 

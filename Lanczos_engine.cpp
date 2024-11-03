@@ -547,9 +547,10 @@ sort(numbers.begin(), numbers.end(), comp);
 
 
     cout<<"----Lanczos milestone 2-----"<<endl;
-    //cout<<TimeEvoPerformed<<endl;
+
 
     if(TimeEvoPerformed){
+    cout<<"TimeEvoPerformed is true"<<endl;
         Vec_new_TimeEvo.resize(Hamil.nrows);
     for(int i=0;i<Hamil.nrows;i++){
     Vec_new_TimeEvo[i]=0.0;
@@ -575,7 +576,7 @@ sort(numbers.begin(), numbers.end(), comp);
      assert(false);
 #endif
         }
-
+       // cout<<n<<"th Krylov emptied done"<<endl;
         vector < double_type >().swap(Krylov_space_vecs[n]);
     }
     Krylov_space_vecs.clear();

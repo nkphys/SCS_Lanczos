@@ -73,33 +73,58 @@ void MODEL_Spins_Target_Sz_and_K::Add_connections_strictly2point(BASIS_Spins_Tar
     Hamil.ncols = Hamil.nrows;
 
     double EPS_=0.0000001;
-    Mat_1_doub J1_vals, J2_vals, J3_vals;
+    Mat_1_doub J1zz_vals, J1pm_vals, J2_vals, J3_vals;
     Mat_1_tetra_int J2_sites,J3_sites;
-    Mat_1_intpair J1_sites;
+    Mat_1_intpair J1zz_sites, J1pm_sites;
     pair_int temp_pair_int;
     tetra_int temp_tetra_int;
 
-    //TERM J1: J1[k][l] x Svec[k].Svec[l] |m>
+    //TERM J1zz: J1zz[k][l] x Sz[k] Sz[l] |m>
     for(int site_k=0;site_k<basis.Length;site_k++){
         for(int site_l=0;site_l<basis.Length;site_l++){
-            if(J1_mat[site_k][site_l]!=0.0){
-                J1_vals.push_back(one*J1_mat[site_k][site_l]);
+            if(abs(J1zz_mat[site_k][site_l])>EPS_){
+                J1zz_vals.push_back(one*J1zz_mat[site_k][site_l]);
                 temp_pair_int.first=site_k;
                 temp_pair_int.second=site_l;
-                J1_sites.push_back(temp_pair_int);
+                J1zz_sites.push_back(temp_pair_int);
 
 
-                J1_vals.push_back(one*J1_mat[site_k][site_l]);
+                J1zz_vals.push_back(one*J1zz_mat[site_k][site_l]);
                 temp_pair_int.first=site_l;
                 temp_pair_int.second=site_k;
-                J1_sites.push_back(temp_pair_int);
+                J1zz_sites.push_back(temp_pair_int);
 
-                if(J1_mat[site_l][site_k]!=J1_mat[site_k][site_l]){
-                    J1_mat[site_l][site_k]=J1_mat[site_k][site_l];
+                if(abs(J1zz_mat[site_l][site_k] - conj(J1zz_mat[site_k][site_l]))>EPS_){
+                    J1zz_mat[site_l][site_k]=conj(J1zz_mat[site_k][site_l]);
                 }
             }
         }
     }
+
+
+    //TERM J1pm: J1pm[k][l] x Sp[k] Sm[l] |m>
+    for(int site_k=0;site_k<basis.Length;site_k++){
+        for(int site_l=0;site_l<basis.Length;site_l++){
+            if(abs(J1pm_mat[site_k][site_l])>EPS_){
+                J1pm_vals.push_back(one*J1pm_mat[site_k][site_l]);
+                temp_pair_int.first=site_k;
+                temp_pair_int.second=site_l;
+                J1pm_sites.push_back(temp_pair_int);
+
+
+                J1pm_vals.push_back(one*J1pm_mat[site_k][site_l]);
+                temp_pair_int.first=site_l;
+                temp_pair_int.second=site_k;
+                J1pm_sites.push_back(temp_pair_int);
+
+                if(abs(J1pm_mat[site_l][site_k] - conj(J1pm_mat[site_k][site_l]))>EPS_){
+                    J1pm_mat[site_l][site_k]=conj(J1pm_mat[site_k][site_l]);
+                }
+            }
+        }
+    }
+
+
 
 
     //TERM J2 and J3
@@ -218,8 +243,8 @@ void MODEL_Spins_Target_Sz_and_K::Add_connections_strictly2point(BASIS_Spins_Tar
             for(int site_k=0;site_k<basis.Length;site_k++){
                 for(int site_l=site_k;site_l<basis.Length;site_l++){
 
-                    if(abs(J1_mat[site_k][site_l])>EPS_){
-                        value += 1.0*J1_mat[site_k][site_l]*((1.0*value_at_pos(dec_m, site_k, basis.BASE)) - (0.5*basis.TwoTimesSpin))*
+                    if(abs(J1zz_mat[site_k][site_l])>EPS_){
+                        value += 1.0*J1zz_mat[site_k][site_l]*((1.0*value_at_pos(dec_m, site_k, basis.BASE)) - (0.5*basis.TwoTimesSpin))*
                                  ((1.0*value_at_pos(dec_m, site_l, basis.BASE)) - (0.5*basis.TwoTimesSpin));
                     }
 
@@ -246,7 +271,7 @@ void MODEL_Spins_Target_Sz_and_K::Add_connections_strictly2point(BASIS_Spins_Tar
 
                     val_site_k = value_at_pos(dec_m, site_k, basis.BASE);
                     val_site_l = value_at_pos(dec_m, site_l, basis.BASE);
-                    if(abs(J1_mat[site_k][site_l])>EPS_ ){
+                    if(abs(J1pm_mat[site_k][site_l])>EPS_ ){
                         assert(site_k!=site_l);
 
                         bool allowed = ((val_site_l != 0) && (val_site_k != (basis.BASE - 1)));
@@ -261,7 +286,7 @@ void MODEL_Spins_Target_Sz_and_K::Add_connections_strictly2point(BASIS_Spins_Tar
                                                ((val_site_k - (0.5*basis.TwoTimesSpin))*
                                                 (val_site_k_new - (0.5*basis.TwoTimesSpin))  ) );
 
-                            value = J1_mat[site_k][site_l]*value*0.5*sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
+                            value = J1pm_mat[site_k][site_l]*value*0.5*sqrt( (1.0*basis.SPIN*(1.0+basis.SPIN))  -
                                                                                 ((val_site_l - (0.5*basis.TwoTimesSpin))*
                                                                                  (val_site_l_new - (0.5*basis.TwoTimesSpin))  ) );
 
@@ -1267,7 +1292,8 @@ void MODEL_Spins_Target_Sz_and_K::Read_parameters(BASIS_Spins_Target_Sz_and_K &b
     string hmag, Hmag = "H_mag = ";
     string d_anisotropy_, D_Anisotropy_ = "Dz_anisotropy = ";
 
-    string LongRangeJ1file_ = "LongRangeJ1_file = ";
+    string LongRangeJ1zzfile_ = "LongRangeJ1zz_file = ";
+    string LongRangeJ1pmfile_ = "LongRangeJ1pm_file = ";
 
     string LongRangeJ2file_ = "LongRangeJ2_file = ";
 
@@ -1297,8 +1323,11 @@ void MODEL_Spins_Target_Sz_and_K::Read_parameters(BASIS_Spins_Target_Sz_and_K &b
             if ((offset = line.find(FourPointObservablesSitesFile_, 0)) != string::npos) {
                 fourpointobservablessitesfile_ = line.substr (offset+FourPointObservablesSitesFile_.length());  }
 
-            if ((offset = line.find(LongRangeJ1file_, 0)) != string::npos) {
-                LongRangeJ1_filepath = line.substr (offset+LongRangeJ1file_.length());  }
+            if ((offset = line.find(LongRangeJ1zzfile_, 0)) != string::npos) {
+                LongRangeJ1zz_filepath = line.substr (offset+LongRangeJ1zzfile_.length());  }
+
+            if ((offset = line.find(LongRangeJ1pmfile_, 0)) != string::npos) {
+                LongRangeJ1pm_filepath = line.substr (offset+LongRangeJ1pmfile_.length());  }
 
             if ((offset = line.find(LongRangeJ2file_, 0)) != string::npos) {
                 LongRangeJ2_filepath = line.substr (offset+LongRangeJ2file_.length());  }
@@ -1414,15 +1443,18 @@ void MODEL_Spins_Target_Sz_and_K::Read_parameters(BASIS_Spins_Target_Sz_and_K &b
 
 
 
-    J1_mat.resize(basis.Length);
+    J1zz_mat.resize(basis.Length);
+    J1pm_mat.resize(basis.Length);
     J2_mat.resize(basis.Length);
     J3_mat.resize(basis.Length);
     for(int i =0;i<basis.Length;i++){
-        J1_mat[i].resize(basis.Length);
+        J1zz_mat[i].resize(basis.Length);
+        J1pm_mat[i].resize(basis.Length);
         J2_mat[i].resize(basis.Length);
         J3_mat[i].resize(basis.Length);
         for(int j =0;j<basis.Length;j++){
-            J1_mat[i][j]=0.0;
+            J1zz_mat[i][j]=0.0;
+            J1pm_mat[i][j]=0.0;
             J2_mat[i][j].resize(basis.Length);
             J3_mat[i][j].resize(basis.Length);
             for(int k =0;k<basis.Length;k++){
@@ -1437,19 +1469,27 @@ void MODEL_Spins_Target_Sz_and_K::Read_parameters(BASIS_Spins_Target_Sz_and_K &b
     }
 
 
-    ifstream inputJ1(LongRangeJ1_filepath.c_str());
+    ifstream inputJ1zz(LongRangeJ1zz_filepath.c_str());
+    ifstream inputJ1pm(LongRangeJ1pm_filepath.c_str());
     ifstream inputJ2(LongRangeJ2_filepath.c_str());
     ifstream inputJ3(LongRangeJ3_filepath.c_str());
 
     string line_temp;
     int i1, i2, i3, i4;
-    double value_temp;
+    double_type value_temp;
 
-    while(getline(inputJ1, line_temp)){
+    while(getline(inputJ1zz, line_temp)){
         stringstream line_temp_ss(line_temp);
         line_temp_ss >> i1 >> i2 >> value_temp;
         cout<<i1<<" "<<i2<<" "<<value_temp<<endl;
-        J1_mat[i1][i2]=value_temp;
+        J1zz_mat[i1][i2]=value_temp;
+    }
+
+    while(getline(inputJ1pm, line_temp)){
+        stringstream line_temp_ss(line_temp);
+        line_temp_ss >> i1 >> i2 >> value_temp;
+        cout<<i1<<" "<<i2<<" "<<value_temp<<endl;
+        J1pm_mat[i1][i2]=value_temp;
     }
 
     while(getline(inputJ2, line_temp)){
@@ -1702,7 +1742,11 @@ void MODEL_Spins_Target_Sz_and_K::Initialize_Seed_for_Dynamics(BASIS_Spins_Targe
     for(int m=0;m<basis_dyn.basis_size;m++){
         norm_temp += abs(VecDyn[m])*abs(VecDyn[m]);
     }
+
+    if(norm_temp<0.00000001){
+        cout<<"GREEN FUNTION IS ZERO IN THIS SECTOR"<<endl;
     assert(norm_temp>0.00000001);
+    }
 
     Num_val = norm_temp;
     for(int m=0;m<basis_dyn.basis_size;m++){
