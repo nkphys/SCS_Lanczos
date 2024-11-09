@@ -1719,7 +1719,7 @@ void MODEL_Spins_Target_Sz_and_K::Initialize_Seed_for_Dynamics(BASIS_Spins_Targe
             indexA_dyn=Find_int_in_intarray_using_bisection_(found_, dec_partA_, basis_dyn.Index_partA_to_DecA_in_givenSection[SectionIndex_dyn]);
             if(found_){
                 m_new_dyn= indexA_dyn + indexB_dyn;
-                norm_dyn=basis.Norm_vals_basis[m_new_dyn];
+                norm_dyn=basis_dyn.Norm_vals_basis[m_new_dyn];
 
                 //Calculate S_z(q)
                 value_szq_m=0.0;
@@ -1736,6 +1736,14 @@ void MODEL_Spins_Target_Sz_and_K::Initialize_Seed_for_Dynamics(BASIS_Spins_Targe
 
     }
 
+
+    if(basis_dyn.basis_size == basis.basis_size){
+        double_type opr_val=0.0;
+        for(int i=0;i<basis.basis_size;i++){
+            opr_val += conjugate(VecGS[i])*VecDyn[i];
+        }
+        cout<<"<GS|O|GS> = <GS|DYN_SEED> = "<<opr_val<<endl;
+    }
 
     //Normalize
     double norm_temp=0.0;
