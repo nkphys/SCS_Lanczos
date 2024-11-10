@@ -74,7 +74,7 @@ void Overlap_of_JJzBasis_with_State(Mat_1_doub &Vec_ , Mat_1_doub &Overlaps_ , M
 void Act_Hamil(BASIS_Spins_Target_Sz_and_K &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
 void Act_translational_opr(BASIS_Spins_Target_Sz_and_K &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
 double_type Get_SzSz(int site1, int site2, Mat_1_doub &Vec_, BASIS_Spins_Target_Sz_and_K &basis);
-
+double_type Get_OprDyn_static(Mat_1_doub &VecGS, BASIS_Spins_Target_Sz_and_K &basis);
 //void Initialize_one_point_to_calculate(BASIS_1_orb_tJ &basis);
 //void Initialize_two_point_to_calculate(BASIS_1_orb_tJ &basis);
 //void Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR, int site1, int site2, BASIS_1_orb_tJ &basis);

@@ -1,0 +1,88 @@
+Model = SpinOnlyTargetSzAndK
+------------------------------------------
+PBC = true
+Length = 18
+TwoTimesSpin = 1
+TwoTimesTotalSzTarget = 0
+H_mag = 0 0 -0.00
+Dz_anisotropy = 0 0 0.00
+LongRangeJ1zz_file = J1file.dat
+LongRangeJ1pm_file = J1file.dat
+LongRangeJ2_file = J2file.dat
+LongRangeJ3_file = J3file.dat
+
+MultiSectionBasisSearchInt = 2
+
+-----------------------------------------
+#Generators of the cyclic groups in the files
+LatticeSymmetryTransformationFiles = 2 Translation_x.txt Translation_y.txt
+
+#Translation_y_4x4.txt
+# Reflection_y_6x4.txt
+#Translation_y_4x4.txt Inversion_4x4.txt Reflection_through_y_4x4.txt Reflection_through_x_4x4.txt
+#Reflection_12x1.txt
+# Translation_y_4x2.txt Reflection_4x2.txt
+#Reflection_6x1.txt
+
+LatticeSymmetryTransformationCardinalities = 3 3
+EigenvaluesTargeted = 0 0
+
+----------------------------------------
+
+Saving_Hamiltonian_and_Oprs = true
+No_of_onepoint_obs = 1
+One_point_oprt_path_1 = Sz.txt
+One_point_oprt_path_2 = Sm.txt
+
+--------------------------------------
+FourPointObservablesSites file = fourpoint.txt
+-------------------------------------
+Lanc_Error = -10e-12
+max_steps = 400
+Random_seed_generator = 3
+file_eval_spectrum = out0.txt
+save_all_Krylov_space_vecs = truee
+get_overlap_bw_eigstates_and_K_vecs = true
+lanczos_reorthogonalization = truee
+Get_Full_Spectrum = true
+need_few_eig_vecs = truee
+few = 1
+----------------------------------------
+Get_overlap_with_basis = false
+States_to_look = 3 0 1 2
+overlap_out_file = out0.txt
+calculate_local_obs_for_states_to_look = true
+calculate_local_obs_for_states_to_look_for_first_n_basis = 100
+file_out_local_obs_for_states_to_look = local_obs_for_state_no
+--------------------------------------
+
+
+Static_Finite_Temperature = false
+Dynamics_Finite_Temperature = false
+Number_of_Random_States = 20
+Number_of_LowKrylov_States_used = 200
+Temperature_Range = 0.1 0.01 1.0
+Energy_Offset_FTLM = -3.6510934089371769317
+Temperature_LTLM_Dynamics = 0.91
+
+
+----------------------------------
+Perform_Dynamics = true
+eta = 0.02
+check_omega = 1.0
+omega_max = 20.0
+omega_min = 0.0
+d_omega = 0.005
+
+Opr_for_Dynamics = 9 Sz (1.00000,0.00000) 1 (1.00000,0.00000) 7 (1.00000,0.00000) 13 (1.00000,0.00000) 3 (1.00000,0.00000) 9 (1.00000,0.00000) 15 (1.00000,0.00000) 5 (1.00000,0.00000) 11 (1.00000,0.00000) 17
+
+#9 Sz (1.00000,0.00000) 0 (1.00000,0.00000) 6 (1.00000,0.00000) 12 (1.00000,0.00000) 2 (1.00000,0.00000) 8 (1.00000,0.00000) 14 (1.00000,0.00000) 4 (1.00000,0.00000) 10 (1.00000,0.00000) 16
+
+EigenvaluesTargetedDynamics = 0 0
+file_dynamics_out = Dyn_SzSz
+---------------------------------
+
+Processors = 16
+
+Write_Basis = false
+Write_Basis_File = Basis_used.txt

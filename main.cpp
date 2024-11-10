@@ -1086,6 +1086,16 @@ int main(int argc, char** argv){
             for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
 
 
+                // //Local Sz
+                // cout<<"Measuring Local Sz-------------------"<<endl;
+                // double_type local_sz;
+                // for(int site1_=0;site1_<_BASIS.Length;site1_++){
+                // local_sz = _MODEL.Get_Sz(site1_, _LANCZOS.Eig_vecs[state_], _BASIS);
+                // cout<<site1_<<" "<<local_sz<<endl;
+                // }
+                // cout<<"----------------------------------"<<endl;
+
+
                 //SS corrsXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                 cout<<"Spin-Spin correlations for state = "<<state_<<endl;
 
@@ -1291,6 +1301,8 @@ int main(int argc, char** argv){
             _LANCZOS_Dynamics.Eig_vec=_LANCZOS.Eig_vec;
             _LANCZOS_Dynamics.GS_energy=_LANCZOS.GS_energy;
 
+
+            cout<<"<GS|OPR_DYN|GS> = "<< _MODEL_Dyn.Get_OprDyn_static(_LANCZOS.Eig_vec, _BASIS)<<endl;
 
             cout<<"initializing dynamics operator xxxxxxxxxxxxxxxxxxxxxxx"<<endl;
             _MODEL_Dyn.Initialize_Seed_for_Dynamics(_BASIS, _BASIS_Dyn, _LANCZOS_Dynamics.Dynamics_seed, _LANCZOS_Dynamics.Numerator_Dynamics, _LANCZOS.Eig_vec);

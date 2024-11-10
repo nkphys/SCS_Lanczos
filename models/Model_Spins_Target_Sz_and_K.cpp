@@ -820,6 +820,37 @@ void MODEL_Spins_Target_Sz_and_K::Act_SiSj(int &site_i, int &site_j, int &m, Mat
 
 
 
+double_type MODEL_Spins_Target_Sz_and_K::Get_OprDyn_static(Mat_1_doub &VecGS, BASIS_Spins_Target_Sz_and_K &basis){
+
+
+    assert(VecGS.size()==basis.basis_size);
+    double_type value_sz_;
+
+    ulli dec_;
+    ulli dec_partB_, dec_partA_;
+    int indexB_dyn, indexA_dyn, SectionIndex_dyn;
+    int m_new_dyn;
+    double norm_dyn, norm_gs;
+    double_type value;
+    for(int m=0;m<basis.basis_size;m++){
+
+        norm_gs=basis.Norm_vals_basis[m];
+        dec_ = basis.MainIndex_to_Dec_partA_[m] +  pow(basis.BASE, basis.Length_A)*basis.MainIndex_to_Dec_partB_[m];
+
+        // dec_partB_ = dec_/pow(basis.BASE, basis.Length_A);
+        // dec_partA_ = dec_ - (dec_partB_*pow(basis.BASE, basis.Length_A));
+
+        for(int opr_no=0;opr_no<Dyn_opr_int.size();opr_no++){
+        value_sz_ += conjugate(VecGS[m])*(VecGS[m])*Dyn_opr_coeffs[opr_no]*(
+                    ((1.0*value_at_pos(dec_, Dyn_opr_int[opr_no], basis.BASE)) - (0.5*basis.TwoTimesSpin)));
+        }
+    }
+
+    value_sz_ = value_sz_*(1.0/(sqrt(1.0*Dyn_opr_int.size())));
+    return value_sz_;
+
+}
+
 double_type MODEL_Spins_Target_Sz_and_K::Get_SzSz(int site1, int site2, Mat_1_doub &Vec_, BASIS_Spins_Target_Sz_and_K &basis){
 
 
@@ -1703,7 +1734,9 @@ void MODEL_Spins_Target_Sz_and_K::Initialize_Seed_for_Dynamics(BASIS_Spins_Targe
     int m_new_dyn;
     double norm_dyn, norm_gs;
     double_type value;
+
     for(int m=0;m<basis.basis_size;m++){
+
         norm_gs=basis.Norm_vals_basis[m];
         dec_ = basis.MainIndex_to_Dec_partA_[m] +  pow(basis.BASE, basis.Length_A)*basis.MainIndex_to_Dec_partB_[m];
 
@@ -1758,7 +1791,7 @@ void MODEL_Spins_Target_Sz_and_K::Initialize_Seed_for_Dynamics(BASIS_Spins_Targe
 
     Num_val = norm_temp;
     for(int m=0;m<basis_dyn.basis_size;m++){
-        VecDyn[m] = (1.0/sqrt(norm_temp))*(VecDyn[m]);
+      //  VecDyn[m] = (1.0/sqrt(norm_temp))*(VecDyn[m]);
     }
 
 }
