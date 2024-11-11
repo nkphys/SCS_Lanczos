@@ -824,7 +824,7 @@ double_type MODEL_Spins_Target_Sz_and_K::Get_OprDyn_static(Mat_1_doub &VecGS, BA
 
 
     assert(VecGS.size()==basis.basis_size);
-    double_type value_sz_;
+    double_type value_sz_=0.0;
 
     ulli dec_;
     ulli dec_partB_, dec_partA_;
@@ -850,6 +850,169 @@ double_type MODEL_Spins_Target_Sz_and_K::Get_OprDyn_static(Mat_1_doub &VecGS, BA
     return value_sz_;
 
 }
+
+
+double_type MODEL_Spins_Target_Sz_and_K::Get_Sz(int site1, Mat_1_doub &Vec_, BASIS_Spins_Target_Sz_and_K &basis){
+
+
+    // Direct product of transformations--------
+
+    Mat_1_int zeros_set;
+    zeros_set.resize(basis.No_of_symms_trans);
+    for(int i=0;i<basis.No_of_symms_trans;i++){
+        zeros_set[i]=0;
+    }
+    Mat_2_int IndicesSet;
+    int Total_no_elements=0;
+    int Total_no_elements_expected=1;
+    for(int i=0;i<basis.Transformation_Cardinalities.size();i++){
+        Total_no_elements_expected *=basis.Transformation_Cardinalities[i];
+    }
+
+    DirectProduct_IndicesSet_by_recursion(zeros_set, basis.Transformation_Cardinalities, Total_no_elements , IndicesSet);
+    assert(Total_no_elements_expected == Total_no_elements);
+
+    Mat_1_int Vec1_in, Vec1_out, Vec2_in, Vec2_out ;
+    Mat_1_int Indices_old, Diff, TransExponent;
+    Indices_old.resize(basis.No_of_symms_trans);
+    Diff.resize(basis.No_of_symms_trans);
+
+    Mat_1_int site1_transformed_set;
+    site1_transformed_set.clear();
+    Mat_1_int site2_transformed_set;
+    site2_transformed_set.clear();
+
+
+    Vec1_in.resize(basis.Length);
+    for(int site=0;site<basis.Length;site++){
+        Vec1_in[site]=0;
+    }
+    Vec1_in[site1]=1;
+
+
+    for(int i=0;i<basis.No_of_symms_trans;i++){
+        Indices_old[i]=IndicesSet[0][i];
+    }
+
+    for(int tn_indx=0;tn_indx<IndicesSet.size();tn_indx++){
+
+        for(int i=0;i<basis.No_of_symms_trans;i++){
+            Diff[i]=IndicesSet[tn_indx][i] - Indices_old[i];
+        }
+
+        for(int tn_type=(basis.No_of_symms_trans-1);tn_type>=0;tn_type--){
+
+            if(Diff[tn_type]>0){
+                for(int m_temp=0;m_temp<Diff[tn_type];m_temp++){
+                    Matrix_vector_multiplication(basis.Transformation_matrices[tn_type], Vec1_in, Vec1_out);
+                    Vec1_in=Vec1_out;
+                }
+            }
+            if(Diff[tn_type]<0){
+                for(int m_temp=0;m_temp<abs(Diff[tn_type]);m_temp++){
+                    Matrix_vector_multiplication(basis.InverseTransformation_matrices[tn_type], Vec1_in, Vec1_out);
+                    Vec1_in=Vec1_out;
+                }
+            }
+            if(Diff[tn_type]==0){
+                Vec1_out=Vec1_in;
+            }
+        }
+
+        //find site_offset;
+        int site1_transformed=-100;
+        for(int site_p=0;site_p<basis.Length;site_p++){
+            if(Vec1_out[site_p]==1){
+                site1_transformed=site_p;
+            }
+        }
+        assert(site1_transformed>=0);
+        site1_transformed_set.push_back(site1_transformed);
+
+        for(int i=0;i<basis.No_of_symms_trans;i++){
+            Indices_old[i]=IndicesSet[tn_indx][i];
+        }
+
+        Vec1_in=Vec1_out;
+    }
+
+
+
+
+    // site1_transformed_set.clear();
+    // site2_transformed_set.clear();
+    // site1_transformed_set.push_back(site1);
+    // site2_transformed_set.push_back(site2);
+
+
+
+
+    //-----------------------
+
+    Mat_1_ullint m_connected;
+    Mat_1_doub coeffs;
+    Mat_1_ullint m_connected_final;
+    Mat_1_doub coeffs_final;
+
+    Mat_1_int m_connected_temp;
+    Mat_1_doub coeffs_temp;
+
+    ulli dec_m, dec_max;
+    ulli dec_part1_, dec_part0_;
+    int m_new;
+    int n_index;
+    Mat_1_int state_vec;
+    int site_i, site_j;
+
+    ulli dec_partB_new_, dec_partA_new_;
+    int indexB_, indexA_, SectionIndex;
+    double norm_a, norm_b;
+    double_type value;
+    complex<double> exponents;
+
+
+    double_type Value_Sz;
+    Value_Sz=0.0;
+
+    double_type value_m;
+    ulli dec_old;
+    for (int m=0;m<basis.MainIndex_to_Dec_partA_.size();m++){
+        dec_old = basis.MainIndex_to_Dec_partA_[m] +  pow(basis.BASE, basis.Length_A)*basis.MainIndex_to_Dec_partB_[m];
+
+
+        //dec_m = basis.D_basis[m];
+        //dec_m = basis.MainIndex_to_Dec_partA_[m] +  pow(basis.BASE, basis.Length_A)*basis.MainIndex_to_Dec_partB_[m];
+
+        // m_connected.clear();
+        // coeffs.clear();
+
+
+        //TERM  Svec[i].Svec[j] |m>
+        value_m =0.0;
+        for(int transformation_index=0;transformation_index<site1_transformed_set.size();transformation_index++){
+
+            site_i=site1_transformed_set[transformation_index];
+
+            //Sz(i)Sz(j)----------------------------------------------------------------
+            value_m += ((1.0*value_at_pos(dec_old, site_i, basis.BASE)) - (0.5*basis.TwoTimesSpin));
+
+        }//offset site
+
+        Value_Sz += value_m*abs(Vec_[m])*abs(Vec_[m]);
+
+    } // m i.e. basis index, columns of H
+
+
+    //----------------------
+
+    Value_Sz = Value_Sz*(1.0/(1.0*site1_transformed_set.size()));
+
+
+    return Value_Sz;
+
+}
+
+
 
 double_type MODEL_Spins_Target_Sz_and_K::Get_SzSz(int site1, int site2, Mat_1_doub &Vec_, BASIS_Spins_Target_Sz_and_K &basis){
 

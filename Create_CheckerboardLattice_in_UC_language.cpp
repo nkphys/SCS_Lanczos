@@ -9,10 +9,11 @@
 
 int main(){
 
+
 double J1_exc=1.0;
 double J2_exc=2.0;
 
-int L1=3;
+int L1=4;
 int L2=4;
 
 int B_=0;
@@ -22,12 +23,36 @@ string Hopp_file_str = "J1file.dat";
 ofstream Hopp_file_stream(Hopp_file_str.c_str());
 
 
+Mat_2_doub Tx; Tx.resize(2*L1*L2);
+for(int i=0;i<2*L1*L2;i++){
+Tx[i].resize(2*L1*L2);
+}
 string Translation_x_file_str = "Translation_x.txt";
 ofstream Translation_x_file_stream(Translation_x_file_str.c_str());
 
-
+Mat_2_doub Ty; Ty.resize(2*L1*L2);
+for(int i=0;i<2*L1*L2;i++){
+Ty[i].resize(2*L1*L2);
+}
 string Translation_y_file_str = "Translation_y.txt";
 ofstream Translation_y_file_stream(Translation_y_file_str.c_str());
+
+
+//Reflection from y axis : x <----> -x
+Mat_2_doub Ry; Ry.resize(2*L1*L2);
+for(int i=0;i<2*L1*L2;i++){
+Ry[i].resize(2*L1*L2);
+}
+string Reflection_y_file_str = "Reflection_y.txt";
+ofstream Reflection_y_file_stream(Reflection_y_file_str.c_str());
+
+//Reflection from x axis : y <----> -y
+Mat_2_doub Rx; Rx.resize(2*L1*L2);
+for(int i=0;i<2*L1*L2;i++){
+Rx[i].resize(2*L1*L2);
+}
+string Reflection_x_file_str = "Reflection_x.txt";
+ofstream Reflection_x_file_stream(Reflection_x_file_str.c_str());
 
 //site= site1 + site_2*L1;
 int site1_new, site2_new, s_new;
@@ -43,12 +68,45 @@ site2_new = site2;
 s_new = s;
 site_new = s + (2*site1_new) + site2_new*2*L1;
 Translation_x_file_stream<<site<<"  "<<site_new<<endl;
+Tx[site_new][site]=1.0;
+
 
 site2_new = (site2 + 1 + L2)%L2; 
 site1_new = site1;
 s_new = s;
 site_new = s + (2*site1_new) + site2_new*2*L1;
 Translation_y_file_stream<<site<<"  "<<site_new<<endl;
+Ty[site_new][site]=1.0;
+
+
+
+if(s==B_){
+site1_new = (-site1 + (L1-1))%L1;
+site2_new = site2;
+}
+if(s==C_){
+site1_new = (-site1 + L1)%L1;
+site2_new = site2;
+}
+site_new = s + (2*site1_new) + site2_new*2*L1;
+Reflection_y_file_stream<<site<<"  "<<site_new<<endl;
+Ry[site_new][site]=1.0;
+
+
+if(s==B_){
+site2_new = (-site2 + (L2))%L2;
+site1_new = site1;
+}
+if(s==C_){
+site2_new = (-site2 + (L2-1))%L2;
+site1_new = site1;
+}
+site_new = s + (2*site1_new) + site2_new*2*L1;
+Reflection_x_file_stream<<site<<"  "<<site_new<<endl;
+Rx[site_new][site]=1.0;
+
+
+
 }
 }
 }
@@ -171,6 +229,75 @@ Hopp_file_stream<<site <<"   "<<sitep<<"   "<<J1_[site][sitep]<<endl;
 }
 }
 
+
+
+
+
+
+
+cout<<"#Checking Lattice Transformation are symmetric or not?-------------"<<endl;
+
+Mat_2_doub Tx_J, Ty_J, Ry_J, Rx_J;
+Ty_J.resize(2*L1*L2);Tx_J.resize(2*L1*L2);
+Ry_J.resize(2*L1*L2);Rx_J.resize(2*L1*L2);
+for(int i=0;i<2*L1*L2;i++){
+Tx_J[i].resize(2*L1*L2);Ty_J[i].resize(2*L1*L2);
+Ry_J[i].resize(2*L1*L2);Rx_J[i].resize(2*L1*L2);
+}
+
+
+//Tx_J=Tx X J_mat
+for(int i=0;i<2*L1*L2;i++){
+for(int j=0;j<2*L1*L2;j++){
+Tx_J[i][j] =0.0;Ty_J[i][j] =0.0;
+Ry_J[i][j] =0.0;Rx_J[i][j] =0.0;
+for(int l=0;l<2*L1*L2;l++){
+Tx_J[i][j] += Tx[i][l]*J1_[l][j];
+Ty_J[i][j] += Ty[i][l]*J1_[l][j];
+Ry_J[i][j] += Ry[i][l]*J1_[l][j];
+Rx_J[i][j] += Rx[i][l]*J1_[l][j];
+}
+}
+}
+
+//Tx_J_TxDag
+Mat_2_doub Tx_J_TxDag, Ty_J_TyDag, Ry_J_RyDag, Rx_J_RxDag;
+Ty_J_TyDag.resize(2*L1*L2);Tx_J_TxDag.resize(2*L1*L2);
+Ry_J_RyDag.resize(2*L1*L2);Rx_J_RxDag.resize(2*L1*L2);
+for(int i=0;i<2*L1*L2;i++){
+Tx_J_TxDag[i].resize(2*L1*L2);Ty_J_TyDag[i].resize(2*L1*L2);
+Ry_J_RyDag[i].resize(2*L1*L2);Rx_J_RxDag[i].resize(2*L1*L2);
+}
+for(int i=0;i<2*L1*L2;i++){
+for(int j=0;j<2*L1*L2;j++){
+Tx_J_TxDag[i][j] =0.0;Ty_J_TyDag[i][j] =0.0;
+Ry_J_RyDag[i][j] =0.0;Rx_J_RxDag[i][j] =0.0;
+for(int l=0;l<2*L1*L2;l++){
+Tx_J_TxDag[i][j] += Tx_J[i][l]*Tx[j][l];
+Ty_J_TyDag[i][j] += Ty_J[i][l]*Ty[j][l];
+Ry_J_RyDag[i][j] += Ry_J[i][l]*Ry[j][l];
+Rx_J_RxDag[i][j] += Rx_J[i][l]*Rx[j][l];
+}
+}
+}
+
+double mat_diff_Tx=0.0;
+double mat_diff_Ty=0.0;
+double mat_diff_Ry=0.0;
+double mat_diff_Rx=0.0;
+for(int i=0;i<2*L1*L2;i++){
+for(int j=0;j<2*L1*L2;j++){
+mat_diff_Tx += abs(J1_[i][j] - Tx_J_TxDag[i][j]);
+mat_diff_Ty += abs(J1_[i][j] - Ty_J_TyDag[i][j]);
+mat_diff_Ry += abs(J1_[i][j] - Ry_J_RyDag[i][j]);
+mat_diff_Rx += abs(J1_[i][j] - Rx_J_RxDag[i][j]);
+}}
+
+
+cout<<"|TJTDag - J| For Tx = "<<mat_diff_Tx<<endl;
+cout<<"|TJTDag - J| For Ty = "<<mat_diff_Ty<<endl;
+cout<<"|TJTDag - J| For Ry = "<<mat_diff_Ry<<endl;
+cout<<"|TJTDag - J| For Rx = "<<mat_diff_Rx<<endl;
 
 return 0;
 }

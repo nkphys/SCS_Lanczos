@@ -1086,14 +1086,14 @@ int main(int argc, char** argv){
             for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
 
 
-                // //Local Sz
-                // cout<<"Measuring Local Sz-------------------"<<endl;
-                // double_type local_sz;
-                // for(int site1_=0;site1_<_BASIS.Length;site1_++){
-                // local_sz = _MODEL.Get_Sz(site1_, _LANCZOS.Eig_vecs[state_], _BASIS);
-                // cout<<site1_<<" "<<local_sz<<endl;
-                // }
-                // cout<<"----------------------------------"<<endl;
+                //Local Sz
+                cout<<"Measuring Local Sz-------------------"<<endl;
+                double_type local_sz;
+                for(int site1_=0;site1_<_BASIS.Length;site1_++){
+                local_sz = _MODEL.Get_Sz(site1_, _LANCZOS.Eig_vecs[state_], _BASIS);
+                cout<<site1_<<" "<<local_sz<<endl;
+                }
+                cout<<"----------------------------------"<<endl;
 
 
                 //SS corrsXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

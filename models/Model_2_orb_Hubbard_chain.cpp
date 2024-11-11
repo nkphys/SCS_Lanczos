@@ -4282,7 +4282,7 @@ double MODEL_2_orb_Hubb_chain::Get_Holes_Projected_state_probability(BASIS_2_orb
 Mat_1_doub MODEL_2_orb_Hubb_chain::Get_2Holes_Projected_state(BASIS_2_orb_Hubb_chain &basis, Mat_1_trio_int Hole_positions, Mat_1_doub &vec){
 
 
-    //    Mat_1_doub vec1;
+        Mat_1_doub vec1;
     //    int bit_VALUE_up_hole_0, bit_VALUE_dn_hole_0;
     //    int bit_VALUE_up_hole_1, bit_VALUE_dn_hole_1;
     //    int index_no;
@@ -4333,7 +4333,7 @@ Mat_1_doub MODEL_2_orb_Hubb_chain::Get_2Holes_Projected_state(BASIS_2_orb_Hubb_c
     //        vec1[i] = vec1[i]/sqrt(norm_);
     //    }
 
-    //    return vec1;
+        return vec1;
 }
 
 

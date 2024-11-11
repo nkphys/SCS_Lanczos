@@ -1,7 +1,7 @@
 Model = SpinOnlyTargetSzAndK
 ------------------------------------------
 PBC = true
-Length = 18
+Length = 32
 TwoTimesSpin = 1
 TwoTimesTotalSzTarget = 0
 H_mag = 0 0 -0.00
@@ -15,7 +15,7 @@ MultiSectionBasisSearchInt = 2
 
 -----------------------------------------
 #Generators of the cyclic groups in the files
-LatticeSymmetryTransformationFiles = 2 Translation_x.txt Translation_y.txt
+LatticeSymmetryTransformationFiles = 4 Translation_x.txt Translation_y.txt Reflection_y.txt Reflection_x.txt
 
 #Translation_y_4x4.txt
 # Reflection_y_6x4.txt
@@ -24,8 +24,8 @@ LatticeSymmetryTransformationFiles = 2 Translation_x.txt Translation_y.txt
 # Translation_y_4x2.txt Reflection_4x2.txt
 #Reflection_6x1.txt
 
-LatticeSymmetryTransformationCardinalities = 3 3
-EigenvaluesTargeted = 0 0
+LatticeSymmetryTransformationCardinalities = 4 4 2 2
+EigenvaluesTargeted = 0 0 0 0
 
 ----------------------------------------
 
@@ -37,8 +37,8 @@ One_point_oprt_path_2 = Sm.txt
 --------------------------------------
 FourPointObservablesSites file = fourpoint.txt
 -------------------------------------
-Lanc_Error = 10e-12
-max_steps = 400
+Lanc_Error = -10e-12
+max_steps = 200
 Random_seed_generator = 3
 file_eval_spectrum = out0.txt
 save_all_Krylov_space_vecs = true
@@ -67,7 +67,7 @@ Temperature_LTLM_Dynamics = 0.91
 
 
 ----------------------------------
-Perform_Dynamics = true
+Perform_Dynamics = truee
 eta = 0.02
 check_omega = 1.0
 omega_max = 20.0
@@ -76,7 +76,7 @@ d_omega = 0.005
 
 Opr_for_Dynamics = 9 Sz (1.00000,0.00000) 0 (1.00000,0.00000) 6 (1.00000,0.00000) 12 (1.00000,0.00000) 2 (1.00000,0.00000) 8 (1.00000,0.00000) 14 (1.00000,0.00000) 4 (1.00000,0.00000) 10 (1.00000,0.00000) 16
 
-EigenvaluesTargetedDynamics = 0 0
+EigenvaluesTargetedDynamics = 0 0 0 0
 file_dynamics_out = Dyn_SzSz
 ---------------------------------
 
