@@ -11,10 +11,11 @@ int main(){
 
 
 double J1_exc=1.0;
-double J2_exc=2.0;
+double J2_exc=1.2;
 
-int L1=4;
-int L2=4;
+int L1=3;
+int L2=3;
+int L;
 
 int B_=0;
 int C_=1;
@@ -53,6 +54,25 @@ Rx[i].resize(2*L1*L2);
 }
 string Reflection_x_file_str = "Reflection_x.txt";
 ofstream Reflection_x_file_stream(Reflection_x_file_str.c_str());
+
+
+//Reflection from x=-y axis : (x,y) <----> (-y,-x)
+Mat_2_doub Rpxmy; Rpxmy.resize(2*L1*L2);
+for(int i=0;i<2*L1*L2;i++){
+Rpxmy[i].resize(2*L1*L2);
+}
+string Reflection_pxmy_file_str = "Reflection_pxmy.txt";
+ofstream Reflection_pxmy_file_stream(Reflection_pxmy_file_str.c_str());
+
+
+//Reflection from x=y axis : (x,y) <----> (y,x)
+Mat_2_doub Rpxpy; Rpxpy.resize(2*L1*L2);
+for(int i=0;i<2*L1*L2;i++){
+Rpxpy[i].resize(2*L1*L2);
+}
+string Reflection_pxpy_file_str = "Reflection_pxpy.txt";
+ofstream Reflection_pxpy_file_stream(Reflection_pxpy_file_str.c_str());
+
 
 //site= site1 + site_2*L1;
 int site1_new, site2_new, s_new;
@@ -104,6 +124,45 @@ site1_new = site1;
 site_new = s + (2*site1_new) + site2_new*2*L1;
 Reflection_x_file_stream<<site<<"  "<<site_new<<endl;
 Rx[site_new][site]=1.0;
+
+
+//Rpxmy and //Rpxpy
+if(L1==L2){
+L=L1;
+
+//Rpxmy
+if(s==B_){
+site2_new = ( (L-2)-site1 + L )%L;
+site1_new = ( (L-1)-site2 + L )%L;
+s_new = C_;
+}
+if(s==C_){
+site2_new = ( (L-1)-site1 + L )%L;
+site1_new = ( (L-2)-site2 + L )%L;
+s_new = B_;
+}
+site_new = s_new + (2*site1_new) + site2_new*2*L1;
+Reflection_pxmy_file_stream<<site<<"  "<<site_new<<endl;
+Rpxmy[site_new][site]=1.0;
+
+
+//Rpxpy
+if(s==B_){
+site2_new = ( site1 + L )%L;
+site1_new = ( site2 + L )%L;
+s_new = C_;
+}
+if(s==C_){
+site2_new = ( site1 + L )%L;
+site1_new = ( site2 + L )%L;
+s_new = B_;
+}
+site_new = s_new + (2*site1_new) + site2_new*2*L1;
+Reflection_pxpy_file_stream<<site<<"  "<<site_new<<endl;
+Rpxpy[site_new][site]=1.0;
+
+
+}
 
 
 
@@ -237,12 +296,14 @@ Hopp_file_stream<<site <<"   "<<sitep<<"   "<<J1_[site][sitep]<<endl;
 
 cout<<"#Checking Lattice Transformation are symmetric or not?-------------"<<endl;
 
-Mat_2_doub Tx_J, Ty_J, Ry_J, Rx_J;
+Mat_2_doub Tx_J, Ty_J, Ry_J, Rx_J, Rpxmy_J, Rpxpy_J;
 Ty_J.resize(2*L1*L2);Tx_J.resize(2*L1*L2);
 Ry_J.resize(2*L1*L2);Rx_J.resize(2*L1*L2);
+Rpxmy_J.resize(2*L1*L2);Rpxpy_J.resize(2*L1*L2);
 for(int i=0;i<2*L1*L2;i++){
 Tx_J[i].resize(2*L1*L2);Ty_J[i].resize(2*L1*L2);
 Ry_J[i].resize(2*L1*L2);Rx_J[i].resize(2*L1*L2);
+Rpxmy_J[i].resize(2*L1*L2);Rpxpy_J[i].resize(2*L1*L2);
 }
 
 
@@ -251,32 +312,40 @@ for(int i=0;i<2*L1*L2;i++){
 for(int j=0;j<2*L1*L2;j++){
 Tx_J[i][j] =0.0;Ty_J[i][j] =0.0;
 Ry_J[i][j] =0.0;Rx_J[i][j] =0.0;
+Rpxmy_J[i][j] =0.0;Rpxpy_J[i][j] =0.0;
 for(int l=0;l<2*L1*L2;l++){
 Tx_J[i][j] += Tx[i][l]*J1_[l][j];
 Ty_J[i][j] += Ty[i][l]*J1_[l][j];
 Ry_J[i][j] += Ry[i][l]*J1_[l][j];
 Rx_J[i][j] += Rx[i][l]*J1_[l][j];
+Rpxmy_J[i][j] += Rpxmy[i][l]*J1_[l][j];
+Rpxpy_J[i][j] += Rpxpy[i][l]*J1_[l][j];
 }
 }
 }
 
 //Tx_J_TxDag
-Mat_2_doub Tx_J_TxDag, Ty_J_TyDag, Ry_J_RyDag, Rx_J_RxDag;
+Mat_2_doub Tx_J_TxDag, Ty_J_TyDag, Ry_J_RyDag, Rx_J_RxDag, Rpxmy_J_RpxmyDag, Rpxpy_J_RpxpyDag;
 Ty_J_TyDag.resize(2*L1*L2);Tx_J_TxDag.resize(2*L1*L2);
 Ry_J_RyDag.resize(2*L1*L2);Rx_J_RxDag.resize(2*L1*L2);
+Rpxmy_J_RpxmyDag.resize(2*L1*L2);Rpxpy_J_RpxpyDag.resize(2*L1*L2);
 for(int i=0;i<2*L1*L2;i++){
 Tx_J_TxDag[i].resize(2*L1*L2);Ty_J_TyDag[i].resize(2*L1*L2);
 Ry_J_RyDag[i].resize(2*L1*L2);Rx_J_RxDag[i].resize(2*L1*L2);
+Rpxmy_J_RpxmyDag[i].resize(2*L1*L2);Rpxpy_J_RpxpyDag[i].resize(2*L1*L2);
 }
 for(int i=0;i<2*L1*L2;i++){
 for(int j=0;j<2*L1*L2;j++){
 Tx_J_TxDag[i][j] =0.0;Ty_J_TyDag[i][j] =0.0;
 Ry_J_RyDag[i][j] =0.0;Rx_J_RxDag[i][j] =0.0;
+Rpxmy_J_RpxmyDag[i][j] =0.0;Rpxpy_J_RpxpyDag[i][j] =0.0;
 for(int l=0;l<2*L1*L2;l++){
 Tx_J_TxDag[i][j] += Tx_J[i][l]*Tx[j][l];
 Ty_J_TyDag[i][j] += Ty_J[i][l]*Ty[j][l];
 Ry_J_RyDag[i][j] += Ry_J[i][l]*Ry[j][l];
 Rx_J_RxDag[i][j] += Rx_J[i][l]*Rx[j][l];
+Rpxmy_J_RpxmyDag[i][j] += Rpxmy_J[i][l]*Rpxmy[j][l];
+Rpxpy_J_RpxpyDag[i][j] += Rpxpy_J[i][l]*Rpxpy[j][l];
 }
 }
 }
@@ -285,12 +354,16 @@ double mat_diff_Tx=0.0;
 double mat_diff_Ty=0.0;
 double mat_diff_Ry=0.0;
 double mat_diff_Rx=0.0;
+double mat_diff_Rpxmy=0.0;
+double mat_diff_Rpxpy=0.0;
 for(int i=0;i<2*L1*L2;i++){
 for(int j=0;j<2*L1*L2;j++){
 mat_diff_Tx += abs(J1_[i][j] - Tx_J_TxDag[i][j]);
 mat_diff_Ty += abs(J1_[i][j] - Ty_J_TyDag[i][j]);
 mat_diff_Ry += abs(J1_[i][j] - Ry_J_RyDag[i][j]);
 mat_diff_Rx += abs(J1_[i][j] - Rx_J_RxDag[i][j]);
+mat_diff_Rpxmy += abs(J1_[i][j] - Rpxmy_J_RpxmyDag[i][j]);
+mat_diff_Rpxpy += abs(J1_[i][j] - Rpxpy_J_RpxpyDag[i][j]);
 }}
 
 
@@ -298,6 +371,9 @@ cout<<"|TJTDag - J| For Tx = "<<mat_diff_Tx<<endl;
 cout<<"|TJTDag - J| For Ty = "<<mat_diff_Ty<<endl;
 cout<<"|TJTDag - J| For Ry = "<<mat_diff_Ry<<endl;
 cout<<"|TJTDag - J| For Rx = "<<mat_diff_Rx<<endl;
+cout<<"|TJTDag - J| For Rpxmy = "<<mat_diff_Rpxmy<<endl;
+cout<<"|TJTDag - J| For Rpxpy = "<<mat_diff_Rpxpy<<endl;
+
 
 return 0;
 }
