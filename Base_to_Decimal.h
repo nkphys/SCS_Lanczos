@@ -272,15 +272,15 @@ char* fromDeci(char res[], int base, T inputNum)
 template <typename T>
 void fromVecint_to_Deci(Mat_1_int &Vec_out, int base, T &outputNum, int sites)
 {
-
+    ulli base_ulli = (ulli) base;
     assert(Vec_out.size() == sites);
 
-    int power=1;
+    ulli power=1;
     outputNum=0;
 
     for(int i=0;i<sites;i++){
     outputNum += Vec_out[i] * power;
-    power = power * base;
+    power = power * base_ulli;
     }
 
 }
@@ -289,6 +289,7 @@ template <typename T>
 void fromDeci_to_Vecint(Mat_1_int &Vec_out, int base, T inputNum, int sites)
 {
 
+    ulli base_ulli= (ulli) base;
     assert( inputNum <= (pow(base,sites) - 1));
     Vec_out.clear();
     Vec_out.resize(sites);
@@ -303,8 +304,8 @@ void fromDeci_to_Vecint(Mat_1_int &Vec_out, int base, T inputNum, int sites)
     // dividing it by base and taking remainder
     while (inputNum > 0)
     {
-        Vec_out[index] = inputNum % base;
-        inputNum /= base;
+        Vec_out[index] = inputNum % base_ulli;
+        inputNum /= base_ulli;
         index +=1;
     }
 

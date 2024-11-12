@@ -265,6 +265,7 @@ void BASIS_Spins_Target_Sz_and_K::Construct_basis(){
   //  R_vals_basis[4][1]=1;
     cout<<"No. of Basis = "<<MainIndex_to_Dec_partA_.size()<<endl;
     basis_size = MainIndex_to_Dec_partA_.size();
+    //assert(false);
 
 }
 
