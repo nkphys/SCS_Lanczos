@@ -1088,10 +1088,24 @@ int main(int argc, char** argv){
 
                     //Local Sz
                     cout<<"Measuring Local Sz-------------------"<<endl;
-                    double_type local_sz;
-                    for(int site1_=0;site1_<_BASIS.Length;site1_++){
-                        local_sz = _MODEL.Get_Sz(site1_, _LANCZOS.Eig_vecs[state_], _BASIS);
-                        cout<<site1_<<" "<<local_sz<<endl;
+                    Mat_1_doub LocalSz;
+                    LocalSz.resize(_BASIS.Length);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
+                    for(int site1=0;site1<_BASIS.Length;site1++){
+                        int thread_id=0;
+#ifdef _OPENMP
+                        thread_id = omp_get_thread_num();
+#endif
+                        cout<<"Sz of "<<site1<<" on thread "<<thread_id<<endl;
+                        double_type val_Sz=_MODEL.Get_Sz(site1, _LANCZOS.Eig_vecs[state_], _BASIS);
+                        LocalSz[site1]=val_Sz;
+                        //cout<<site1<<"  "<<val_Sz<<endl;
+                    }
+                    for(int site1=0;site1<_BASIS.Length;site1++){
+                        cout<<site1<<"  "<<LocalSz[site1]<<endl;
                     }
                     cout<<"----------------------------------"<<endl;
 
@@ -1398,6 +1412,7 @@ int main(int argc, char** argv){
 
 
             LANCZOS<BASIS_Spins_Target_Sz, MODEL_Spins_Target_Sz> _LANCZOS(_BASIS, _MODEL);
+            _LANCZOS.TimeEvoPerformed=false;
             _LANCZOS.Dynamics_performed=false;
             _LANCZOS.Read_Lanczos_parameters(inp_filename);
 
@@ -1409,9 +1424,24 @@ int main(int argc, char** argv){
                 if(Cheaper_SpinSpincorr){
                     for(int state_=0;state_<_LANCZOS.states_to_look.size();state_++){
                         cout<<"Local Sz for state = "<<state_<<"---------------------"<<endl;
+                        Mat_1_doub LocalSz;
+                        LocalSz.resize(_BASIS.Length);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(shared)
+#endif
                         for(int site1=0;site1<_BASIS.Length;site1++){
+                            int thread_id=0;
+#ifdef _OPENMP
+                            thread_id = omp_get_thread_num();
+#endif
+                            cout<<"Sz of "<<site1<<" on thread "<<thread_id<<endl;
                             double_type val_Sz=_MODEL.Get_Sz(site1, _LANCZOS.Eig_vecs[state_], _BASIS);
-                            cout<<site1<<"  "<<val_Sz<<endl;
+                            LocalSz[site1]=val_Sz;
+                            //cout<<site1<<"  "<<val_Sz<<endl;
+                        }
+                        for(int site1=0;site1<_BASIS.Length;site1++){
+                            cout<<site1<<"  "<<LocalSz[site1]<<endl;
                         }
                         cout<<"------------------------------------------------------"<<endl;
 

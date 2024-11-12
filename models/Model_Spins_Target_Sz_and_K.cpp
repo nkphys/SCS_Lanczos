@@ -94,8 +94,8 @@ void MODEL_Spins_Target_Sz_and_K::Add_connections_strictly2point(BASIS_Spins_Tar
                 temp_pair_int.second=site_k;
                 J1zz_sites.push_back(temp_pair_int);
 
-                if(abs(J1zz_mat[site_l][site_k] - conj(J1zz_mat[site_k][site_l]))>EPS_){
-                    J1zz_mat[site_l][site_k]=conj(J1zz_mat[site_k][site_l]);
+                if(abs(J1zz_mat[site_l][site_k] - conjugate(J1zz_mat[site_k][site_l]))>EPS_){
+                    J1zz_mat[site_l][site_k]=conjugate(J1zz_mat[site_k][site_l]);
                 }
             }
         }
@@ -117,8 +117,8 @@ void MODEL_Spins_Target_Sz_and_K::Add_connections_strictly2point(BASIS_Spins_Tar
                 temp_pair_int.second=site_k;
                 J1pm_sites.push_back(temp_pair_int);
 
-                if(abs(J1pm_mat[site_l][site_k] - conj(J1pm_mat[site_k][site_l]))>EPS_){
-                    J1pm_mat[site_l][site_k]=conj(J1pm_mat[site_k][site_l]);
+                if(abs(J1pm_mat[site_l][site_k] - conjugate(J1pm_mat[site_k][site_l]))>EPS_){
+                    J1pm_mat[site_l][site_k]=conjugate(J1pm_mat[site_k][site_l]);
                 }
             }
         }

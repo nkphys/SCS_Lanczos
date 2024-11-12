@@ -22,14 +22,14 @@ One_point_oprt_path_2 = Sm.txt
 --------------------------------------
 FourPointObservablesSites file = fourpoint.txt
 -------------------------------------
-Lanc_Error = 10e-12
-max_steps = 600
+Lanc_Error = -10e-12
+max_steps = 100
 Random_seed_generator = 3
 file_eval_spectrum = out_eval.txt
-save_all_Krylov_space_vecs = truee
-get_overlap_bw_eigstates_and_K_vecs = truee
-lanczos_reorthogonalization = truee
-Get_Full_Spectrum = truee
+save_all_Krylov_space_vecs = true
+get_overlap_bw_eigstates_and_K_vecs = true
+lanczos_reorthogonalization = true
+Get_Full_Spectrum = true
 need_few_eig_vecs = truee
 few = 10
 ----------------------------------------
@@ -68,7 +68,7 @@ k = 0.1
 file_dynamics_out = Dyn_SzSz_kn2_L8.txt
 ---------------------------------
 
-Processors = 1
+Processors = 8
 
 Write_Basis = false
 Write_Basis_File = Basis_used.txt
