@@ -15,7 +15,7 @@ MultiSectionBasisSearchInt = 2
 
 -----------------------------------------
 #Generators of the cyclic groups in the files
-LatticeSymmetryTransformationFiles = 6 Translation_x.txt Translation_y.txt Reflection_y.txt Reflection_x.txt Reflection_pxmy.txt Reflection_pxpy.txt
+LatticeSymmetryTransformationFiles = 2 Translation_x.txt Translation_y.txt Reflection_y.txt Reflection_x.txt Reflection_pxmy.txt Reflection_pxpy.txt
 
 #Translation_y_4x4.txt
 # Reflection_y_6x4.txt

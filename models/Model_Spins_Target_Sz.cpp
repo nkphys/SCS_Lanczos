@@ -698,6 +698,49 @@ void MODEL_Spins_Target_Sz::Act_translational_opr(BASIS_Spins_Target_Sz &basis, 
 }
 
 
+
+
+double_type MODEL_Spins_Target_Sz::Get_SzSz(int site1, int site2, Mat_1_doub &Vec_, BASIS_Spins_Target_Sz &basis){
+
+
+    ulli dec_m;
+    double_type value=0.0;
+    for (int m=0;m<basis.MainIndex_to_Dec_part0_.size();m++){
+
+        //dec_m = basis.D_basis[m];
+        dec_m = basis.MainIndex_to_Dec_part0_[m] +  pow(basis.BASE, basis.Partition_Length[0])*basis.MainIndex_to_Dec_part1_[m];
+
+
+        //Sz(i)Sz(j)----------------------------------------------------------------
+        value +=conjugate(Vec_[m])*Vec_[m]*((1.0*value_at_pos(dec_m, site1, basis.BASE)) - (0.5*basis.TwoTimesSpin))*
+                ((1.0*value_at_pos(dec_m, site2, basis.BASE)) - (0.5*basis.TwoTimesSpin));
+
+    }
+
+    return value;
+
+}
+
+double_type MODEL_Spins_Target_Sz::Get_Sz(int site1, Mat_1_doub &Vec_, BASIS_Spins_Target_Sz &basis){
+
+
+    ulli dec_m;
+    double_type value=0.0;
+    for (int m=0;m<basis.MainIndex_to_Dec_part0_.size();m++){
+
+        //dec_m = basis.D_basis[m];
+        dec_m = basis.MainIndex_to_Dec_part0_[m] +  pow(basis.BASE, basis.Partition_Length[0])*basis.MainIndex_to_Dec_part1_[m];
+
+
+        //Sz(i)Sz(j)----------------------------------------------------------------
+        value +=conjugate(Vec_[m])*Vec_[m]*((1.0*value_at_pos(dec_m, site1, basis.BASE)) - (0.5*basis.TwoTimesSpin));
+
+    }
+
+    return value;
+
+}
+
 void MODEL_Spins_Target_Sz::Act_SiSj(int &site_i, int &site_j, ulli &m, Mat_1_ullint &m_out_array, Mat_1_doub &Coeff_out_Array, BASIS_Spins_Target_Sz &basis){
 
 

@@ -71,6 +71,8 @@ void Create_JJz_Trial_States(Mat_2_pair_realint &JJzBasis_states, Mat_2_real &Co
 void Overlap_of_JJzBasis_with_State(Mat_1_doub &Vec_ , Mat_1_doub &Overlaps_ , Mat_1_int &sorted_indices,  Mat_2_pair_realint &JJzBasis_states, Mat_2_real &Coefficients, Mat_2_int &m_basis, BASIS_Spins_Target_Sz &basis);
 void Act_Hamil(BASIS_Spins_Target_Sz &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
 void Act_translational_opr(BASIS_Spins_Target_Sz &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
+double_type Get_SzSz(int site1, int site2, Mat_1_doub &Vec_, BASIS_Spins_Target_Sz &basis);
+double_type Get_Sz(int site1, Mat_1_doub &Vec_, BASIS_Spins_Target_Sz &basis);
 
 //void Initialize_one_point_to_calculate(BASIS_1_orb_tJ &basis);
 //void Initialize_two_point_to_calculate(BASIS_1_orb_tJ &basis);
