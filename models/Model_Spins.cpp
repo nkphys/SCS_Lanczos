@@ -5,6 +5,9 @@ This class includes the Model for which Lanczos is being done
 #ifndef HIDDEN
 #include "Model_Spins.h"
 #include <stdlib.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 using namespace std;
 #define PI 3.14159265
 
@@ -92,6 +95,372 @@ void MODEL_Spins::Act_diagonal_terms(BASIS_Spins &basis, Mat_1_doub &Vec_in, Mat
             }
         
     }
+
+}
+
+
+
+
+void MODEL_Spins::Add_arbitraryconnections_from_files_new(BASIS_Spins &basis){
+
+    Hamil.value.clear();
+    Hamil.nrows = basis.basis_size;
+    Hamil.ncols = Hamil.nrows;
+
+
+
+    Hamiltonian_1_COO Hamil_private;
+    int N_threads=1;
+#ifdef _OPENMP
+    N_threads=no_of_proc;
+#endif
+    Hamil_private.resize(N_threads);
+
+
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+#endif
+    int thread_id;
+    double EPS_=0.000001;
+    //Mat_1_int state_vec;
+
+    Mat_1_ullint dec_vec_out_given_m;
+    Mat_1_doub val_vec_out_given_m;
+    Mat_1_ullint dec_vec_out_final;
+    Mat_1_doub val_vec_out_final;
+
+    Mat_1_ullint dec_vec_out;
+    Mat_1_doub val_vec_out;
+    Mat_1_string oprs_list;
+    Mat_1_int oprs_site;
+    //stringstream connection_stream;
+    string temp_opr_str;
+
+
+#ifdef _OPENMP
+#pragma omp for
+#endif
+    for (unsigned long long int dec_m=basis.D_min;dec_m<basis.D_max+1;dec_m++){
+
+        thread_id=0;
+#ifdef _OPENMP
+        thread_id = omp_get_thread_num();
+#endif
+
+        //dec_m = basis.D_basis[m];
+        dec_vec_out_given_m.clear();
+        val_vec_out_given_m.clear();
+
+        for(int FileNo=0;FileNo<ConnectionFiles.size();FileNo++){
+            for(int connection_no=0;connection_no<Connections[FileNo].size();connection_no++){
+                // cout<<"here 2"<<endl;
+                // connection_stream.str("");
+
+                stringstream connection_stream;
+                connection_stream<<Connections[FileNo][connection_no];
+
+                int n_oprs;
+                oprs_list.clear();
+                oprs_site.clear();
+
+
+                double_type connection_val;
+                connection_stream>>n_oprs;
+                oprs_list.resize(n_oprs);
+                oprs_site.resize(n_oprs);
+
+                for(int opr_no=(n_oprs-1);opr_no>=0;opr_no--){
+                    connection_stream>>temp_opr_str;
+                    oprs_list[opr_no]=temp_opr_str;
+                }
+                for(int opr_no=(n_oprs-1);opr_no>=0;opr_no--){
+                    connection_stream>>oprs_site[opr_no];
+                }
+                connection_stream>>connection_val;
+
+                dec_vec_out.clear();
+                val_vec_out.clear();
+                dec_vec_out.push_back(dec_m);
+                val_vec_out.push_back(connection_val);
+
+
+                Act_LocalOprString_by_Recursion(oprs_site, oprs_list, dec_vec_out, val_vec_out, basis, 0);
+
+
+                for(int index_temp=0;index_temp<dec_vec_out.size();index_temp++){
+                    dec_vec_out_given_m.push_back(dec_vec_out[index_temp]);
+                    val_vec_out_given_m.push_back(val_vec_out[index_temp]);
+                }
+
+                // cout<<"here 1"<<endl;
+            }
+        }
+
+
+
+        Remove_repetitions(dec_vec_out_given_m, val_vec_out_given_m, dec_vec_out_final, val_vec_out_final);
+
+        for(int j=0;j<dec_vec_out_final.size();j++){
+
+            if(abs(val_vec_out_final[j])>EPS_){
+
+                // fromDeci_to_Vecint(state_vec, basis.BASE, dec_vec_out_final[j] , basis.Length);
+                // quicksort(state_vec, 0, state_vec.size() -1);
+                // fromVecint_to_Deci(state_vec, basis.BASE, dec_max, basis.Length);
+                // n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
+                // m_new = Find_int_in_part_of_intarray(dec_vec_out_final[j], basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
+
+
+                if(dec_vec_out_final[j]<=dec_m){
+                    Hamil_private[thread_id].value.push_back(val_vec_out_final[j]*one);
+                    Hamil_private[thread_id].rows.push_back(dec_vec_out_final[j]);
+                    Hamil_private[thread_id].columns.push_back(dec_m);
+                }
+            }
+
+        }
+
+
+        if(dec_m%10000==0){
+            cout<<"dec_m = "<<dec_m<<" done "<<endl;
+        }
+
+    }
+
+#ifdef _OPENMP
+    }
+#endif
+
+    for(int thread=0;thread<N_threads;thread++){
+        Hamil.value.insert(Hamil.value.end(),Hamil_private[thread].value.begin(), Hamil_private[thread].value.end() );
+        Hamil.rows.insert(Hamil.rows.end(),Hamil_private[thread].rows.begin(), Hamil_private[thread].rows.end() );
+        Hamil.columns.insert(Hamil.columns.end(),Hamil_private[thread].columns.begin(), Hamil_private[thread].columns.end() );
+    }
+
+    //state_vec.clear();
+    //dec_vec_out.clear();
+    //val_vec_out.clear();
+    // connection_stream.str(std::string());
+
+
+}
+
+
+void MODEL_Spins::Add_arbitraryconnections_from_files(BASIS_Spins &basis){
+
+    Hamil.value.clear();
+    Hamil.nrows = basis.basis_size;
+    Hamil.ncols = Hamil.nrows;
+
+
+    double EPS_=0.000001;
+    int thread_id;
+    ulli dec_m;
+    ulli dec_max;
+    int m_new;
+    int n_index;
+    Mat_1_int state_vec;
+
+    Mat_1_ullint dec_vec_out_given_m;
+    Mat_1_doub val_vec_out_given_m;
+    Mat_1_ullint dec_vec_out_final;
+    Mat_1_doub val_vec_out_final;
+
+    Mat_1_ullint dec_vec_out;
+    Mat_1_doub val_vec_out;
+    Mat_1_string oprs_list;
+    Mat_1_int oprs_site;
+    //stringstream connection_stream;
+    string temp_opr_str;
+
+
+    //abort();
+
+
+    //for (int m=0;m<basis.D_basis.size();m++){
+    for (unsigned long long int dec_m=basis.D_min;dec_m<basis.D_max+1;dec_m++){
+
+
+        //dec_m = basis.D_basis[m];
+        dec_vec_out_given_m.clear();
+        val_vec_out_given_m.clear();
+
+        for(int FileNo=0;FileNo<ConnectionFiles.size();FileNo++){
+            for(int connection_no=0;connection_no<Connections[FileNo].size();connection_no++){
+                // cout<<"here 2"<<endl;
+                // connection_stream.str("");
+
+                stringstream connection_stream;
+                connection_stream<<Connections[FileNo][connection_no];
+
+                int n_oprs;
+                oprs_list.clear();
+                oprs_site.clear();
+
+
+                double_type connection_val;
+                connection_stream>>n_oprs;
+                oprs_list.resize(n_oprs);
+                oprs_site.resize(n_oprs);
+
+                for(int opr_no=(n_oprs-1);opr_no>=0;opr_no--){
+                    connection_stream>>temp_opr_str;
+                    oprs_list[opr_no]=temp_opr_str;
+                }
+                for(int opr_no=(n_oprs-1);opr_no>=0;opr_no--){
+                    connection_stream>>oprs_site[opr_no];
+                }
+                connection_stream>>connection_val;
+
+                dec_vec_out.clear();
+                val_vec_out.clear();
+                dec_vec_out.push_back(dec_m);
+                val_vec_out.push_back(connection_val);
+
+
+                Act_LocalOprString_by_Recursion(oprs_site, oprs_list, dec_vec_out, val_vec_out, basis, 0);
+
+
+                for(int index_temp=0;index_temp<dec_vec_out.size();index_temp++){
+                    dec_vec_out_given_m.push_back(dec_vec_out[index_temp]);
+                    val_vec_out_given_m.push_back(val_vec_out[index_temp]);
+                }
+
+                // cout<<"here 1"<<endl;
+            }
+        }
+
+
+
+        Remove_repetitions(dec_vec_out_given_m, val_vec_out_given_m, dec_vec_out_final, val_vec_out_final);
+
+        for(int j=0;j<dec_vec_out_final.size();j++){
+
+            if(abs(val_vec_out_final[j])>EPS_){
+
+                // fromDeci_to_Vecint(state_vec, basis.BASE, dec_vec_out_final[j] , basis.Length);
+                // quicksort(state_vec, 0, state_vec.size() -1);
+                // fromVecint_to_Deci(state_vec, basis.BASE, dec_max, basis.Length);
+                // n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
+                // m_new = Find_int_in_part_of_intarray(dec_vec_out_final[j], basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
+
+
+                if(dec_vec_out_final[j]<=dec_m){
+                    Hamil.value.push_back(val_vec_out_final[j]*one);
+                    Hamil.rows.push_back(dec_vec_out_final[j]);
+                    Hamil.columns.push_back(dec_m);
+                }
+            }
+
+        }
+
+
+        if(dec_m%5000==0){
+            cout<<"dec_m = "<<dec_m<<" done "<<endl;
+        }
+
+    }
+
+
+    state_vec.clear();
+    dec_vec_out.clear();
+    val_vec_out.clear();
+    // connection_stream.str(std::string());
+
+
+}
+
+
+void MODEL_Spins::Get_LocalOPR(Matrix<double_type> &OPR_, string opr_type){
+
+    if(opr_type=="Id"){
+        OPR_=Idendity;
+    }
+    else if(opr_type=="Sz"){
+        OPR_=SzLocal;
+    }
+    else if(opr_type=="Sx"){
+        OPR_=SxLocal;
+    }
+    else if(opr_type=="SyI"){
+        OPR_=SyLocalTimesIota;
+    }
+    else if(opr_type=="Sp"){
+        OPR_=SplusLocal;
+    }
+    else if(opr_type=="Sm"){
+        OPR_=SminusLocal;
+    }
+    else if (opr_type=="Sx2"){
+        OPR_=Sx2Local;
+    }
+    else if (opr_type=="Sy2"){
+        OPR_=Sy2Local;
+    }
+    else if (opr_type=="Sz2"){
+        OPR_=Sz2Local;
+    }
+    else if (opr_type=="Qxz"){
+        OPR_=QxzLocal;
+    }
+    else if (opr_type=="QyzI"){
+        OPR_=QyzLocalTimesIota;
+    }
+    else if (opr_type=="QxyI"){
+        OPR_=QxyLocalTimesIota;
+    }
+    else if (opr_type=="TauZ"){
+        OPR_ = TauZLocal;
+    }
+    else{
+        cout<<"OPR TYPE "<<opr_type<<" not present"<<endl;
+    }
+
+}
+
+void MODEL_Spins::Act_LocalOprString_by_Recursion(Mat_1_int oprs_site, Mat_1_string oprs_list, Mat_1_ullint & dec_vec_out, Mat_1_doub &val_vec_out,BASIS_Spins & basis, int opr_no){
+
+    double EPS_=0.0000001;
+
+
+    if(opr_no<oprs_list.size()){
+
+        Matrix<double_type> OPR_;
+        Get_LocalOPR(OPR_, oprs_list[opr_no]);
+
+        //act opr on dec_vec and update dec_vec_out and val_vec_out
+        Mat_1_ullint dec_vec_out_temp_final;
+        Mat_1_doub val_vec_out_temp_final;
+        Mat_1_ullint dec_vec_out_temp;
+        Mat_1_doub val_vec_out_temp;
+
+        ulli dec_old, dec_new_temp;
+        int val_site_old;
+        for(int dec_index=0;dec_index<dec_vec_out.size();dec_index++){
+            dec_old = dec_vec_out[dec_index];
+            val_site_old = value_at_pos(dec_old, oprs_site[opr_no], basis.BASE);
+
+            for(int val_col=0;val_col<basis.BASE;val_col++){
+                if(abs(OPR_(val_col,val_site_old))>EPS_){
+                    dec_new_temp = Updated_decimal_with_value_at_pos(dec_old, oprs_site[opr_no], basis.BASE, val_col);
+                    dec_vec_out_temp.push_back(dec_new_temp);
+                    val_vec_out_temp.push_back(OPR_(val_col,val_site_old)*val_vec_out[dec_index]);
+                }
+            }
+        }
+
+        Remove_repetitions(dec_vec_out_temp, val_vec_out_temp, dec_vec_out_temp_final, val_vec_out_temp_final);
+        dec_vec_out=dec_vec_out_temp_final;
+        val_vec_out=val_vec_out_temp_final;
+
+    }
+
+    if((opr_no+1)<oprs_list.size()){
+        Act_LocalOprString_by_Recursion(oprs_site, oprs_list, dec_vec_out, val_vec_out, basis, opr_no+1);
+    }
+
+
 
 }
 
@@ -308,7 +677,7 @@ for(int i2_=0;i2_<basis_sys2.Length;i2_++){
 State_Sys2_.push_back(State_Full[Sys2_[i2_]]);
 }
 fromVecint_to_Deci(State_Sys1_, basis_sys1.BASE , dec1_, basis_sys1.Length);
-fromVecint_to_Deci(State_Sys2_, basis_sys2.BASE , dec2_, basis_sys1.Length);
+fromVecint_to_Deci(State_Sys2_, basis_sys2.BASE , dec2_, basis_sys2.Length);
 Psi_LB(dec1_,dec2_) = Vec_[i];
 }
 
@@ -950,6 +1319,8 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
 
     string no_of_onepoint_obs_, No_Of_Onepoint_Obs_ = "No_of_onepoint_obs = ";
 
+    string genericconnectionsfiles_, GenericConnectionsFiles_ = "GenericConnectionsFiles = ";
+
 
 
     int offset;
@@ -961,6 +1332,9 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
         while(!inputfile.eof())
         {
             getline(inputfile,line);
+
+            if ((offset = line.find(GenericConnectionsFiles_, 0)) != string::npos) {
+                genericconnectionsfiles_ = line.substr (offset+GenericConnectionsFiles_.length());  }
 
             if ((offset = line.find(No_Of_Onepoint_Obs_, 0)) != string::npos) {
                 no_of_onepoint_obs_ = line.substr (offset+No_Of_Onepoint_Obs_.length());  }
@@ -1015,10 +1389,32 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
 
 
 
+    stringstream genericconnectionsfiles_stream;
+    genericconnectionsfiles_stream<<genericconnectionsfiles_;
+    genericconnectionsfiles_stream>>N_ConnectionsFiles;
+    ConnectionFiles.resize(N_ConnectionsFiles);
+    string filename_temp;
+    for(int i=0;i<N_ConnectionsFiles;i++){
+        genericconnectionsfiles_stream>>filename_temp;
+        ConnectionFiles[i]=filename_temp;
+    }
+
+
+    Connections.resize(N_ConnectionsFiles);
+    for(int FileNo=0;FileNo<N_ConnectionsFiles;FileNo++){
+        string line_connection;
+        ifstream inputfileConnection(ConnectionFiles[FileNo].c_str());
+        Connections[FileNo].clear();
+        while(getline(inputfileConnection,line_connection)){
+            Connections[FileNo].push_back(line_connection);
+        }
+    }
+
+
     MagFieldVectorfilepath = MagFieldVectorfilepath;// + Extenstion_to_FilePaths;
 
     //cout<<"Reading Magnetic field :"<<endl;
-    ifstream inMagfile(MagFieldVectorfilepath.c_str());
+   /* ifstream inMagfile(MagFieldVectorfilepath.c_str());
     double temp_hx, temp_hy , temp_hz;
     int temp_site;
     Hx_field_const.clear();Hy_field_const.clear();Hz_field_const.clear();
@@ -1028,9 +1424,10 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
         Hx_field_const[i]=temp_hx;Hy_field_const[i]=temp_hy;Hz_field_const[i]=temp_hz;
         assert(i==temp_site);
         //cout<<i<<"  "<<Hx_field_const[i]<<"  "<<Hy_field_const[i]<<"  "<<Hz_field_const[i]<<endl;
-    }
+    }*/
     //cout<<endl;
 
+    /*
     Hx_field = Hx_field_const;
     Hy_field = Hy_field_const;
     Hz_field = Hz_field_const;
@@ -1117,10 +1514,92 @@ void MODEL_Spins::Read_parameters(BASIS_Spins &basis, string filename){
         Four_point_sites_set.push_back(Tetra_int_temp);
         // process pair (a,b)
     }
-
+    */
 
 
 }
+
+
+
+
+void MODEL_Spins::CreateLocalOprs_in_LocalHilbertBasis(BASIS_Spins &basis){
+
+    assert(basis.TwoTimesSpin>0);
+    int HS; //Hilbert Space Size
+    HS=basis.TwoTimesSpin+1;
+    double Spin=0.5*basis.TwoTimesSpin;
+    //basis convention = [-S, -S+1,..., S-1, S]
+
+    Idendity.resize(HS,HS);
+
+    //Dipole Oprs
+    SxLocal.resize(HS,HS);SyLocal.resize(HS,HS);SzLocal.resize(HS,HS);
+    SplusLocal.resize(HS,HS);SminusLocal.resize(HS,HS);SyLocalTimesIota.resize(HS,HS);
+    int mp_temp;
+    for(int m=0;m<HS;m++){
+        Idendity(m,m)=1.0;
+        SzLocal(m,m) = -Spin + 1.0*m;
+        mp_temp=m+1;
+
+        if(mp_temp<HS){
+            SplusLocal(mp_temp,m) = sqrt( Spin*(Spin+1.0) - ( (-Spin+mp_temp*1.0)*(-Spin+m*1.0) ) );
+            SminusLocal(m,mp_temp) = SplusLocal(mp_temp,m);
+        }
+    }
+
+    for(int m=0;m<HS;m++){
+        for(int mp=0;mp<HS;mp++){
+            SxLocal(mp,m) = 0.5*(SplusLocal(mp,m) + SminusLocal(mp,m));
+            SyLocalTimesIota(mp,m) = 0.5*(SplusLocal(mp,m) - SminusLocal(mp,m));
+        }
+    }
+
+#ifdef USE_COMPLEX
+    for(int m=0;m<HS;m++){
+        for(int mp=0;mp<HS;mp++){
+            SyLocal(mp,m) = -0.5*iota_comp*(SplusLocal(mp,m) - SminusLocal(mp,m));
+        }
+    }
+#endif
+
+
+
+    //Quadropolar Oprs
+    if(basis.TwoTimesSpin>=2){
+        QxxLocal.resize(HS,HS);QxyLocal.resize(HS,HS);QxzLocal.resize(HS,HS);
+        QyyLocal.resize(HS,HS);QyzLocal.resize(HS,HS);QzzLocal.resize(HS,HS);
+        QxyLocalTimesIota.resize(HS,HS);QyzLocalTimesIota.resize(HS,HS);
+        Sx2Local.resize(HS,HS);Sy2Local.resize(HS,HS);Sz2Local.resize(HS,HS);
+        TauZLocal.resize(HS,HS);
+
+
+        for(int m=0;m<HS;m++){
+            for(int mp=0;mp<HS;mp++){
+                for(int k=0;k<HS;k++){
+                    Sx2Local(mp,m) += SxLocal(mp,k)*SxLocal(k,m);
+                    Sy2Local(mp,m) += -1.0*SyLocalTimesIota(mp,k)*SyLocalTimesIota(k,m);
+                    Sz2Local(mp,m) += SzLocal(mp,k)*SzLocal(k,m);
+                    QxzLocal(mp,m) += SxLocal(mp,k)*SzLocal(k,m) + SzLocal(mp,k)*SxLocal(k,m);
+                    QyzLocalTimesIota(mp,m) += SyLocalTimesIota(mp,k)*SzLocal(k,m) +
+                                                SzLocal(mp,k)*SyLocalTimesIota(k,m);
+                    QxyLocalTimesIota(mp,m) += SxLocal(mp,k)*SyLocalTimesIota(k,m) +
+                                                SyLocalTimesIota(mp,k)*SxLocal(k,m);
+                }
+            }}
+
+
+        for(int m=0;m<HS;m++){
+            for(int mp=0;mp<HS;mp++){
+                TauZLocal(mp,m) = 0.5*(Sx2Local(mp,m) - Sy2Local(mp,m));
+            }}
+
+
+    }
+
+}
+
+
+
 
 
 
@@ -1234,6 +1713,258 @@ void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis, int site_){
     }
 
 }
+
+
+
+
+void MODEL_Spins::Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR_ , int site1, int site2, BASIS_Spins &basis){
+
+
+
+    OPR_.nrows = basis.basis_size;
+    OPR_.ncols = OPR_.nrows;
+
+    Mat_1_int state_vec;
+
+    double EPS_=0.000001;
+    Mat_1_ullint dec_vec_out_given_m;
+    Mat_1_doub val_vec_out_given_m;
+    Mat_1_ullint dec_vec_out_final;
+    Mat_1_doub val_vec_out_final;
+
+    Mat_1_ullint dec_vec_out;
+    Mat_1_doub val_vec_out;
+    Mat_1_string oprs_list;
+    Mat_1_int oprs_site;
+    //stringstream connection_stream;
+    string temp_opr_str;
+
+
+
+
+
+    if(opr_type=="Svec.Svec"){
+        Mat_1_string connection_type;
+        connection_type.push_back("Sz Sz");
+        connection_type.push_back("Sp Sm");
+        connection_type.push_back("Sm Sp");
+        Mat_1_doub connection_val;
+        connection_val.push_back(1.0);
+        connection_val.push_back(0.5);
+        connection_val.push_back(0.5);
+
+    for (unsigned long long int dec_m=basis.D_min;dec_m<basis.D_max+1;dec_m++){
+
+
+        //dec_m = basis.D_basis[m];
+        dec_vec_out_given_m.clear();
+        val_vec_out_given_m.clear();
+
+
+                // cout<<"here 2"<<endl;
+                // connection_stream.str("");
+
+        for(int connection_type_ind=0;connection_type_ind<connection_type.size();connection_type_ind++){
+                string connections="2 "+ connection_type[connection_type_ind] + " "+to_string(site1) +" "+to_string(site2)+" "+to_string(connection_val[connection_type_ind]);
+                stringstream connection_stream;
+                connection_stream<<connections;
+                int n_oprs;
+                oprs_list.clear();
+                oprs_site.clear();
+                double_type connection_val;
+                connection_stream>>n_oprs;
+                oprs_list.resize(n_oprs);
+                oprs_site.resize(n_oprs);
+
+                for(int opr_no=(n_oprs-1);opr_no>=0;opr_no--){
+                    connection_stream>>temp_opr_str;
+                    oprs_list[opr_no]=temp_opr_str;
+                }
+                for(int opr_no=(n_oprs-1);opr_no>=0;opr_no--){
+                    connection_stream>>oprs_site[opr_no];
+                }
+                connection_stream>>connection_val;
+
+                dec_vec_out.clear();
+                val_vec_out.clear();
+                dec_vec_out.push_back(dec_m);
+                val_vec_out.push_back(connection_val);
+
+
+                Act_LocalOprString_by_Recursion(oprs_site, oprs_list, dec_vec_out, val_vec_out, basis, 0);
+
+
+                for(int index_temp=0;index_temp<dec_vec_out.size();index_temp++){
+                    dec_vec_out_given_m.push_back(dec_vec_out[index_temp]);
+                    val_vec_out_given_m.push_back(val_vec_out[index_temp]);
+                }
+
+                // cout<<"here 1"<<endl;
+
+        }
+
+        Remove_repetitions(dec_vec_out_given_m, val_vec_out_given_m, dec_vec_out_final, val_vec_out_final);
+
+        for(int j=0;j<dec_vec_out_final.size();j++){
+
+            if(abs(val_vec_out_final[j])>EPS_){
+
+                // fromDeci_to_Vecint(state_vec, basis.BASE, dec_vec_out_final[j] , basis.Length);
+                // quicksort(state_vec, 0, state_vec.size() -1);
+                // fromVecint_to_Deci(state_vec, basis.BASE, dec_max, basis.Length);
+                // n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
+                // m_new = Find_int_in_part_of_intarray(dec_vec_out_final[j], basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
+
+                    OPR_.value.push_back(val_vec_out_final[j]*one);
+                    OPR_.rows.push_back(dec_vec_out_final[j]);
+                    OPR_.columns.push_back(dec_m);
+
+            }
+
+        }
+
+    }
+
+    }
+
+
+    state_vec.clear();
+    dec_vec_out.clear();
+    val_vec_out.clear();
+
+    if(opr_type=="TauZTauZ"){
+        Mat_1_string connection_type;
+        connection_type.push_back("TauZ TauZ");
+        Mat_1_doub connection_val;
+        connection_val.push_back(1.0);
+        for (unsigned long long int dec_m=basis.D_min;dec_m<basis.D_max+1;dec_m++){
+
+
+            //dec_m = basis.D_basis[m];
+            dec_vec_out_given_m.clear();
+            val_vec_out_given_m.clear();
+
+
+            // cout<<"here 2"<<endl;
+            // connection_stream.str("");
+
+            for(int connection_type_ind=0;connection_type_ind<connection_type.size();connection_type_ind++){
+                string connections="2 "+ connection_type[connection_type_ind] + " "+to_string(site1) +" "+to_string(site2)+" "+to_string(connection_val[connection_type_ind]);
+                stringstream connection_stream;
+                connection_stream<<connections;
+                int n_oprs;
+                oprs_list.clear();
+                oprs_site.clear();
+                double_type connection_val;
+                connection_stream>>n_oprs;
+                oprs_list.resize(n_oprs);
+                oprs_site.resize(n_oprs);
+
+                for(int opr_no=(n_oprs-1);opr_no>=0;opr_no--){
+                    connection_stream>>temp_opr_str;
+                    oprs_list[opr_no]=temp_opr_str;
+                }
+                for(int opr_no=(n_oprs-1);opr_no>=0;opr_no--){
+                    connection_stream>>oprs_site[opr_no];
+                }
+                connection_stream>>connection_val;
+
+                dec_vec_out.clear();
+                val_vec_out.clear();
+                dec_vec_out.push_back(dec_m);
+                val_vec_out.push_back(connection_val);
+
+
+                Act_LocalOprString_by_Recursion(oprs_site, oprs_list, dec_vec_out, val_vec_out, basis, 0);
+
+
+                for(int index_temp=0;index_temp<dec_vec_out.size();index_temp++){
+                    dec_vec_out_given_m.push_back(dec_vec_out[index_temp]);
+                    val_vec_out_given_m.push_back(val_vec_out[index_temp]);
+                }
+
+                // cout<<"here 1"<<endl;
+
+            }
+
+            Remove_repetitions(dec_vec_out_given_m, val_vec_out_given_m, dec_vec_out_final, val_vec_out_final);
+
+            for(int j=0;j<dec_vec_out_final.size();j++){
+
+                if(abs(val_vec_out_final[j])>EPS_){
+
+                        // fromDeci_to_Vecint(state_vec, basis.BASE, dec_vec_out_final[j] , basis.Length);
+                        // quicksort(state_vec, 0, state_vec.size() -1);
+                        // fromVecint_to_Deci(state_vec, basis.BASE, dec_max, basis.Length);
+                        // n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
+                        // m_new = Find_int_in_part_of_intarray(dec_vec_out_final[j], basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
+
+                    OPR_.value.push_back(val_vec_out_final[j]*one);
+                    OPR_.rows.push_back(dec_vec_out_final[j]);
+                    OPR_.columns.push_back(dec_m);
+
+                }
+
+            }
+
+        }
+
+    }
+
+    state_vec.clear();
+    dec_vec_out.clear();
+    val_vec_out.clear();
+
+
+
+
+}
+
+
+
+double_type MODEL_Spins::Get_SzSz(int site1, int site2, Mat_1_doub &Vec_, BASIS_Spins &basis){
+
+
+
+    double_type value=0.0;
+    // for (int m=0;m<basis.MainIndex_to_Dec_part0_.size();m++){
+    //dec_m = basis.MainIndex_to_Dec_part0_[m] +  pow(basis.BASE, basis.Partition_Length[0])*basis.MainIndex_to_Dec_part1_[m];
+
+    for (unsigned long long int dec_m=basis.D_min;dec_m<basis.D_max+1;dec_m++){
+
+
+        //Sz(i)Sz(j)----------------------------------------------------------------
+        value +=conjugate(Vec_[dec_m])*Vec_[dec_m]*((1.0*value_at_pos(dec_m, site1, basis.BASE)) - (0.5*basis.TwoTimesSpin))*
+                 ((1.0*value_at_pos(dec_m, site2, basis.BASE)) - (0.5*basis.TwoTimesSpin));
+
+    }
+
+    return value;
+
+}
+
+double_type MODEL_Spins::Get_Sz(int site1, Mat_1_doub &Vec_, BASIS_Spins &basis){
+
+
+    ulli dec_m;
+    double_type value=0.0;
+    //for (int m=0;m<basis.MainIndex_to_Dec_part0_.size();m++){
+    for (unsigned long long int dec_m=basis.D_min;dec_m<basis.D_max+1;dec_m++){
+
+
+        //Using Li tables
+        //dec_m = basis.MainIndex_to_Dec_part0_[m] +  pow(basis.BASE, basis.Partition_Length[0])*basis.MainIndex_to_Dec_part1_[m];
+
+
+        //Sz(i)Sz(j)----------------------------------------------------------------
+        value +=conjugate(Vec_[dec_m])*Vec_[dec_m]*((1.0*value_at_pos(dec_m, site1, basis.BASE)) - (0.5*basis.TwoTimesSpin));
+
+    }
+
+    return value;
+
+}
+
 
 void MODEL_Spins::Initialize_Opr_for_Dynamics(BASIS_Spins &basis){
 

@@ -2,11 +2,13 @@ Model = SpinOnly
 ------------------------------------------
 PBC = true
 Length = 16
-TwoTimesSpin = 1
+TwoTimesSpin = 2
 H_mag = 40 -40 40 -40 40 -40 40 -40 40 -40 40 -40 40 -40 40 -40
 D_anisotropy = 0 0 0.00
-LongRangeExchangeZZ file = Jzz_longrange_16.txt
-LongRangeExchangePM file = Jpm_longrange_16.txt
+LongRangeExchangeZZ file = Jzz_longrange_8.txt
+LongRangeExchangePM file = Jzz_longrange_8.txt
+
+GenericConnectionsFiles = 1 SSLL.txt
 ----------------------------------------
 
 No_of_onepoint_obs = 1
@@ -18,19 +20,19 @@ Saving_Hamiltonian_and_Oprs = true
 --------------------------------------
 FourPointObservablesSites file = fourpoint.txt
 -------------------------------------
-Lanc_Error = -10e-16
-max_steps = 120
-Random_seed_generator = 2
+Lanc_Error = -10e-12
+max_steps = 600
+Random_seed_generator = 3
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = true
-get_overlap_bw_eigstates_and_K_vecs = true
-lanczos_reorthogonalization = true
-Get_Full_Spectrum = true
-need_few_eig_vecs = true
+save_all_Krylov_space_vecs = truee
+get_overlap_bw_eigstates_and_K_vecs = truee
+lanczos_reorthogonalization = truee
+Get_Full_Spectrum = truee
+need_few_eig_vecs = truee
 few = 1
 ----------------------------------------
 Get_overlap_with_basis = false
-States_to_look = 1 0
+States_to_look = 2 0 1
 overlap_out_file = out0.txt
 calculate_local_obs_for_states_to_look = true
 calculate_local_obs_for_states_to_look_for_first_n_basis = 100
@@ -48,7 +50,7 @@ Temperature_LTLM_Dynamics = 0.91
 
 
 ----------------------------------
-Perform_Dynamics = true
+Perform_Dynamics = false
 eta = 0.05
 check_omega = 0.2
 omega_max = 100.0
@@ -60,4 +62,4 @@ k = 0.0
 file_dynamics_out = Dyn_Sm_K0.0
 ---------------------------------
 
-Processors = 1
+Processors = 8

@@ -1,35 +1,43 @@
 Model = 3_orb_Hubbard_chain
+Geometryy = chain
+Geometry = LongRange
 ------------------------------------------
 PBC = false
-Length = 1
-Ndown = 2
-Nup = 1
-CFS = 0 0 0
+Length = 4
+Ndown = 4
+Nup = 4
+CFS = -0.0 -0.0 -2.0
 
-Hopping_mat[0][orb] = 1 0 0
-Hopping_mat[1][orb] = 0 1 0
-Hopping_mat[2][orb] = 0 0 1
-U = 10.0
-JHund = 2.50 
-Uprime = 5.0
-H_mag = 0
+Hopping_mat[0][orb] = -0 0 0
+Hopping_mat[1][orb] = 0 -0 0
+Hopping_mat[2][orb] = 0 0 -0
+
+
+LongRangeHopping_matrix_file = Hopp.dat
+
+U = 20.0
+JHund = 5.00
+Uprime = 10.0
+H_mag = 0.0 0.0 0.0 0.0
 ----------------------------------------
 
 Saving_Hamiltonian_and_Oprs = true
 
 --------------------------------------
-Lanc_Error = 10e-11
-max_steps = 800
-file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = truee
-get_overlap_bw_eigstates_and_K_vecs = truee
-lanczos_reorthogonalization = truee
-Get_Full_Spectrum = truee
-need_few_eig_vecs = truee
+Random_seed_generator = 31
+
+Lanc_Error = -10e-18
+max_steps = 1000
+file_eval_spectrum = out0_3orb.txt
+save_all_Krylov_space_vecs = true
+get_overlap_bw_eigstates_and_K_vecs = true
+lanczos_reorthogonalization = true
+Get_Full_Spectrum = true
+need_few_eig_vecs = true
 few = 1
 ----------------------------------------
 Get_overlap_with_basis = truee
-States_to_look = 1 0
+States_to_look = 2 0 1
 overlap_out_file = out0.txt
 calculate_local_obs_for_states_to_look = false
 calculate_local_obs_for_states_to_look_for_first_n_basis = 100
@@ -61,4 +69,4 @@ Light_polarization_in = 0 1 0
 Incident_energy = 0.1
 ----------------------------------------
 
-
+Processors = 4

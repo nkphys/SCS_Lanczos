@@ -33,6 +33,8 @@ public:
     bool PBC;
     Mat_1_real Momentum_values;
 
+    bool LongRange;
+    Mat_2_doub Tmat;
 
 
 
@@ -41,6 +43,7 @@ void Read_parameters_for_dynamics(string filename);
 void Add_diagonal_terms(BASIS_3_orb_Hubb_chain &basis);
 void Add_non_diagonal_terms(BASIS_3_orb_Hubb_chain &basis);
 void Add_connections(BASIS_3_orb_Hubb_chain &basis);
+void Add_connectionsLongRange(BASIS_3_orb_Hubb_chain &basis);
 
 void Initialize_macro_oprs_to_calculate(BASIS_3_orb_Hubb_chain &basis);
 void Initialize_one_point_to_calculate(BASIS_3_orb_Hubb_chain &basis);

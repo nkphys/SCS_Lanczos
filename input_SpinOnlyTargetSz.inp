@@ -1,23 +1,29 @@
 Model = SpinOnlyTargetSz
 ------------------------------------------
 PBC = true
-Length = 18
-TwoTimesSpin = 1
+Length = 5
+TwoTimesSpin = 2
 TwoTimesTotalSzTarget = 0
 H_mag = 0 0 -0.00
 Dz_anisotropy = 0 0 0.00
+
+GenericConnectionsFiles = 1 SS_AKLT.txt
 LongRangeJ1_file = J1file.dat
 LongRangeJ2_file = J2file.dat
 LongRangeJ3_file = J3file.dat
 
-MultiSectionBasisSearchInt = 2
+MultiSectionBasisSearchInt = 1
 ----------------------------------------
 
 Saving_Hamiltonian_and_Oprs = true
 
-No_of_onepoint_obs = 1
-One_point_oprt_path_1 = Sz.txt
-One_point_oprt_path_2 = Sm.txt
+
+#These operators are used for generic n-body term too
+#One_point_oprt_paths = 5 Sx.txt Sy.txt Sz.txt Sp.txt Sm.txt
+#Qxx.txt Qxy.txt Qxz.txt Qyy.txt Qyz.txt Qzz.txt
+
+
+
 
 --------------------------------------
 FourPointObservablesSites file = fourpoint.txt

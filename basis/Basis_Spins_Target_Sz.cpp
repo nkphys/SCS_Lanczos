@@ -17,7 +17,7 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
     //---------------------------------//
 
 
-    bool USE_LIN_TABLE=true;
+    bool USE_LIN_TABLE=false;
     bool Basis_direclty_in_TotalSz=true;
 
     SPIN = ((1.0*TwoTimesSpin)/2.0);
@@ -353,14 +353,15 @@ void BASIS_Spins_Target_Sz::Construct_basis(){
 
 
 
-    // basis_size = (unsigned long long int)D_basis.size();
-
-    basis_size = MainIndex_to_Dec_part0_.size();
-    cout<<endl;
-    cout<<"-----------------------------------------------"<<endl;
-    cout<<"Total basis = "<< D_max + (unsigned long long int)1<<endl;
+    basis_size = (unsigned long long int)D_basis.size();
     cout<<"In the Sz = "<<Target_Total_Sz<<" sector : "<<basis_size<<endl;
-    cout<<"-----------------------------------------------"<<endl<<endl;
+
+    // basis_size = MainIndex_to_Dec_part0_.size();
+    // cout<<endl;
+    // cout<<"-----------------------------------------------"<<endl;
+    // cout<<"Total basis = "<< D_max + (unsigned long long int)1<<endl;
+    // cout<<"In the Sz = "<<Target_Total_Sz<<" sector : "<<basis_size<<endl;
+    // cout<<"-----------------------------------------------"<<endl<<endl;
 
 
 }

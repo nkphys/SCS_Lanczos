@@ -269,6 +269,215 @@ void MODEL_Spins_Target_Sz::Add_connections_strictly2point(BASIS_Spins_Target_Sz
 }
 
 
+void MODEL_Spins_Target_Sz::Add_arbitraryconnections_from_files(BASIS_Spins_Target_Sz &basis){
+
+    Hamil.value.clear();
+    Hamil.nrows = basis.basis_size;
+    Hamil.ncols = Hamil.nrows;
+
+
+    double EPS_=0.000001;
+    int thread_id;
+    ulli dec_m;
+    ulli dec_max;
+    int m_new;
+    int n_index;
+    Mat_1_int state_vec;
+
+    Mat_1_ullint dec_vec_out_given_m;
+    Mat_1_doub val_vec_out_given_m;
+    Mat_1_ullint dec_vec_out_final;
+    Mat_1_doub val_vec_out_final;
+
+    Mat_1_ullint dec_vec_out;
+    Mat_1_doub val_vec_out;
+    Mat_1_string oprs_list;
+    Mat_1_int oprs_site;
+    //stringstream connection_stream;
+    string temp_opr_str;
+
+
+    //abort();
+
+
+     for (int m=0;m<basis.D_basis.size();m++){
+
+         dec_m = basis.D_basis[m];
+         dec_vec_out_given_m.clear();
+         val_vec_out_given_m.clear();
+
+         for(int FileNo=0;FileNo<ConnectionFiles.size();FileNo++){
+             for(int connection_no=0;connection_no<Connections[FileNo].size();connection_no++){
+               // cout<<"here 2"<<endl;
+       // connection_stream.str("");
+
+                stringstream connection_stream;
+                connection_stream<<Connections[FileNo][connection_no];
+
+                int n_oprs;
+                oprs_list.clear();
+                oprs_site.clear();
+
+
+                double_type connection_val;
+                connection_stream>>n_oprs;
+                oprs_list.resize(n_oprs);
+                oprs_site.resize(n_oprs);
+
+                for(int opr_no=(n_oprs-1);opr_no>=0;opr_no--){
+                    connection_stream>>temp_opr_str;
+                    oprs_list[opr_no]=temp_opr_str;
+                }
+                for(int opr_no=(n_oprs-1);opr_no>=0;opr_no--){
+                    connection_stream>>oprs_site[opr_no];
+                }
+                connection_stream>>connection_val;
+
+                dec_vec_out.clear();
+                val_vec_out.clear();
+                dec_vec_out.push_back(dec_m);
+                val_vec_out.push_back(connection_val);
+
+
+                Act_LocalOprString_by_Recursion(oprs_site, oprs_list, dec_vec_out, val_vec_out, basis, 0);
+
+
+                for(int index_temp=0;index_temp<dec_vec_out.size();index_temp++){
+                    dec_vec_out_given_m.push_back(dec_vec_out[index_temp]);
+                    val_vec_out_given_m.push_back(val_vec_out[index_temp]);
+                }
+
+
+
+               // cout<<"here 1"<<endl;
+             }
+         }
+
+
+
+         Remove_repetitions(dec_vec_out_given_m, val_vec_out_given_m, dec_vec_out_final, val_vec_out_final);
+
+         for(int j=0;j<dec_vec_out_final.size();j++){
+
+             if(abs(val_vec_out_final[j])>EPS_){
+             fromDeci_to_Vecint(state_vec, basis.BASE, dec_vec_out_final[j] , basis.Length);
+             quicksort(state_vec, 0, state_vec.size() -1);
+             fromVecint_to_Deci(state_vec, basis.BASE, dec_max, basis.Length);
+             n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
+             m_new = Find_int_in_part_of_intarray(dec_vec_out_final[j], basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
+
+
+             if(m_new<=m){
+                 Hamil.value.push_back(val_vec_out_final[j]*one);
+                 Hamil.rows.push_back(m_new);
+                 Hamil.columns.push_back(m);
+             }
+             }
+
+         }
+
+
+
+
+     }
+
+
+     state_vec.clear();
+    dec_vec_out.clear();
+     val_vec_out.clear();
+   // connection_stream.str(std::string());
+
+
+}
+
+
+void MODEL_Spins_Target_Sz::Get_LocalOPR(Matrix<double_type> &OPR_, string opr_type){
+
+    if(opr_type=="Sz"){
+        OPR_=SzLocal;
+    }
+    else if(opr_type=="Sx"){
+        OPR_=SxLocal;
+    }
+    else if(opr_type=="SyTimesIota"){
+        OPR_=SyLocalTimesIota;
+    }
+    else if(opr_type=="Sp"){
+        OPR_=SplusLocal;
+    }
+    else if(opr_type=="Sm"){
+        OPR_=SminusLocal;
+    }
+    else if (opr_type=="Sx2"){
+        OPR_=Sx2Local;
+    }
+    else if (opr_type=="Sy2"){
+        OPR_=Sy2Local;
+    }
+    else if (opr_type=="Sz2"){
+        OPR_=Sz2Local;
+    }
+    else if (opr_type=="Qxz"){
+        OPR_=QxzLocal;
+    }
+    else if (opr_type=="QyzI"){
+        OPR_=QyzLocalTimesIota;
+    }
+    else if (opr_type=="QxyI"){
+        OPR_=QxyLocalTimesIota;
+    }
+    else{
+        cout<<"OPR TYPE "<<opr_type<<" not present"<<endl;
+    }
+
+}
+
+void MODEL_Spins_Target_Sz::Act_LocalOprString_by_Recursion(Mat_1_int oprs_site, Mat_1_string oprs_list, Mat_1_ullint & dec_vec_out, Mat_1_doub &val_vec_out,BASIS_Spins_Target_Sz & basis, int opr_no){
+
+    double EPS_=0.0000001;
+
+
+    if(opr_no<oprs_list.size()){
+
+        Matrix<double_type> OPR_;
+        Get_LocalOPR(OPR_, oprs_list[opr_no]);
+
+    //act opr on dec_vec and update dec_vec_out and val_vec_out
+        Mat_1_ullint dec_vec_out_temp_final;
+        Mat_1_doub val_vec_out_temp_final;
+        Mat_1_ullint dec_vec_out_temp;
+        Mat_1_doub val_vec_out_temp;
+
+        ulli dec_old, dec_new_temp;
+        int val_site_old;
+        for(int dec_index=0;dec_index<dec_vec_out.size();dec_index++){
+            dec_old = dec_vec_out[dec_index];
+            val_site_old = value_at_pos(dec_old, oprs_site[opr_no], basis.BASE);
+
+            for(int val_col=0;val_col<basis.BASE;val_col++){
+                if(abs(OPR_(val_col,val_site_old))>EPS_){
+                dec_new_temp = Updated_decimal_with_value_at_pos(dec_old, oprs_site[opr_no], basis.BASE, val_col);
+                dec_vec_out_temp.push_back(dec_new_temp);
+                val_vec_out_temp.push_back(OPR_(val_col,val_site_old)*val_vec_out[dec_index]);
+                }
+            }
+        }
+
+        Remove_repetitions(dec_vec_out_temp, val_vec_out_temp, dec_vec_out_temp_final, val_vec_out_temp_final);
+        dec_vec_out=dec_vec_out_temp_final;
+        val_vec_out=val_vec_out_temp_final;
+
+    }
+
+    if((opr_no+1)<oprs_list.size()){
+        Act_LocalOprString_by_Recursion(oprs_site, oprs_list, dec_vec_out, val_vec_out, basis, opr_no+1);
+    }
+
+
+
+}
+
+
 void MODEL_Spins_Target_Sz::Add_connections_new(BASIS_Spins_Target_Sz &basis){
 
 
@@ -705,10 +914,11 @@ double_type MODEL_Spins_Target_Sz::Get_SzSz(int site1, int site2, Mat_1_doub &Ve
 
     ulli dec_m;
     double_type value=0.0;
-    for (int m=0;m<basis.MainIndex_to_Dec_part0_.size();m++){
+   // for (int m=0;m<basis.MainIndex_to_Dec_part0_.size();m++){
+        //dec_m = basis.MainIndex_to_Dec_part0_[m] +  pow(basis.BASE, basis.Partition_Length[0])*basis.MainIndex_to_Dec_part1_[m];
 
-        //dec_m = basis.D_basis[m];
-        dec_m = basis.MainIndex_to_Dec_part0_[m] +  pow(basis.BASE, basis.Partition_Length[0])*basis.MainIndex_to_Dec_part1_[m];
+        for (int m=0;m<basis.D_basis.size();m++){
+        dec_m = basis.D_basis[m];
 
 
         //Sz(i)Sz(j)----------------------------------------------------------------
@@ -726,10 +936,12 @@ double_type MODEL_Spins_Target_Sz::Get_Sz(int site1, Mat_1_doub &Vec_, BASIS_Spi
 
     ulli dec_m;
     double_type value=0.0;
-    for (int m=0;m<basis.MainIndex_to_Dec_part0_.size();m++){
+    //for (int m=0;m<basis.MainIndex_to_Dec_part0_.size();m++){
+    for (int m=0;m<basis.D_basis.size();m++){
+        dec_m = basis.D_basis[m];
 
-        //dec_m = basis.D_basis[m];
-        dec_m = basis.MainIndex_to_Dec_part0_[m] +  pow(basis.BASE, basis.Partition_Length[0])*basis.MainIndex_to_Dec_part1_[m];
+        //Using Li tables
+        //dec_m = basis.MainIndex_to_Dec_part0_[m] +  pow(basis.BASE, basis.Partition_Length[0])*basis.MainIndex_to_Dec_part1_[m];
 
 
         //Sz(i)Sz(j)----------------------------------------------------------------
@@ -977,10 +1189,11 @@ void MODEL_Spins_Target_Sz::Initialize_two_point_operator_sites_specific(string 
         int site_i, site_j;
 
 
-        for (int m=0;m<basis.MainIndex_to_Dec_part0_.size();m++){
+      //  for (int m=0;m<basis.MainIndex_to_Dec_part0_.size();m++){
 
-            //dec_m = basis.D_basis[m];
-            dec_m = basis.MainIndex_to_Dec_part0_[m] +  pow(basis.BASE, basis.Partition_Length[0])*basis.MainIndex_to_Dec_part1_[m];
+        for (int m=0;m<basis.D_basis.size();m++){
+            dec_m = basis.D_basis[m];
+           // dec_m = basis.MainIndex_to_Dec_part0_[m] +  pow(basis.BASE, basis.Partition_Length[0])*basis.MainIndex_to_Dec_part1_[m];
 
             m_connected.clear();
             coeffs.clear();
@@ -1003,9 +1216,9 @@ void MODEL_Spins_Target_Sz::Initialize_two_point_operator_sites_specific(string 
 
             for(int j=0;j<m_connected_final.size();j++){
 
-                dec_part1_ = m_connected_final[j]/pow(basis.BASE, basis.Partition_Length[0]);
-                dec_part0_ = m_connected_final[j] - (dec_part1_*pow(basis.BASE, basis.Partition_Length[0]));
-                m_new = basis.Dec_to_Index_part0_[dec_part0_] + basis.Dec_to_Index_part1_[dec_part1_];
+                // dec_part1_ = m_connected_final[j]/pow(basis.BASE, basis.Partition_Length[0]);
+                // dec_part0_ = m_connected_final[j] - (dec_part1_*pow(basis.BASE, basis.Partition_Length[0]));
+                // m_new = basis.Dec_to_Index_part0_[dec_part0_] + basis.Dec_to_Index_part1_[dec_part1_];
 
                 //m_new = Find_int_in_intarray_using_bisection(m_connected_final[j], basis.D_basis);
                 //or
@@ -1013,12 +1226,14 @@ void MODEL_Spins_Target_Sz::Initialize_two_point_operator_sites_specific(string 
 
                 //or
                 // m_new = Find_int_in_intarray(m_connected_final[j], basis.D_basis);
+
                 //or
-                // fromDeci_to_Vecint(state_vec, basis.BASE,m_connected_final[j] , basis.Length);
-                // quicksort(state_vec, 0, state_vec.size() -1);
-                // fromVecint_to_Deci(state_vec, basis.BASE, dec_max, basis.Length);
-                // n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
-                // m_new = Find_int_in_part_of_intarray(m_connected_final[j], basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
+
+                 fromDeci_to_Vecint(state_vec, basis.BASE,m_connected_final[j] , basis.Length);
+                 quicksort(state_vec, 0, state_vec.size() -1);
+                 fromVecint_to_Deci(state_vec, basis.BASE, dec_max, basis.Length);
+                 n_index = Find_int_in_intarray(dec_max, basis.Partitions_Dec);
+                 m_new = Find_int_in_part_of_intarray(m_connected_final[j], basis.D_basis, basis.Partitions_pos[n_index].first, basis.Partitions_pos[n_index].second);
 
                 OPR_.value.push_back(coeffs_final[j]*one);
                 OPR_.rows.push_back(m_new);
@@ -1066,10 +1281,11 @@ void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string
 
     string LongRangeJ3file_ = "LongRangeJ3_file = ";
 
+    string genericconnectionsfiles_, GenericConnectionsFiles_ = "GenericConnectionsFiles = ";
 
     string fourpointobservablessitesfile_ ,FourPointObservablesSitesFile_ = "FourPointObservablesSites file = ";
 
-    string no_of_onepoint_obs_, No_Of_Onepoint_Obs_ = "No_of_onepoint_obs = ";
+    //string no_of_onepoint_obs_, No_Of_Onepoint_Obs_ = "No_of_onepoint_obs = ";
 
     int offset;
     string line;
@@ -1081,8 +1297,11 @@ void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string
         {
             getline(inputfile,line);
 
-            if ((offset = line.find(No_Of_Onepoint_Obs_, 0)) != string::npos) {
-                no_of_onepoint_obs_ = line.substr (offset+No_Of_Onepoint_Obs_.length());  }
+            if ((offset = line.find(GenericConnectionsFiles_, 0)) != string::npos) {
+               genericconnectionsfiles_ = line.substr (offset+GenericConnectionsFiles_.length());  }
+
+            // if ((offset = line.find(No_Of_Onepoint_Obs_, 0)) != string::npos) {
+            //     no_of_onepoint_obs_ = line.substr (offset+No_Of_Onepoint_Obs_.length());  }
 
             if ((offset = line.find(FourPointObservablesSitesFile_, 0)) != string::npos) {
                 fourpointobservablessitesfile_ = line.substr (offset+FourPointObservablesSitesFile_.length());  }
@@ -1165,8 +1384,29 @@ void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string
 
     MultisectionSearch_int = atoi(multisectionsearchint_.c_str());
 
-    No_of_onepoint_obs=atoi(no_of_onepoint_obs_.c_str());
+    //No_of_onepoint_obs=atoi(no_of_onepoint_obs_.c_str());
 
+
+    stringstream genericconnectionsfiles_stream;
+    genericconnectionsfiles_stream<<genericconnectionsfiles_;
+    genericconnectionsfiles_stream>>N_ConnectionsFiles;
+    ConnectionFiles.resize(N_ConnectionsFiles);
+    string filename_temp;
+    for(int i=0;i<N_ConnectionsFiles;i++){
+        genericconnectionsfiles_stream>>filename_temp;
+        ConnectionFiles[i]=filename_temp;
+    }
+
+
+    Connections.resize(N_ConnectionsFiles);
+    for(int FileNo=0;FileNo<N_ConnectionsFiles;FileNo++){
+    string line_connection;
+    ifstream inputfileConnection(ConnectionFiles[FileNo].c_str());
+    Connections[FileNo].clear();
+    while(getline(inputfileConnection,line_connection)){
+    Connections[FileNo].push_back(line_connection);
+    }
+    }
 
 
     double temp_h;
@@ -1312,6 +1552,75 @@ void MODEL_Spins_Target_Sz::Read_parameters(BASIS_Spins_Target_Sz &basis, string
     }
 
     */
+
+
+}
+
+
+void MODEL_Spins_Target_Sz::CreateLocalOprs_in_LocalHilbertBasis(BASIS_Spins_Target_Sz &basis){
+
+    assert(basis.TwoTimesSpin>0);
+    int HS; //Hilbert Space Size
+    HS=basis.TwoTimesSpin+1;
+    double Spin=0.5*basis.TwoTimesSpin;
+    //basis convention = [-S, -S+1,..., S-1, S]
+
+    //Dipole Oprs
+    SxLocal.resize(HS,HS);SyLocal.resize(HS,HS);SzLocal.resize(HS,HS);
+    SplusLocal.resize(HS,HS);SminusLocal.resize(HS,HS);SyLocalTimesIota.resize(HS,HS);
+    int mp_temp;
+    for(int m=0;m<HS;m++){
+        SzLocal(m,m) = -Spin + 1.0*m;
+        mp_temp=m+1;
+
+        if(mp_temp<HS){
+        SplusLocal(mp_temp,m) = sqrt( Spin*(Spin+1.0) - ( (-Spin+mp_temp*1.0)*(-Spin+m*1.0) ) );
+        SminusLocal(m,mp_temp) = SplusLocal(mp_temp,m);
+        }
+    }
+
+    for(int m=0;m<HS;m++){
+        for(int mp=0;mp<HS;mp++){
+            SxLocal(mp,m) = 0.5*(SplusLocal(mp,m) + SminusLocal(mp,m));
+            SyLocalTimesIota(mp,m) = 0.5*(SplusLocal(mp,m) - SminusLocal(mp,m));
+        }
+    }
+
+#ifdef USE_COMPLEX
+    for(int m=0;m<HS;m++){
+        for(int mp=0;mp<HS;mp++){
+        SyLocal(mp,m) = -0.5*iota_comp*(SplusLocal(mp,m) - SminusLocal(mp,m));
+        }
+    }
+#endif
+
+
+
+    //Quadropolar Oprs
+    if(basis.TwoTimesSpin>=2){
+    QxxLocal.resize(HS,HS);QxyLocal.resize(HS,HS);QxzLocal.resize(HS,HS);
+    QyyLocal.resize(HS,HS);QyzLocal.resize(HS,HS);QzzLocal.resize(HS,HS);
+    QxyLocalTimesIota.resize(HS,HS);QyzLocalTimesIota.resize(HS,HS);
+    Sx2Local.resize(HS,HS);Sy2Local.resize(HS,HS);Sz2Local.resize(HS,HS);
+
+
+
+    for(int m=0;m<HS;m++){
+        for(int mp=0;mp<HS;mp++){
+        for(int k=0;k<HS;k++){
+                Sx2Local(mp,m) += SxLocal(mp,k)*SxLocal(k,m);
+                Sy2Local(mp,m) += -1.0*SyLocalTimesIota(mp,k)*SyLocalTimesIota(k,m);
+                Sz2Local(mp,m) += SzLocal(mp,k)*SzLocal(k,m);
+                QxzLocal(mp,m) += SxLocal(mp,k)*SzLocal(k,m) + SzLocal(mp,k)*SxLocal(k,m);
+                QyzLocalTimesIota(mp,m) += SyLocalTimesIota(mp,k)*SzLocal(k,m) +
+                                           SzLocal(mp,k)*SyLocalTimesIota(k,m);
+                QxyLocalTimesIota(mp,m) += SxLocal(mp,k)*SyLocalTimesIota(k,m) +
+                                           SyLocalTimesIota(mp,k)*SxLocal(k,m);
+            }
+    }}
+
+
+    }
 
 }
 

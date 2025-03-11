@@ -42,7 +42,7 @@ public:
     string LongRangeExchangeZZfilepath;
     string LongRangeExchangePMfilepath;
 
-    string LongRangeJ1_filepath, LongRangeJ2_filepath, LongRangeJ3_filepath  ;
+    string LongRangeJ1_filepath, LongRangeJ2_filepath, LongRangeJ3_filepath;
 
     Mat_2_doub Jzz_Exchange_mat;
     Mat_2_doub Jpm_Exchange_mat;
@@ -51,8 +51,29 @@ public:
     Mat_4_doub J3_mat;
 
 
+    int N_ConnectionsFiles;
+    Mat_1_string ConnectionFiles;
+    Mat_2_string Connections;
+
+    //Used for any S
+    //Dipole operators
+    Matrix<double> SxLocal, SyLocalTimesIota, SzLocal, SplusLocal, SminusLocal;
+    Matrix<complex<double>> SyLocal;
+
+    //Used for any S>=1
+    //Quadropolar operators
+    Matrix<double> QxxLocal, QxyLocalTimesIota , QxzLocal, QyyLocal, QyzLocalTimesIota, QzzLocal;
+    Matrix<double> Sx2Local,Sy2Local, Sz2Local;
+    Matrix<complex<double>> QxyLocal, QyzLocal;
+
+
+
     int MultisectionSearch_int;
 
+void Get_LocalOPR(Matrix<double_type> &OPR_, string opr_type);
+void Act_LocalOprString_by_Recursion(Mat_1_int oprs_site, Mat_1_string oprs_list,  Mat_1_ullint & dec_vec_out, Mat_1_doub & val_vec_out,BASIS_Spins_Target_Sz & basis, int opr_no);
+void Add_arbitraryconnections_from_files(BASIS_Spins_Target_Sz &basis);
+void CreateLocalOprs_in_LocalHilbertBasis(BASIS_Spins_Target_Sz &basis);
 void Read_parameters(BASIS_Spins_Target_Sz &basis, string filename);
 void Add_diagonal_terms(BASIS_Spins_Target_Sz &basis);
 void Add_non_diagonal_terms(BASIS_Spins_Target_Sz &basis);

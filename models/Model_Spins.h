@@ -27,6 +27,7 @@ public:
 
     bool PBC;
     Matrix_COO Hamil;
+    int no_of_proc;
 
     Mat_1_string one_point_obs;
     Hamiltonian_2_COO One_point_oprts;
@@ -54,9 +55,33 @@ public:
     Mat_2_doub Jzz_Exchange_mat_const;
     Mat_2_doub Jpm_Exchange_mat_const;
 
+    int N_ConnectionsFiles;
+    Mat_1_string ConnectionFiles;
+    Mat_2_string Connections;
+
+    //Used for any S
+    //Dipole operators
+    Matrix<double> SxLocal, SyLocalTimesIota, SzLocal, SplusLocal, SminusLocal;
+    Matrix<complex<double>> SyLocal;
+
+    //Used for any S>=1
+    //Quadropolar operators
+    Matrix<double> Idendity, QxxLocal, QxyLocalTimesIota , QxzLocal, QyyLocal, QyzLocalTimesIota, QzzLocal;
+    Matrix<double> Sx2Local,Sy2Local, Sz2Local;
+    Matrix<complex<double>> QxyLocal, QyzLocal;
+    Matrix<double> TauZLocal;
+
+
     string Extenstion_to_FilePaths="";
 
-
+void Initialize_two_point_operator_sites_specific(string opr_type , Matrix_COO &OPR_ , int site1, int site2, BASIS_Spins &basis);
+double_type Get_SzSz(int site1, int site2, Mat_1_doub &Vec_, BASIS_Spins &basis);
+double_type Get_Sz(int site1, Mat_1_doub &Vec_, BASIS_Spins &basis);
+void Act_LocalOprString_by_Recursion(Mat_1_int oprs_site, Mat_1_string oprs_list, Mat_1_ullint & dec_vec_out, Mat_1_doub &val_vec_out,BASIS_Spins & basis, int opr_no);
+void Get_LocalOPR(Matrix<double_type> &OPR_, string opr_type);
+void Add_arbitraryconnections_from_files(BASIS_Spins &basis);
+void Add_arbitraryconnections_from_files_new(BASIS_Spins &basis);
+void CreateLocalOprs_in_LocalHilbertBasis(BASIS_Spins &basis);
 void Get_BipartiteEntanglement(BASIS_Spins &basis, Mat_1_int &Sys1_, Mat_1_int &Sys2_, Mat_1_doub &Vec_, double & VonNuemannEntropy);
 void Read_parameters(BASIS_Spins &basis, string filename);
 void MeasureEnergy(BASIS_Spins &basis, Mat_1_doub &Vec, double_type &Energy_);

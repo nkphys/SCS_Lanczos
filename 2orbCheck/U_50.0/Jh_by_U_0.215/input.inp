@@ -1,0 +1,72 @@
+Model = 3_orb_Hubbard_chain
+Geometry = chain
+Geometryy = LongRange
+------------------------------------------
+PBC = false
+Length = 2
+Ndown = 1
+Nup = 1
+CFS = 0 0 1000.0
+
+Hopping_mat[0][orb] = -1 0 0
+Hopping_mat[1][orb] = 0 -0 0
+Hopping_mat[2][orb] = 0 0 -0
+
+
+LongRangeHopping_matrix_file = Hopp_file.txt
+
+U = 50.0
+JHund = 10.750000
+Uprime = 28.500000
+H_mag = 0
+----------------------------------------
+
+Saving_Hamiltonian_and_Oprs = true
+
+--------------------------------------
+Random_seed_generator = 19
+
+Lanc_Error = 10e-10
+max_steps = 1000
+file_eval_spectrum = out0.txt
+save_all_Krylov_space_vecs = true
+get_overlap_bw_eigstates_and_K_vecs = true
+lanczos_reorthogonalization = true
+Get_Full_Spectrum = truee
+need_few_eig_vecs = truee
+few = 1
+----------------------------------------
+Get_overlap_with_basis = truee
+States_to_look = 1 0
+overlap_out_file = out0.txt
+calculate_local_obs_for_states_to_look = false
+calculate_local_obs_for_states_to_look_for_first_n_basis = 100
+file_out_local_obs_for_states_to_look = local_obs_for_state_no
+--------------------------------------
+
+----------------------------------
+Perform_Dynamics = false
+check_omega = 0.05
+Opr_for_Dynamics = J_0
+Momentum_resolved = false
+k = 0.4
+file_dynamics_out = opt_orbHubb_U0_L12_n2.txt
+---------------------------------
+
+---------------For both RIXS and std. dynamics---------
+eta = 0.05
+omega_max = 20.0
+omega_min = 0.02
+d_omega = 0.001
+--------------------------------------
+
+----------------------------------------
+Perform_RIXS = false
+Gamma = 0.2
+No_of_intermediate_states(n) = 100
+Light_polarization_in = 1 0 0 
+Light_polarization_in = 0 1 0
+Incident_energy = 0.1
+----------------------------------------
+
+
