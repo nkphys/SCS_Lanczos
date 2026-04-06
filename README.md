@@ -1,17 +1,17 @@
 # SCS_Lanczos
-+0) This code is developed regularly. If you are interested in using this code, please contact the author. Unless the author is contacted, responsibility of getting "accurate" results lies solely on the user.
+0) This code is developed regularly.
+   If you are interested in using this code, please contact the author.
 
-+1) This code is written by Nitin Kaushal (kaushalnitin002@gmail.com)
+1) This code is written by Nitin Kaushal (kaushalnitin002@gmail.com)
     This solves various Strongly correlated systems using the Lanczos Algorithm.
     This code also performs ED (without Lanczos) for "small enough" systems.
+    
 
-+2) Author's affiliations when code is/was being developed :
+2) Author's affiliations so far:
     University of Tennessee, Knoxville, USA
     Oak Ridge National Lab, USA
-    University of British Columbia, Canada
+    University of British Columbia, Canada (Present)
      
-
-
 
 *SCS  stands for Strongly correlated systems.
 

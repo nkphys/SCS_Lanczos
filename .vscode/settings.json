@@ -1,0 +1,25 @@
+{
+    "files.associations": {
+        "iosfwd": "cpp",
+        "iostream": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "ostream": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "disabled",
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/nitin/Documents/Codes/SCS_Lanczos",
+            "binaryPath": "/home/nitin/Documents/Codes/SCS_Lanczos/lanczos",
+            "binaryArgs": [
+                "input_1orbHubbard.inp"
+            ]
+        },
+        {
+            "cwd": "/home/nitin/Documents/Codes/SCS_Lanczos",
+            "binaryPath": "/home/nitin/Documents/Codes/SCS_Lanczos/lanczos",
+            "binaryArgs": []
+        }
+    ]
+}
