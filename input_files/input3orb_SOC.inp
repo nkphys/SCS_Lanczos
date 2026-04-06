@@ -4,33 +4,39 @@ Restriction_on_local_occupations = 3 3 4 5
 ------------------------------------------
 PBC = true
 Length = 4
-N_Total = 16
-CFS = 0.0 0.0 0.0
-LongRangeHopping_file = 4_site_PBC_chain.dat
+N_Total = 8
+CFS = 0.0 0.0 -1.5
+
+USE_LONG_RANGE_HOPPINGS = true
+LongRangeHopping_file = Hopp.dat
  
-Hopping_mat[0][orb] = 1.0 0.0 0.0
-Hopping_mat[1][orb] = 0.0 1.0 0.0
-Hopping_mat[2][orb] = 0.0 0.0 1.0
-U = 40.0
-JHund = 10.0
-Uprime = 20.0
-H_mag = 0
-lambda_SOC = 0.45
+Hopping_mat[0][orb] = -0.7 0.0 0.0
+Hopping_mat[1][orb] = 0.0 0.0 0.0
+Hopping_mat[2][orb] = 0.0 0.0 -1.0
+U = 10.0
+JHund = 2.0
+Uprime = 6.0
+H_mag = 0.0
+lambda_SOC = 0.0
 ----------------------------------------
-Random_seed_generator = 321
+Random_seed_generator = 2
 --------------------------------------
-Lanc_Error = -10e-10
-max_steps = 250
+
+Saving_Hamiltonian_and_Oprs = true
+Processors = 2
+
+Lanc_Error = 10e-10
+max_steps = 500
 file_eval_spectrum = Tri_evals_OBC_GC.txt
 save_all_Krylov_space_vecs = false
 get_overlap_bw_eigstates_and_K_vecs = false
 lanczos_reorthogonalization = false
-Get_Full_Spectrum = true
+Get_Full_Spectrum = false
 need_few_eig_vecs = false
 Get_overlap_with_basis = false
 States_to_look = 1 0
 overlap_out_file = out0.txt
-calculate_local_obs_for_states_to_look = true
+calculate_local_obs_for_states_to_look = false
 calculate_local_obs_for_states_to_look_for_first_n_basis = 4000
 file_out_local_obs_for_states_to_look = local_obs_for_state_no
 Read_the_seed = false
@@ -39,7 +45,7 @@ seed_file = seed_GSold.txt
 
 
 ----------------------------------
-Perform_Dynamics = true
+Perform_Dynamics = false
 check_omega = 0.5
 Opr_for_Dynamics = Mz_kPBC
 Momentum_resolved = true

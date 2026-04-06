@@ -1,35 +1,48 @@
 Geometry = LongRange
 Model = 1_orb_Hubbard_chain
 ------------------------------------------
-PBC = true
-Length_X = 2000
-Length_Y = 1000
-Total_Sites = 2
+PBC = false
+Length_X = 1
+Length_Y = 1
+Total_Sites = 6
 Ndown = 1
-Nup = 1
+Nup = 0
  
-Hopping = 1.0
+Hopping = 0.0
 Hopping_NN = 0.0
 U = 0.0
-H_mag = 0
-File_Onsite_Energies = false onsite_ener.txt
-File_Hopping_Connections = Hoppings_L2.txt
-File_NonLocal_Int_Connections = Interactions_L2.txt
+H_mag = 6 0 0 0 0 0 0
+File_Onsite_U = true Local_U.txt
+File_Onsite_Energies = false pinning_ener.txt
+File_Hopping_Connections = Hopping.txt
+File_NonLocal_Int_Connections = Interactions.txt
+File_Direct_Exchange_Connections = DirectExchange.txt
+
+File_Pair_Hopping_Connections = PairHopping.txt
+File_Interaction_Assisted_Hopping_Connections = InteractionAssistedHopping.txt
+
+
+File_Three_Point_Observation = ThreePointOprs.txt
+File_Three_Point_Interaction = ThreePointIntrs.txt
 ----------------------------------------
 -------------------------------------
-Lanc_Error = 10e-10
-max_steps = 200
+Saving_Hamiltonian_and_Oprs = true
+Random_seed_generator = 564
+---------------------------------------------
+Lanc_Error = 10e-12
+max_steps = 1000
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = tru
-get_overlap_bw_eigstates_and_K_vecs = false
-lanczos_reorthogonalization = false
+save_all_Krylov_space_vecs = truee
+get_overlap_bw_eigstates_and_K_vecs = true
+lanczos_reorthogonalization = truee
 Get_Full_Spectrum = true
 need_few_eig_vecs = true
-few = 6
+few = 2
 ----------------------------------------
 Get_overlap_with_basis = false
 States_to_look = 1 0
-overlap_out_file = out0.txt
+# 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+overlap_out_file = out1.txt
 calculate_local_obs_for_states_to_look = false
 calculate_local_obs_for_states_to_look_for_first_n_basis = 100
 file_out_local_obs_for_states_to_look = local_obs_for_state_no
@@ -46,7 +59,7 @@ Opr_for_Dynamics = J
 Momentum_resolved = false
 k = 0.4
 file_dynamics_out = orb0_up_site1
-Dynamics_dos_operators = 1 1.0 0 1 1
+Dynamics_dos_operators = 1 1.0 0.0 0 1 1
 ---------------------------------
 
 ---------------------------------------------------
@@ -62,5 +75,4 @@ Number_of_LowKrylov_States_used = 100
 Temperature = 0.2
 
 
-Processors = 8
-
+Processors = 1

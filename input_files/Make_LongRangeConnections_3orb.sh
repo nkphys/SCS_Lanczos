@@ -1,13 +1,13 @@
 for orb1 in 0 1 2
 do
 
-for site1 in 0 1
+for site1 in 0 1 2 3
 do   
 
 for orb2 in 0 1 2 
 do
 
-for site2 in 0 1
+for site2 in 0 1 2 3
 do 
 
 printf "t_o${orb1}${orb2}_s${site1}${site2} "

@@ -86,6 +86,8 @@ bool present_before(Mat_1_int nup_2, Mat_1_int ndn_2, Mat_2_int nup_2_group, Mat
 complex<double> divide(complex<double> z1, complex<double> z2);
 void Read_matrix_from_file(string filepath,
                          Mat_2_doub &Mat, int row, int column);
+void Read_matrix_from_file(string filepath,
+                         Mat_2_real &Mat, int row, int column);
 complex<double> reading_pair(string pair_str);
 Matrix_COO Identity_COO(int rows_no, int cols_no);
 int Find_commont_int(Mat_1_int Vec1, Mat_1_int Vec2);

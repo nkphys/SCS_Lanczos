@@ -1298,10 +1298,11 @@ void MODEL_3_orb_Hubb_chain::Initialize_two_point_to_calculate(BASIS_3_orb_Hubb_
     two_point_obs[3]="TauzTauz";
     two_point_obs[4]="TaupTaum";
     two_point_obs[5]="TaumTaup";
-    Two_point_oprts.resize(6);
+    two_point_obs[6]="SzTauz";
+    Two_point_oprts.resize(7);
 
 
-    int T_no_oprs=6;
+    int T_no_oprs=7;
 
 
 
@@ -1986,6 +1987,58 @@ void MODEL_3_orb_Hubb_chain::Initialize_two_point_to_calculate(BASIS_3_orb_Hubb_
 
 
 
+
+        if(two_point_obs[opr_no]=="SzTauz"){
+
+            for(int site=0;site<basis.Length;site++){
+                for(int site2=site;site2<basis.Length;site2++){
+                    Two_point_oprts[opr_no][site][site2].nrows = basis.D_up_basis.size()*basis.D_dn_basis.size();
+                    Two_point_oprts[opr_no][site][site2].ncols = Two_point_oprts[opr_no][site][site2].nrows;
+                }
+            }
+
+            //Remember OPR[l][m]=<l|OPR|m>
+            int m;
+            double value;
+
+
+            for(int site=0;site<basis.Length;site++){
+                for(int site2=site;site2<basis.Length;site2++){
+
+                    for (int i=0;i<basis.D_up_basis.size();i++){
+                        for (int j=0;j<basis.D_dn_basis.size();j++){
+                            m=basis.D_dn_basis.size()*i + j;
+
+                            value=0;
+
+                            for(int alpha=0;alpha<3;alpha++){
+
+                            value+=0.25*( ( bit_value(basis.D_up_basis[i],alpha*basis.Length + site)
+                                          - bit_value(basis.D_dn_basis[j],alpha*basis.Length + site)
+                                                 )*
+                                             (
+                                                 bit_value(basis.D_up_basis[i],1*basis.Length + site2)
+                                                 + bit_value(basis.D_dn_basis[j],1*basis.Length + site2)
+                                                 - bit_value(basis.D_up_basis[i],0*basis.Length + site2)
+                                                 - bit_value(basis.D_dn_basis[j],0*basis.Length + site2)
+                                                 )
+                                             );
+
+                            }
+
+                            if(value!=0){
+                                Two_point_oprts[opr_no][site][site2].value.push_back(value);
+                                Two_point_oprts[opr_no][site][site2].rows.push_back(m);
+                                Two_point_oprts[opr_no][site][site2].columns.push_back(m);
+                            }
+                        }
+                    }
+
+                }
+
+            }
+
+        }
 
 
     }

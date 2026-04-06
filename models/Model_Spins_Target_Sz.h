@@ -57,13 +57,13 @@ public:
 
     //Used for any S
     //Dipole operators
-    Matrix<double> SxLocal, SyLocalTimesIota, SzLocal, SplusLocal, SminusLocal;
+    Matrix<double_type> SxLocal, SyLocalTimesIota, SzLocal, SplusLocal, SminusLocal;
     Matrix<complex<double>> SyLocal;
 
     //Used for any S>=1
     //Quadropolar operators
-    Matrix<double> QxxLocal, QxyLocalTimesIota , QxzLocal, QyyLocal, QyzLocalTimesIota, QzzLocal;
-    Matrix<double> Sx2Local,Sy2Local, Sz2Local;
+    Matrix<double_type> QxxLocal, QxyLocalTimesIota , QxzLocal, QyyLocal, QyzLocalTimesIota, QzzLocal;
+    Matrix<double_type> Sx2Local,Sy2Local, Sz2Local;
     Matrix<complex<double>> QxyLocal, QyzLocal;
 
 

@@ -12,11 +12,11 @@ LongRangeHopping = true
 LongRangeInteraction = true
 LongRangeExchangeZZ = true
 LongRangeExchangePM = true
-LongRangeHopping file = hopping_longrange_4x4_YCn_PBC.txt
-LongRangeInteraction file = denden_longrange_4x4_YCn_PBC.txt
-LongRangeExchangeZZ file = Jzz_longrange_4x4_YCn_PBC.txt
-LongRangeExchangePM file = Jpm_longrange_4x4_YCn_PBC.txt
-RingExchange_file = Ring_Exchange_4x4_YCn_PBC.txt
+LongRangeHopping file = hopping.txt
+LongRangeInteraction file = denden.txt
+LongRangeExchangeZZ file = Jzz.txt
+LongRangeExchangePM file = Jpm.txt
+RingExchange_file = Ring_Exchange.txt
 ----------------------------------------
 Saving_Hamiltonian_and_Oprs = true
 Random_seed_generator = 31

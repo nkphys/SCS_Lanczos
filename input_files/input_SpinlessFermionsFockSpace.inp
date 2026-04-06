@@ -1,0 +1,62 @@
+Geometry = LongRange
+Model = SpinlessFermionsFockSpace
+------------------------------------------
+Total_Sites = 16
+ 
+File_Onsite_Energies = false pinning_ener.txt
+File_Hopping_Connections = Hopping_Tshape_16site.txt
+File_NonLocal_Int_Connections = Interactions_Tshape_16site.txt
+File_Pairing_Connections = PairingField_Tshape_16site.txt
+
+----------------------------------------
+-------------------------------------
+Saving_Hamiltonian_and_Oprs = true
+Random_seed_generator = 564
+---------------------------------------------
+Lanc_Error = 10e-12
+max_steps = 200
+file_eval_spectrum = out0.txt
+save_all_Krylov_space_vecs = true
+get_overlap_bw_eigstates_and_K_vecs = true
+lanczos_reorthogonalization = true
+Get_Full_Spectrum = true
+need_few_eig_vecs = true
+few = 20
+----------------------------------------
+Get_overlap_with_basis = false
+States_to_look = 2 0 1
+# 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+overlap_out_file = out1.txt
+calculate_local_obs_for_states_to_look = false
+calculate_local_obs_for_states_to_look_for_first_n_basis = 100
+file_out_local_obs_for_states_to_look = local_obs_for_state_no
+--------------------------------------
+
+----------------------------------
+Perform_Dynamics = false
+eta = 0.2
+check_omega = 0.05
+omega_max = 20.0
+omega_min = -20.0
+d_omega = 0.001
+Opr_for_Dynamics = J
+Momentum_resolved = false
+k = 0.4
+file_dynamics_out = orb0_up_site1
+Dynamics_dos_operators = 1 1.0 0.0 0 1 1
+---------------------------------
+
+---------------------------------------------------
+#2 1.654 0 0 1 0.0321 0 1 1
+#no_of_orps real orb spin site ...
+
+#upspin=0, downspin=1
+---------------------------------
+
+Static_Finite_Temperature = false
+Number_of_Random_States = 300
+Number_of_LowKrylov_States_used = 100
+Temperature = 0.2
+
+
+Processors = 1

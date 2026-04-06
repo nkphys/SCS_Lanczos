@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900" viewBox="0 0 900 900">
+<rect x="0" y="0" width="900" height="900" fill="white"/>
+<text x="450" y="40" text-anchor="middle" font-size="24" font-family="Arial">Lattice graph from Hopping_mat_LongRange</text>
+<line x1="774" y1="450" x2="679.103" y2="679.103" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 0 and 1; uu_21=(10.5,-0); uu_12=(10.5,0); dd_21=(10.5,-0); dd_12=(10.5,0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,-0)</title>
+</line>
+<line x1="774" y1="450" x2="220.897" y2="679.103" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 0 and 3; uu_21=(10.5,0); uu_12=(10.5,-0); dd_21=(10.5,0); dd_12=(10.5,-0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,0)</title>
+</line>
+<line x1="774" y1="450" x2="126" y2="450" stroke="#dc2626" stroke-width="1.47619" stroke-dasharray="8,5" >
+<title>sites 0 and 4; uu_21=(-0.5,0); uu_12=(-0.5,-0); dd_21=(-0.5,0); dd_12=(-0.5,-0); ud_21=(-0,0.4); ud_12=(-0,-0.4); du_21=(-0,0.4); du_12=(-0,-0.4); dominant=(-0.5,0)</title>
+</line>
+<line x1="774" y1="450" x2="220.897" y2="220.897" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 0 and 5; uu_21=(10.5,0); uu_12=(10.5,-0); dd_21=(10.5,0); dd_12=(10.5,-0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,0)</title>
+</line>
+<line x1="774" y1="450" x2="679.103" y2="220.897" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 0 and 7; uu_21=(10.5,0); uu_12=(10.5,-0); dd_21=(10.5,0); dd_12=(10.5,-0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,0)</title>
+</line>
+<line x1="679.103" y1="679.103" x2="450" y2="774" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 1 and 2; uu_21=(10.5,-0); uu_12=(10.5,0); dd_21=(10.5,-0); dd_12=(10.5,0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,-0)</title>
+</line>
+<line x1="679.103" y1="679.103" x2="220.897" y2="679.103" stroke="#dc2626" stroke-width="1.47619" stroke-dasharray="8,5" >
+<title>sites 1 and 3; uu_21=(-0.5,0); uu_12=(-0.5,-0); dd_21=(-0.5,0); dd_12=(-0.5,-0); ud_21=(0.4,-0); ud_12=(0.4,0); du_21=(0.4,0); du_12=(0.4,-0); dominant=(-0.5,0)</title>
+</line>
+<line x1="679.103" y1="679.103" x2="126" y2="450" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 1 and 4; uu_21=(10.5,-0); uu_12=(10.5,0); dd_21=(10.5,-0); dd_12=(10.5,0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,-0)</title>
+</line>
+<line x1="679.103" y1="679.103" x2="450" y2="126" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 1 and 6; uu_21=(10.5,-0); uu_12=(10.5,0); dd_21=(10.5,-0); dd_12=(10.5,0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,-0)</title>
+</line>
+<line x1="450" y1="774" x2="220.897" y2="679.103" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 2 and 3; uu_21=(10.5,-0); uu_12=(10.5,0); dd_21=(10.5,-0); dd_12=(10.5,0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,-0)</title>
+</line>
+<line x1="450" y1="774" x2="220.897" y2="220.897" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 2 and 5; uu_21=(10.5,0); uu_12=(10.5,-0); dd_21=(10.5,0); dd_12=(10.5,-0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,0)</title>
+</line>
+<line x1="450" y1="774" x2="450" y2="126" stroke="#dc2626" stroke-width="1.47619" stroke-dasharray="8,5" >
+<title>sites 2 and 6; uu_21=(-0.5,0); uu_12=(-0.5,-0); dd_21=(-0.5,0); dd_12=(-0.5,-0); ud_21=(-0,0.4); ud_12=(-0,-0.4); du_21=(-0,0.4); du_12=(-0,-0.4); dominant=(-0.5,0)</title>
+</line>
+<line x1="450" y1="774" x2="679.103" y2="220.897" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 2 and 7; uu_21=(10.5,0); uu_12=(10.5,-0); dd_21=(10.5,0); dd_12=(10.5,-0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,0)</title>
+</line>
+<line x1="220.897" y1="679.103" x2="126" y2="450" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 3 and 4; uu_21=(10.5,-0); uu_12=(10.5,0); dd_21=(10.5,-0); dd_12=(10.5,0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,-0)</title>
+</line>
+<line x1="220.897" y1="679.103" x2="450" y2="126" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 3 and 6; uu_21=(10.5,-0); uu_12=(10.5,0); dd_21=(10.5,-0); dd_12=(10.5,0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,-0)</title>
+</line>
+<line x1="126" y1="450" x2="220.897" y2="220.897" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 4 and 5; uu_21=(10.5,-0); uu_12=(10.5,0); dd_21=(10.5,-0); dd_12=(10.5,0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,-0)</title>
+</line>
+<line x1="126" y1="450" x2="679.103" y2="220.897" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 4 and 7; uu_21=(10.5,0); uu_12=(10.5,-0); dd_21=(10.5,0); dd_12=(10.5,-0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,0)</title>
+</line>
+<line x1="220.897" y1="220.897" x2="450" y2="126" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 5 and 6; uu_21=(10.5,-0); uu_12=(10.5,0); dd_21=(10.5,-0); dd_12=(10.5,0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,-0)</title>
+</line>
+<line x1="220.897" y1="220.897" x2="679.103" y2="220.897" stroke="#dc2626" stroke-width="1.47619" stroke-dasharray="8,5" >
+<title>sites 5 and 7; uu_21=(-0.5,0); uu_12=(-0.5,-0); dd_21=(-0.5,0); dd_12=(-0.5,-0); ud_21=(0.4,-0); ud_12=(0.4,0); du_21=(0.4,0); du_12=(0.4,-0); dominant=(-0.5,0)</title>
+</line>
+<line x1="450" y1="126" x2="679.103" y2="220.897" stroke="#1d4ed8" stroke-width="11" >
+<title>sites 6 and 7; uu_21=(10.5,-0); uu_12=(10.5,0); dd_21=(10.5,-0); dd_12=(10.5,0); ud_21=(0,0); ud_12=(0,0); du_21=(0,0); du_12=(0,0); dominant=(10.5,-0)</title>
+</line>
+<circle cx="774" cy="450" r="18" fill="#cfe8ff" stroke="#1f4e79" stroke-width="2"/>
+<text x="774" y="455" text-anchor="middle" font-size="16" font-family="Arial" fill="#102a43">0</text>
+<circle cx="679.103" cy="679.103" r="18" fill="#cfe8ff" stroke="#1f4e79" stroke-width="2"/>
+<text x="679.103" y="684.103" text-anchor="middle" font-size="16" font-family="Arial" fill="#102a43">1</text>
+<circle cx="450" cy="774" r="18" fill="#cfe8ff" stroke="#1f4e79" stroke-width="2"/>
+<text x="450" y="779" text-anchor="middle" font-size="16" font-family="Arial" fill="#102a43">2</text>
+<circle cx="220.897" cy="679.103" r="18" fill="#cfe8ff" stroke="#1f4e79" stroke-width="2"/>
+<text x="220.897" y="684.103" text-anchor="middle" font-size="16" font-family="Arial" fill="#102a43">3</text>
+<circle cx="126" cy="450" r="18" fill="#cfe8ff" stroke="#1f4e79" stroke-width="2"/>
+<text x="126" y="455" text-anchor="middle" font-size="16" font-family="Arial" fill="#102a43">4</text>
+<circle cx="220.897" cy="220.897" r="18" fill="#cfe8ff" stroke="#1f4e79" stroke-width="2"/>
+<text x="220.897" y="225.897" text-anchor="middle" font-size="16" font-family="Arial" fill="#102a43">5</text>
+<circle cx="450" cy="126" r="18" fill="#cfe8ff" stroke="#1f4e79" stroke-width="2"/>
+<text x="450" y="131" text-anchor="middle" font-size="16" font-family="Arial" fill="#102a43">6</text>
+<circle cx="679.103" cy="220.897" r="18" fill="#cfe8ff" stroke="#1f4e79" stroke-width="2"/>
+<text x="679.103" y="225.897" text-anchor="middle" font-size="16" font-family="Arial" fill="#102a43">7</text>
+<rect x="25" y="775" width="250" height="90" fill="#fbfbfb" stroke="#bbbbbb"/>
+<text x="40" y="805" font-size="16" font-family="Arial">Legend</text>
+<line x1="45" y1="830" x2="105" y2="830" stroke="#1d4ed8" stroke-width="3"/>
+<text x="115" y="836" font-size="14" font-family="Arial">positive hopping</text>
+<line x1="45" y1="855" x2="105" y2="855" stroke="#dc2626" stroke-width="3"/>
+<text x="115" y="861" font-size="14" font-family="Arial">negative hopping</text>
+<text x="40" y="882" font-size="14" font-family="Arial">dashed lines indicate spin-flip terms; width tracks magnitude</text>
+</svg>

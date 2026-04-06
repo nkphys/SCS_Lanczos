@@ -122,6 +122,7 @@ struct tetra_int{
 
 };
 typedef vector<tetra_int> Mat_1_tetra_int;
+typedef vector<Mat_1_tetra_int> Mat_2_tetra_int;
 
 
 

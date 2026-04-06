@@ -1,41 +1,49 @@
 Model = SpinOnlyTargetSz
 ------------------------------------------
 PBC = true
-Length = 4
+Length = 5
 TwoTimesSpin = 2
 TwoTimesTotalSzTarget = 0
 H_mag = 0 0 -0.00
-D_anisotropy = 0 0 0.00
-LongRangeJ1_file = J1file_L2_use.txt
-LongRangeJ2_file = J2file_L2_use.txt
-LongRangeJ3_file = J3file_L2_use.txt
+Dz_anisotropy = 0 0 0.00
 
+GenericConnectionsFiles = 1 SS_AKLT.txt
+LongRangeJ1_file = J1file.dat
+LongRangeJ2_file = J2file.dat
+LongRangeJ3_file = J3file.dat
+
+MultiSectionBasisSearchInt = 1
 ----------------------------------------
 
-No_of_onepoint_obs = 1
-One_point_oprt_path_1 = Sz.txt
-One_point_oprt_path_2 = Sm.txt
+Saving_Hamiltonian_and_Oprs = true
+
+
+#These operators are used for generic n-body term too
+#One_point_oprt_paths = 5 Sx.txt Sy.txt Sz.txt Sp.txt Sm.txt
+#Qxx.txt Qxy.txt Qxz.txt Qyy.txt Qyz.txt Qzz.txt
+
+
 
 
 --------------------------------------
 FourPointObservablesSites file = fourpoint.txt
 -------------------------------------
-Lanc_Error = 10e-12
-max_steps = 220
-Random_seed_generator = 43
-file_eval_spectrum = out0.txt
+Lanc_Error = -10e-12
+max_steps = 100
+Random_seed_generator = 3
+file_eval_spectrum = out_eval.txt
 save_all_Krylov_space_vecs = true
 get_overlap_bw_eigstates_and_K_vecs = true
-lanczos_reorthogonalization = false
+lanczos_reorthogonalization = true
 Get_Full_Spectrum = true
-need_few_eig_vecs = true
-few = 1
+need_few_eig_vecs = truee
+few = 10
 ----------------------------------------
 Get_overlap_with_basis = false
-States_to_look = 1 0
-overlap_out_file = out0.txt
-calculate_local_obs_for_states_to_look = true
-calculate_local_obs_for_states_to_look_for_first_n_basis = 100
+States_to_look = 60 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59
+overlap_out_file = out_overlap.txt
+calculate_local_obs_for_states_to_look = false
+calculate_local_obs_for_states_to_look_for_first_n_basis = 10
 file_out_local_obs_for_states_to_look = local_obs_for_state_no
 --------------------------------------
 
@@ -50,16 +58,23 @@ Temperature_LTLM_Dynamics = 0.91
 
 
 ----------------------------------
-Perform_Dynamics = false
-eta = 0.05
-check_omega = 0.2
-omega_max = 10.0
+Perform_Dynamics = truee
+eta = 0.02
+check_omega = 0.3
+omega_max = 8.0
 omega_min = 0.0
-d_omega = 0.01
-Opr_for_Dynamics = 3 Sz (1.0,0.345) 1 (2.0,-0.4325) 2 (3.12. 54.23) 3
+d_omega = 0.005
+Opr_for_Dynamics = 8 Sz (1.00000,0.00000) 0 (0.00000,-1.00000) 1 (-1.00000,-0.00000) 2 (-0.00000,1.00000) 3 (1.00000,0.00000) 4 (0.00000,-1.00000) 5 (-1.00000,-0.00000) 6 (-0.00000,1.00000) 7
+
+#8 Sz (1.0,0.0) 0 (-1.0,0.0) 1 (1.0,0.0) 2 (-1.0,0.0) 3 (1.0,0.0) 4 (-1.0,0.0) 5 (1.0,0.0) 6 (-1.0,0.0) 7
+
+# (-1.00000,-0.00000) 4 (-0.70711,0.70711) 5 (-0.00000,1.00000) 6 (0.70711,0.70711) 7 
 Momentum_resolved = true
 k = 0.1
-file_dynamics_out = Dyn_Sz_K0.1
+file_dynamics_out = Dyn_SzSz_kn2_L8.txt
 ---------------------------------
 
-Processors = 16
+Processors = 8
+
+Write_Basis = false
+Write_Basis_File = Basis_used.txt

@@ -1748,7 +1748,7 @@ void MODEL_Spins::Initialize_two_point_operator_sites_specific(string opr_type ,
         connection_type.push_back("Sz Sz");
         connection_type.push_back("Sp Sm");
         connection_type.push_back("Sm Sp");
-        Mat_1_doub connection_val;
+        Mat_1_real connection_val;
         connection_val.push_back(1.0);
         connection_val.push_back(0.5);
         connection_val.push_back(0.5);
@@ -1835,7 +1835,7 @@ void MODEL_Spins::Initialize_two_point_operator_sites_specific(string opr_type ,
     if(opr_type=="TauZTauZ"){
         Mat_1_string connection_type;
         connection_type.push_back("TauZ TauZ");
-        Mat_1_doub connection_val;
+        Mat_1_real connection_val;
         connection_val.push_back(1.0);
         for (unsigned long long int dec_m=basis.D_min;dec_m<basis.D_max+1;dec_m++){
 

@@ -533,6 +533,29 @@ void Read_matrix_from_file(string filepath,
 
 }
 
+void Read_matrix_from_file(string filepath,
+                           Mat_2_real &Mat, int row, int column){
+
+    ifstream infile(filepath.c_str());
+
+    Mat.resize(row);
+    for(int i=0;i<row;i++){
+        Mat[i].resize(column);
+    }
+
+    double tmp_doub;
+
+    for (int i =0;i<row;i++){
+        for (int j =0;j<column;j++){
+
+            infile>>tmp_doub;
+            Mat[i][j]=tmp_doub;
+        }
+
+    }
+
+}
+
 complex<double> divide(complex<double> z1, complex<double> z2){
 
     complex<double> z;

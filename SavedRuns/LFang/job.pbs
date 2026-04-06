@@ -1,0 +1,15 @@
+#!/bin/sh
+#PBS -N dm-N-3
+#PBS -l nodes=1:ppn=8:vanilla
+#PBS -l walltime=144:00:00
+#PBS -l vmem=80gb
+#PBS -q batch
+#PBS -r n
+hostname
+cd $PBS_O_WORKDIR
+pwd
+
+date
+lanczos_n input_2orb.inp >lanczos.dat
+date
+

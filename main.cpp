@@ -49,7 +49,7 @@ int main(int argc, char** argv){
     cout<<"Do_Dynamics ="<<Do_Dynamics<<endl;
 
 
-    bool DO_FULL_DIAGONALIZATION=false;
+    bool DO_FULL_DIAGONALIZATION=true;
 
 #ifdef _OPENMP
     double begin_time, end_time;
@@ -2638,6 +2638,7 @@ int main(int argc, char** argv){
 
         }
 
+#ifndef USE_COMPLEX
         if (model_name=="3_orb_Hubbard_chain") {
             MODEL_3_orb_Hubb_chain _MODEL;
             BASIS_3_orb_Hubb_chain _BASIS;
@@ -2758,6 +2759,7 @@ int main(int argc, char** argv){
 
         }
 
+#endif
         //=======================================================================================================================================================================================================//
         //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
         //=======================================================================================================================================================================================================//
@@ -4475,7 +4477,7 @@ int main(int argc, char** argv){
             }
 
             //_MODEL.Get_Delta_Matrix(_LANCZOS);
-            _MODEL.Get_ExcitonCoherence_Length(_LANCZOS.Eig_vecs[0]);
+            //_MODEL.Get_ExcitonCoherence_Length(_LANCZOS.Eig_vecs[0]);
 
             for(int state_=0;state_<_LANCZOS.Eig_vecs.size();state_++){
 
@@ -4492,7 +4494,7 @@ int main(int argc, char** argv){
 
 
             //States in Basis ----XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-            if(true){
+            if(false){
 
                 string file_basis = "BASIS.txt";
                 ofstream file_basis_out(file_basis.c_str());
@@ -4588,7 +4590,7 @@ int main(int argc, char** argv){
 
             Mat_1_real Eigen_ED;
             Mat_2_doub vecs;
-            DO_FULL_DIAGONALIZATION=false;
+            DO_FULL_DIAGONALIZATION=true;
             if(_MODEL.Hamil.nrows>800){
                 DO_FULL_DIAGONALIZATION=false;
             }
@@ -5912,13 +5914,14 @@ int main(int argc, char** argv){
 
 
             _MODEL.Read_parameters(inp_filename);
+
+            //_MODEL.Create_Lattice_Graph("latticegraph.svg");
             _BASIS.Construct_basis();
             cout<<"Basis contructed"<<endl;
             _MODEL.Add_diagonal_terms();
             cout<<"Diagonal terms added"<<endl;
             _MODEL.Add_connections();
             cout<<"Connections added"<<endl;
-
 
 
             cout<<"Size of Hilbert space = "<<_MODEL.Hamil.nrows<<endl;
@@ -5928,6 +5931,7 @@ int main(int argc, char** argv){
 
             LANCZOS<BASIS_1_orb_Hubbard_GC, MODEL_1_orb_Hubbard_GC<BASIS_1_orb_Hubbard_GC>> _LANCZOS(_BASIS, _MODEL);
             _LANCZOS.Dynamics_performed=false;
+            _LANCZOS.TimeEvoPerformed=false;
 
 
 
@@ -5956,7 +5960,7 @@ int main(int argc, char** argv){
             cout<<scientific<<setprecision(6);
             _MODEL.Calculate_one_point_observables(_LANCZOS.Eig_vec);
             _MODEL.Calculate_two_point_observables(_LANCZOS.Eig_vec);
-
+            _MODEL.Calculate_four_point_observables(_LANCZOS.Eig_vec);
 
             // Only following basis are printed.
             /*  Mat_1_int Temp_index;

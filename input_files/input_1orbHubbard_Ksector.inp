@@ -2,27 +2,39 @@ Model = 1_orb_Hubbard_2D_KSector
 ------------------------------------------
 Geometry = LongRange
 PBC = true
-Lx = 6
-Ly = 1
-Momentum_nx = 0
-Momentum_ny = 0
-Ndown = 3
-Nup = 3
-Hopping_NN = 1.0
+Lx = 4
+Ly = 4
+Momentum_nx = 1
+Momentum_ny = 1
+Ndown = 4
+Nup = 4
+Hopping_NN = 0.0
 
 U = 10.0
 H_mag = 0
 
-File_Onsite_Energies = somefile
-File_Hopping_Connections = somefile
-File_NonLocal_Int_Connections = somefile
+File_Onsite_Energies = false somefile
+File_Hopping_Connections = Hoppings_longrange_4x4.txt
+File_NonLocal_Int_Connections = Interactions.txt
+
+
+File_Three_Point_Observation = ThreePointOprs.txt
+File_Three_Point_Interaction = ThreePointIntrs.txt
+----------------------------------------
+
+
+
+Saving_Hamiltonian_and_Oprs = true
+
+
+
 ----------------------------------------
 
 Read_Basis_bool = false
-Read_File_Basis = Kx6Ky0_L12
+Read_File_Basis = Kx0Ky0
 
 Write_Basis_bool = false
-Write_File_Basis = Kx6Ky0_L12
+Write_File_Basis = Kx0Ky0
 
 Random_seed_generator = 13
 Read_the_seed = false
@@ -30,14 +42,14 @@ seed_file = seed_GS_old.txt
 
 
 --------------------------------------
-Lanc_Error = -10e-12
-max_steps = 80
+Lanc_Error = 10e-15
+max_steps = 800
 file_eval_spectrum = out0.txt
-save_all_Krylov_space_vecs = true
-get_overlap_bw_eigstates_and_K_vecs = true
-lanczos_reorthogonalization = true
-Get_Full_Spectrum = true
-need_few_eig_vecs = true
+save_all_Krylov_space_vecs = false
+get_overlap_bw_eigstates_and_K_vecs = false
+lanczos_reorthogonalization = false
+Get_Full_Spectrum = false
+need_few_eig_vecs = false
 few = 1
 ----------------------------------------
 Get_overlap_with_basis = false
@@ -82,4 +94,4 @@ Light_polarization_in = 0 1 0
 Incident_energy = 0.1
 ----------------------------------------
 
-Processors = 6
+Processors = 8

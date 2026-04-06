@@ -2,9 +2,66 @@
 #define Model_1_orb_Hubbard_GC_Functions
 
 #include "Model_1_orb_Hubbard_GC.h"
+#include <cmath>
+#include <iomanip>
+#include <sstream>
 #include <stdlib.h>
 using namespace std;
 #define PI 3.14159265
+
+namespace {
+
+double_type Read_FourPoint_Coefficient(const string& token){
+
+#ifdef USE_COMPLEX
+    if(token.size()>2 && token[0]=='(' && token[token.size()-1]==')'){
+        string coeff_string = token.substr(1, token.size()-2);
+        size_t comma_pos = coeff_string.find(',');
+        if(comma_pos != string::npos){
+            double real_part = atof(coeff_string.substr(0, comma_pos).c_str());
+            double imag_part = atof(coeff_string.substr(comma_pos + 1).c_str());
+            return complex<double>(real_part, imag_part);
+        }
+    }
+
+    return complex<double>(atof(token.c_str()), 0.0);
+#endif
+
+#ifndef USE_COMPLEX
+    if(token.size()>2 && token[0]=='(' && token[token.size()-1]==')'){
+        string coeff_string = token.substr(1, token.size()-2);
+        size_t comma_pos = coeff_string.find(',');
+        if(comma_pos != string::npos){
+            return atof(coeff_string.substr(0, comma_pos).c_str());
+        }
+    }
+
+    return atof(token.c_str());
+#endif
+}
+
+double GetDoubleTypeMagnitude(const double_type& value_){
+    return abs(value_);
+}
+
+double GetDoubleTypeSignedPart(const double_type& value_){
+#ifdef USE_COMPLEX
+    return value_.real();
+#endif
+
+#ifndef USE_COMPLEX
+    return value_;
+#endif
+}
+
+string DoubleTypeToString(const double_type& value_){
+    stringstream value_stream;
+    value_stream<<setprecision(6)<<value_;
+    return value_stream.str();
+}
+
+}
+
 /*convention for basis:
 
     1)  for "up-spin" basis
@@ -42,6 +99,19 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Add_diagonal_terms(){
         //intra-orbital coulomb repulsion:
         value+=U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
 
+
+        //Long range density-density interaction:
+        for(int site1=0;site1<basis.Length;site1++){
+            for(int site2=0;site2<basis.Length;site2++){
+                value+=DenDenInt_mat_LongRange[site1][site2]*
+                        ( ( bit_value(basis.D_up_basis[i], site1) +
+                            bit_value(basis.D_dn_basis[j], site1) )
+                          *
+                          ( bit_value(basis.D_up_basis[i], site2) +
+                            bit_value(basis.D_dn_basis[j], site2) )
+                        );
+            }
+        }
 
         //Crystal Field Splitting (CFE):
         for(int site=0;site<basis.Length;site++){
@@ -304,6 +374,9 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Read_parameters(string filename){
     string cfs_site_resolved, CFS_SITE_RESOLVED = "CFS_SITE_RESOLVED = ";
 
     string LongRangeHoppingfile_ = "LongRangeHopping_file = ";
+    string LongRangeDenDenIntfile_ = "LongRangeDenDenInt_file = ";
+
+    string FourPointObsSet_file_ = "FourPointObsSet_file = ";
 
     int offset;
     string line;
@@ -335,12 +408,17 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Read_parameters(string filename){
             if ((offset = line.find(LongRangeHoppingfile_, 0)) != string::npos) {
                 LongRangeHoppingfilepath = line.substr (offset+LongRangeHoppingfile_.length());  }
 
+            if ((offset = line.find(LongRangeDenDenIntfile_, 0)) != string::npos) {
+                LongRangeDenDenIntfilepath = line.substr (offset+LongRangeDenDenIntfile_.length());  }
+
+            if ((offset = line.find(FourPointObsSet_file_, 0)) != string::npos) {
+                FourPointObsSet_filepath = line.substr (offset+FourPointObsSet_file_.length());  }
+
         }
         inputfile.close();
     }
     else
     {cout<<"Unable to open input file while in the Model class."<<endl;}
-
 
 
 
@@ -398,7 +476,86 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Read_parameters(string filename){
 
     Read_matrix_from_file(LongRangeHoppingfilepath, Hopping_mat_LongRange , 2*basis.Length, 2*basis.Length);
 
-    //Print_Matrix(Hopping_mat_LongRange);
+    cout<<"Hopping matrix read from file : "<<endl;
+    Print_Matrix(Hopping_mat_LongRange);
+
+
+
+
+    cout<<"Reading DenDenInt matrix from : "<<LongRangeDenDenIntfilepath<<endl;
+
+    Read_matrix_from_file(LongRangeDenDenIntfilepath, DenDenInt_mat_LongRange , basis.Length, basis.Length);
+
+
+    cout<<"DenDenInt matrix read from file : "<<endl;
+    Print_Matrix(DenDenInt_mat_LongRange);
+
+
+
+
+    ifstream FourPointInfile(FourPointObsSet_filepath.c_str());
+    fourpointSitesSet.clear();
+    fourpointSpinsSet.clear();
+    fourpointValuesSet.clear();
+    if(FourPointInfile.is_open())
+    {
+        string line;
+        while(getline(FourPointInfile, line))
+        {
+            stringstream line_stream(line);
+            string first_token;
+            line_stream >> first_token;
+
+            if(first_token.size()==0 || first_token[0]=='#'){
+                continue;
+            }
+
+            int no_of_oprs = atoi(first_token.c_str());
+            Mat_1_tetra_int sites_set_temp;
+            Mat_1_tetra_int spins_set_temp;
+            Mat_1_doub values_set_temp;
+
+            for(int opr_no=0;opr_no<no_of_oprs;opr_no++){
+                string coeff_token;
+                int site1, spin1, site2, spin2, site3, spin3, site4, spin4;
+                tetra_int sites_temp;
+                tetra_int spins_temp;
+
+                line_stream >> coeff_token;
+                line_stream >> site1 >> spin1 >> site2 >> spin2 >> site3 >> spin3 >> site4 >> spin4;
+
+                if(line_stream.fail()){
+                    cout<<"Malformed four point observable entry: "<<line<<endl;
+                    break;
+                }
+
+                sites_temp.first = site1;
+                sites_temp.second = site2;
+                sites_temp.third = site3;
+                sites_temp.fourth = site4;
+
+                spins_temp.first = spin1;
+                spins_temp.second = spin2;
+                spins_temp.third = spin3;
+                spins_temp.fourth = spin4;
+
+                sites_set_temp.push_back(sites_temp);
+                spins_set_temp.push_back(spins_temp);
+                values_set_temp.push_back(Read_FourPoint_Coefficient(coeff_token));
+            }
+
+            if(sites_set_temp.size()>0){
+                fourpointSitesSet.push_back(sites_set_temp);
+                fourpointSpinsSet.push_back(spins_set_temp);
+                fourpointValuesSet.push_back(values_set_temp);
+            }
+        }
+        FourPointInfile.close();
+    }
+    else    {cout<<"Unable to open input file for four point obs set."<<endl;}
+
+    cout<<"No. of four point observable sets read = "<<fourpointSitesSet.size()<<endl;
+
 
     //THINK ABOUT IT LATER :)
     /*for(int site=0;site<basis.Length ;site++){
@@ -410,7 +567,7 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Read_parameters(string filename){
         }}
         */
 
-    cout<<"READING PARAMETERS"<<endl;
+    cout<<"PARAMETERS READ"<<endl;
 
 
 }
@@ -464,6 +621,192 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Read_parameters_for_dynamics(string fil
 }
 
 
+//NOT WORKING PROPERLY AT PRESENT, THINK ABOUT IT LATER
+template <typename Basis_type>
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Create_Lattice_Graph(string output_filename){
+
+    ofstream graph_file(output_filename.c_str());
+
+    if(!graph_file.is_open()){
+        cout<<"Unable to open lattice graph output file."<<endl;
+        return;
+    }
+
+    const double canvas_x = 900.0;
+    const double canvas_y = 900.0;
+    const double center_x = canvas_x*0.5;
+    const double center_y = canvas_y*0.5;
+    const double radius = 0.36*((canvas_x<canvas_y)?canvas_x:canvas_y);
+    const double node_radius = 18.0;
+
+    Mat_1_real site_x, site_y;
+    site_x.resize(basis.Length);
+    site_y.resize(basis.Length);
+
+    if(basis.Length==1){
+        site_x[0]=center_x;
+        site_y[0]=center_y;
+    }
+    else{
+        for(int site=0;site<basis.Length;site++){
+            double angle = (2.0*PI*site)/(1.0*basis.Length);
+            site_x[site] = center_x + radius*cos(angle);
+            site_y[site] = center_y + radius*sin(angle);
+        }
+    }
+
+    double max_strength = 0.0;
+    for(int site1=0;site1<basis.Length;site1++){
+        for(int site2=site1+1;site2<basis.Length;site2++){
+            for(int spin_from=0;spin_from<2;spin_from++){
+                for(int spin_to=0;spin_to<2;spin_to++){
+                    int alpha_12 = basis.Length*spin_from + site1;
+                    int alpha_21 = basis.Length*spin_to + site2;
+
+                    double strength1 = GetDoubleTypeMagnitude(Hopping_mat_LongRange[alpha_21][alpha_12]);
+                    double strength2 = GetDoubleTypeMagnitude(Hopping_mat_LongRange[alpha_12][alpha_21]);
+
+                    if(strength1>max_strength){max_strength=strength1;}
+                    if(strength2>max_strength){max_strength=strength2;}
+                }
+            }
+        }
+    }
+
+    if(max_strength==0.0){
+        max_strength=1.0;
+    }
+
+    graph_file<<"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\""<<canvas_x
+              <<"\" height=\""<<canvas_y<<"\" viewBox=\"0 0 "<<canvas_x<<" "<<canvas_y<<"\">"<<endl;
+    graph_file<<"<rect x=\"0\" y=\"0\" width=\""<<canvas_x<<"\" height=\""<<canvas_y
+              <<"\" fill=\"white\"/>"<<endl;
+    graph_file<<"<text x=\""<<(0.5*canvas_x)<<"\" y=\"40\" text-anchor=\"middle\" font-size=\"24\" font-family=\"Arial\">"
+              <<"Lattice graph from Hopping_mat_LongRange</text>"<<endl;
+
+    for(int site1=0;site1<basis.Length;site1++){
+        for(int site2=site1+1;site2<basis.Length;site2++){
+            double_type uu_12 = Hopping_mat_LongRange[site2][site1];
+            double_type uu_21 = Hopping_mat_LongRange[site1][site2];
+            double_type dd_12 = Hopping_mat_LongRange[basis.Length + site2][basis.Length + site1];
+            double_type dd_21 = Hopping_mat_LongRange[basis.Length + site1][basis.Length + site2];
+            double_type ud_12 = Hopping_mat_LongRange[basis.Length + site2][site1];
+            double_type ud_21 = Hopping_mat_LongRange[site1][basis.Length + site2];
+            double_type du_12 = Hopping_mat_LongRange[site2][basis.Length + site1];
+            double_type du_21 = Hopping_mat_LongRange[basis.Length + site1][site2];
+
+            double edge_strength = 0.0;
+            edge_strength = max(edge_strength, GetDoubleTypeMagnitude(uu_12));
+            edge_strength = max(edge_strength, GetDoubleTypeMagnitude(uu_21));
+            edge_strength = max(edge_strength, GetDoubleTypeMagnitude(dd_12));
+            edge_strength = max(edge_strength, GetDoubleTypeMagnitude(dd_21));
+            edge_strength = max(edge_strength, GetDoubleTypeMagnitude(ud_12));
+            edge_strength = max(edge_strength, GetDoubleTypeMagnitude(ud_21));
+            edge_strength = max(edge_strength, GetDoubleTypeMagnitude(du_12));
+            edge_strength = max(edge_strength, GetDoubleTypeMagnitude(du_21));
+
+            if(edge_strength==0.0){
+                continue;
+            }
+
+            double_type dominant_hopping = uu_12;
+            if(GetDoubleTypeMagnitude(uu_21) > GetDoubleTypeMagnitude(dominant_hopping)){
+                dominant_hopping = uu_21;
+            }
+            if(GetDoubleTypeMagnitude(dd_12) > GetDoubleTypeMagnitude(dominant_hopping)){
+                dominant_hopping = dd_12;
+            }
+            if(GetDoubleTypeMagnitude(dd_21) > GetDoubleTypeMagnitude(dominant_hopping)){
+                dominant_hopping = dd_21;
+            }
+            if(GetDoubleTypeMagnitude(ud_12) > GetDoubleTypeMagnitude(dominant_hopping)){
+                dominant_hopping = ud_12;
+            }
+            if(GetDoubleTypeMagnitude(ud_21) > GetDoubleTypeMagnitude(dominant_hopping)){
+                dominant_hopping = ud_21;
+            }
+            if(GetDoubleTypeMagnitude(du_12) > GetDoubleTypeMagnitude(dominant_hopping)){
+                dominant_hopping = du_12;
+            }
+            if(GetDoubleTypeMagnitude(du_21) > GetDoubleTypeMagnitude(dominant_hopping)){
+                dominant_hopping = du_21;
+            }
+
+            double signed_value = GetDoubleTypeSignedPart(dominant_hopping);
+
+            bool spin_conserving = ((GetDoubleTypeMagnitude(uu_12)!=0.0) || (GetDoubleTypeMagnitude(uu_21)!=0.0)
+                                    || (GetDoubleTypeMagnitude(dd_12)!=0.0) || (GetDoubleTypeMagnitude(dd_21)!=0.0));
+            bool spin_flip = ((GetDoubleTypeMagnitude(ud_12)!=0.0) || (GetDoubleTypeMagnitude(ud_21)!=0.0)
+                              || (GetDoubleTypeMagnitude(du_12)!=0.0) || (GetDoubleTypeMagnitude(du_21)!=0.0));
+
+            string edge_color = "#6c757d";
+            string dash_style = "none";
+            if(signed_value > 0.0){
+                edge_color = "#1d4ed8";
+            }
+            if(signed_value < 0.0){
+                edge_color = "#dc2626";
+            }
+
+            if(spin_conserving && spin_flip){
+                dash_style = "8,5";
+            }
+            else if(spin_flip){
+                dash_style = "8,5";
+            }
+
+            double normalized_strength = edge_strength/max_strength;
+            double line_width = 1.0 + 10.0*normalized_strength;
+
+            graph_file<<"<line x1=\""<<site_x[site1]<<"\" y1=\""<<site_y[site1]
+                      <<"\" x2=\""<<site_x[site2]<<"\" y2=\""<<site_y[site2]
+                      <<"\" stroke=\""<<edge_color<<"\" stroke-width=\""<<line_width<<"\" ";
+            if(dash_style!="none"){
+                graph_file<<"stroke-dasharray=\""<<dash_style<<"\" ";
+            }
+            graph_file<<">"<<endl;
+
+            graph_file<<"<title>sites "<<site1<<" and "<<site2
+                      <<"; uu_21="<<DoubleTypeToString(uu_12)
+                      <<"; uu_12="<<DoubleTypeToString(uu_21)
+                      <<"; dd_21="<<DoubleTypeToString(dd_12)
+                      <<"; dd_12="<<DoubleTypeToString(dd_21)
+                      <<"; ud_21="<<DoubleTypeToString(ud_12)
+                      <<"; ud_12="<<DoubleTypeToString(ud_21)
+                      <<"; du_21="<<DoubleTypeToString(du_12)
+                      <<"; du_12="<<DoubleTypeToString(du_21)
+                      <<"; dominant="<<DoubleTypeToString(dominant_hopping)
+                      <<"</title>"<<endl;
+            graph_file<<"</line>"<<endl;
+        }
+    }
+
+    for(int site=0;site<basis.Length;site++){
+        graph_file<<"<circle cx=\""<<site_x[site]<<"\" cy=\""<<site_y[site]
+                  <<"\" r=\""<<node_radius<<"\" fill=\"#cfe8ff\" stroke=\"#1f4e79\" stroke-width=\"2\"/>"<<endl;
+        graph_file<<"<text x=\""<<site_x[site]<<"\" y=\""<<(site_y[site] + 5.0)
+                  <<"\" text-anchor=\"middle\" font-size=\"16\" font-family=\"Arial\" fill=\"#102a43\">"
+                  <<site<<"</text>"<<endl;
+    }
+
+    graph_file<<"<rect x=\"25\" y=\""<<(canvas_y-125.0)<<"\" width=\"250\" height=\"90\" fill=\"#fbfbfb\" stroke=\"#bbbbbb\"/>"<<endl;
+    graph_file<<"<text x=\"40\" y=\""<<(canvas_y-95.0)<<"\" font-size=\"16\" font-family=\"Arial\">Legend</text>"<<endl;
+    graph_file<<"<line x1=\"45\" y1=\""<<(canvas_y-70.0)<<"\" x2=\"105\" y2=\""<<(canvas_y-70.0)
+              <<"\" stroke=\"#1d4ed8\" stroke-width=\"3\"/>"<<endl;
+    graph_file<<"<text x=\"115\" y=\""<<(canvas_y-64.0)<<"\" font-size=\"14\" font-family=\"Arial\">positive hopping</text>"<<endl;
+    graph_file<<"<line x1=\"45\" y1=\""<<(canvas_y-45.0)<<"\" x2=\"105\" y2=\""<<(canvas_y-45.0)
+              <<"\" stroke=\"#dc2626\" stroke-width=\"3\"/>"<<endl;
+    graph_file<<"<text x=\"115\" y=\""<<(canvas_y-39.0)<<"\" font-size=\"14\" font-family=\"Arial\">negative hopping</text>"<<endl;
+    graph_file<<"<text x=\"40\" y=\""<<(canvas_y-18.0)<<"\" font-size=\"14\" font-family=\"Arial\">dashed lines indicate spin-flip terms; width tracks magnitude</text>"<<endl;
+
+    graph_file<<"</svg>"<<endl;
+    graph_file.close();
+
+    cout<<"Lattice graph written to "<<output_filename<<endl;
+
+}
+
+
 template <typename Basis_type>
 void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_two_point_observables(Mat_1_doub &Vec_){
 
@@ -478,7 +821,7 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_two_point_observables(Mat_1_d
     }
 
 
-    int TOTAL_NO_OBS=4;
+    int TOTAL_NO_OBS=5;
     Mat_3_doub AMatL, AMatR;
     AMatL.resize(TOTAL_NO_OBS);
     AMatR.resize(TOTAL_NO_OBS);
@@ -504,6 +847,11 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_two_point_observables(Mat_1_d
     AMatL[3]=AMat0;AMatR[3]=AMat0;
     AMatL[3][0][1]=one; //S+
     AMatR[3][0][1]=one; //S+
+
+    two_point_obs[4]="<nup[i].ndn[j]>";
+    AMatL[4]=AMat0;AMatR[4]=AMat0;
+    AMatL[4][0][0]=one;
+    AMatR[4][1][1]=one;
 
 
 
@@ -605,6 +953,80 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_one_point_observables(Mat_1_d
         vector< int >().swap( OPR_.rows );
         vector< double_type >().swap( OPR_.value );
     }
+
+}
+
+
+template <typename Basis_type>
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_four_point_observables(Mat_1_doub &Vec_){
+
+    Matrix_COO OPR1_, OPR2_;
+    Mat_1_doub Vec_temp_, Vec_final_;
+    double_type value_, value_sum_;
+
+    Mat_2_doub AMat0;
+    AMat0.resize(2);
+    for(int ind=0;ind<2;ind++){
+        AMat0[ind].resize(2);
+        for(int ind2=0;ind2<2;ind2++){
+            AMat0[ind][ind2]=zero;
+        }
+    }
+
+    cout<<"--------------<cdag c cdag c>-------------------"<<endl;
+
+    for(int set_no=0;set_no<fourpointSitesSet.size();set_no++){
+        assert(fourpointSitesSet[set_no].size()==fourpointSpinsSet[set_no].size());
+        assert(fourpointSitesSet[set_no].size()==fourpointValuesSet[set_no].size());
+
+        value_sum_=zero;
+
+        cout<<"Set = "<<set_no<<endl;
+        for(int term_no=0;term_no<fourpointSitesSet[set_no].size();term_no++){
+            Mat_2_doub AMat1, AMat2;
+            tetra_int sites_;
+            tetra_int spins_;
+
+            AMat1=AMat0;
+            AMat2=AMat0;
+
+            sites_ = fourpointSitesSet[set_no][term_no];
+            spins_ = fourpointSpinsSet[set_no][term_no];
+
+            AMat1[spins_.first][spins_.second]=one;
+            AMat2[spins_.third][spins_.fourth]=one;
+
+            Get_CdaggerC_type_Opr(AMat2, OPR2_, sites_.third, sites_.fourth);
+            Matrix_COO_vector_multiplication("cx", OPR2_, Vec_, Vec_temp_);
+
+            Get_CdaggerC_type_Opr(AMat1, OPR1_, sites_.first, sites_.second);
+            Matrix_COO_vector_multiplication("cx", OPR1_, Vec_temp_, Vec_final_);
+
+            value_ = fourpointValuesSet[set_no][term_no]*dot_product(Vec_final_, Vec_);
+            value_sum_ += value_;
+
+            cout<<"term="<<term_no<<"  coeff="<<fourpointValuesSet[set_no][term_no]
+                <<"  sites=("<<sites_.first<<","<<sites_.second<<","<<sites_.third<<","<<sites_.fourth<<")"
+                <<"  spins=("<<spins_.first<<","<<spins_.second<<","<<spins_.third<<","<<spins_.fourth<<")"
+                <<"  value="<<value_<<endl;
+
+            vector< int >().swap( OPR1_.columns );
+            vector< int >().swap( OPR1_.rows );
+            vector< double_type >().swap( OPR1_.value );
+
+            vector< int >().swap( OPR2_.columns );
+            vector< int >().swap( OPR2_.rows );
+            vector< double_type >().swap( OPR2_.value );
+
+            vector< double_type >().swap( Vec_temp_ );
+            vector< double_type >().swap( Vec_final_ );
+        }
+
+        cout<<"Total for set "<<set_no<<" = "<<value_sum_<<endl;
+        cout<<endl;
+    }
+
+    cout<<"------------------------------------------------"<<endl;
 
 }
 

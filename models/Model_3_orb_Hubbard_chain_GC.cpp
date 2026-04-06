@@ -1581,7 +1581,7 @@ void MODEL_3_orb_Hubb_chain_GC<Basis_type>::Read_parameters(string filename){
     }
 
     if(USE_LONG_RANGE_HOPPINGS){
-        cout<<"Reading hopping matrix from : "<<LongRangeHoppingfilepath<<endl;
+        cout<<"Reading hopping matrix from : \""<<LongRangeHoppingfilepath<<"\""<<endl;
         Read_matrix_from_file(LongRangeHoppingfilepath, Hopping_mat_LongRange , 3*basis.Length, 3*basis.Length);
     }
 

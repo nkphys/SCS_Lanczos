@@ -5,6 +5,7 @@ This class includes the Model for which Lanczos is being done
 #include "../basis/Basis_1_orb_Hubbard_GC.h"
 #include "../functions_real.h"
 #include "../functions_complex.h"
+#include <string>
 #define PI 3.14159265
 
 #ifndef Model_1_orb_Hubbard_GC_Class
@@ -25,9 +26,12 @@ public:
     //2Lx2L matrix for L sites, "2" for spin, it includes hopping and SOC both.
     //index=L*spin + site; spin \in {0=UP,1=DOWN}, and L=No of sites
     Mat_2_doub Hopping_mat_LongRange;
+    Mat_2_real DenDenInt_mat_LongRange;
     Mat_1_real CFS;
 
     string LongRangeHoppingfilepath;
+    string LongRangeDenDenIntfilepath;
+    string FourPointObsSet_filepath;
     bool CFS_SITE_RESOLVED_bool;
 
     Matrix_COO Hamil;
@@ -45,8 +49,13 @@ public:
     Mat_1_doub State_c_on_GS;
     Mat_1_doub State_cdagger_on_GS;
 
+    Mat_2_tetra_int fourpointSitesSet;
+    Mat_2_tetra_int fourpointSpinsSet;
+    Mat_2_doub fourpointValuesSet;
+
     void Read_parameters(string filename);
     void Read_parameters_for_dynamics(string filename);
+    void Create_Lattice_Graph(string output_filename);
     void Add_diagonal_terms();
     void Add_non_diagonal_terms();
     void Add_connections();
@@ -60,6 +69,7 @@ public:
                            Mat_1_trio_int TRIO_VEC, Mat_1_doub values);
     void Calculate_one_point_observables(Mat_1_doub &Vec_);
     void Calculate_two_point_observables(Mat_1_doub &Vec_);
+    void Calculate_four_point_observables(Mat_1_doub &Vec_);
     void Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site);
     void Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site, int site_p);
 
