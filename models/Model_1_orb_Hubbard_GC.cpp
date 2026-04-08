@@ -961,8 +961,14 @@ template <typename Basis_type>
 void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_four_point_observables(Mat_1_doub &Vec_){
 
     Matrix_COO OPR1_, OPR2_;
-    Mat_1_doub Vec_temp_, Vec_final_;
+    Mat_1_doub Vec_temp_, Vec_temp2_,Vec_final_;
     double_type value_, value_sum_;
+    double_type value_sum_quantum;
+
+    double_type Value1_class, Value2_class;
+
+    double_type Total_Value_Sum=zero;
+    double_type Total_Value_Sum_quantum=zero;
 
     Mat_2_doub AMat0;
     AMat0.resize(2);
@@ -973,7 +979,7 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_four_point_observables(Mat_1_
         }
     }
 
-    cout<<"--------------<cdag c cdag c>-------------------"<<endl;
+    cout<<"-------------- <cdag c cdag c> and <cdagc><cdagc>  and <cdag c cdag c> - <cdagc><cdagc>-------------------"<<endl;
 
     for(int set_no=0;set_no<fourpointSitesSet.size();set_no++){
         assert(fourpointSitesSet[set_no].size()==fourpointSpinsSet[set_no].size());
@@ -999,16 +1005,32 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_four_point_observables(Mat_1_
             Get_CdaggerC_type_Opr(AMat2, OPR2_, sites_.third, sites_.fourth);
             Matrix_COO_vector_multiplication("cx", OPR2_, Vec_, Vec_temp_);
 
+
             Get_CdaggerC_type_Opr(AMat1, OPR1_, sites_.first, sites_.second);
             Matrix_COO_vector_multiplication("cx", OPR1_, Vec_temp_, Vec_final_);
 
+            //For classical <cdag1 c2>
+            Matrix_COO_vector_multiplication("cx", OPR1_, Vec_, Vec_temp2_);
+
+
             value_ = fourpointValuesSet[set_no][term_no]*dot_product(Vec_final_, Vec_);
+
+
+            Value2_class = dot_product(Vec_temp_, Vec_);
+            Value1_class = dot_product(Vec_temp2_, Vec_);
+            
+
             value_sum_ += value_;
+
+            value_sum_quantum +=  value_ - (fourpointValuesSet[set_no][term_no]*Value1_class*Value2_class);
 
             cout<<"term="<<term_no<<"  coeff="<<fourpointValuesSet[set_no][term_no]
                 <<"  sites=("<<sites_.first<<","<<sites_.second<<","<<sites_.third<<","<<sites_.fourth<<")"
                 <<"  spins=("<<spins_.first<<","<<spins_.second<<","<<spins_.third<<","<<spins_.fourth<<")"
-                <<"  value="<<value_<<endl;
+                <<"  value="<<value_
+                <<"  value_classical="<<fourpointValuesSet[set_no][term_no]*Value1_class*Value2_class
+                <<"  value_quantum="<<value_ - (fourpointValuesSet[set_no][term_no]*Value1_class*Value2_class)
+                <<endl;
 
             vector< int >().swap( OPR1_.columns );
             vector< int >().swap( OPR1_.rows );
@@ -1019,14 +1041,20 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_four_point_observables(Mat_1_
             vector< double_type >().swap( OPR2_.value );
 
             vector< double_type >().swap( Vec_temp_ );
+            vector< double_type >().swap( Vec_temp2_ );
             vector< double_type >().swap( Vec_final_ );
         }
 
         cout<<"Total for set "<<set_no<<" = "<<value_sum_<<endl;
+        cout<<"Total quantum for set "<<set_no<<" = "<<value_sum_quantum<<endl;
         cout<<endl;
+        Total_Value_Sum += value_sum_;
+        Total_Value_Sum_quantum += value_sum_quantum;
     }
 
     cout<<"------------------------------------------------"<<endl;
+    cout<<"Total Value Sum = "<<Total_Value_Sum<<endl;
+    cout<<"Total Value Sum Quantum = "<<Total_Value_Sum_quantum<<endl;
 
 }
 
