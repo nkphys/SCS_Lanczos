@@ -6,6 +6,9 @@
 #include <iomanip>
 #include <sstream>
 #include <stdlib.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 using namespace std;
 #define PI 3.14159265
 
@@ -77,12 +80,275 @@ string DoubleTypeToString(const double_type& value_){
 template <typename Basis_type>
 void MODEL_1_orb_Hubbard_GC<Basis_type>::Act_Hamil(BASIS_1_orb_Hubbard_GC &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out){
 
- cout<<"NOT WORKING AT PRESENT"<<endl;
+    assert(Vec_in.size() == basis.D_up_basis.size());
+
+    Vec_out.clear();
+    Vec_out.resize(basis.D_up_basis.size());
+    for(int i=0;i<basis.D_up_basis.size();i++){
+        Vec_out[i] = zero;
+    }
+
+    int N_threads = 1;
+#ifdef _OPENMP
+    N_threads = omp_get_max_threads();
+#endif
+    vector<Mat_1_doub> Vec_out_private;
+    Vec_out_private.resize(N_threads);
+    for(int thread=0;thread<N_threads;thread++){
+        Vec_out_private[thread].resize(basis.D_up_basis.size());
+        for(int i=0;i<basis.D_up_basis.size();i++){
+            Vec_out_private[thread][i] = zero;
+        }
+    }
+
+    
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+#endif
+    int thread_id = 0;
+    int alpha_, alpha_p_;
+    int j;
+    int D_up,D_dn;
+    int i_new,j_new;
+    int m_new;
+    double sign_FM;
+    int sign_pow_up, sign_pow_dn;
+    int max_up, max_dn, min_dn;
+    int l,lp;
+    double value;
+
+#ifdef _OPENMP
+    thread_id = omp_get_thread_num();
+
+#pragma omp for
+#endif
+    for (int i=0;i<basis.D_up_basis.size();i++){
+
+        j=i;
+        value=0;
+
+        //intra-orbital coulomb repulsion:
+        value += U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
+
+        //Long range density-density interaction:
+        for(int site1=0;site1<basis.Length;site1++){
+            for(int site2=0;site2<basis.Length;site2++){
+                value += DenDenInt_mat_LongRange[site1][site2]*
+                        ( ( bit_value(basis.D_up_basis[i], site1) +
+                            bit_value(basis.D_dn_basis[j], site1) )
+                          *
+                          ( bit_value(basis.D_up_basis[i], site2) +
+                            bit_value(basis.D_dn_basis[j], site2) )
+                        );
+            }
+        }
+
+        //Crystal Field Splitting (CFE):
+        for(int site=0;site<basis.Length;site++){
+            value += (CFS[site])*
+                    ( ( bit_value(basis.D_up_basis[i], site) +
+                        bit_value(basis.D_dn_basis[j], site) )
+                      );
+        }
+
+        //magnetic Field * [Sz]
+        for(int site=0;site<basis.Length;site++){
+            value += 0.5*(H_field[site])*
+                    ( ( bit_value(basis.D_up_basis[i],site) -
+                        bit_value(basis.D_dn_basis[j], site) )
+                      );
+        }
+
+        Vec_out_private[thread_id][i] += (value*one)*Vec_in[i];
+
+
+        for(int sigma=0;sigma<2 ;sigma++){
+            for(int site=0;site<basis.Length ;site++){
+                alpha_ = basis.Length*sigma + site;
+
+                for(int sigma_p=0;sigma_p<2 ;sigma_p++){
+                    for(int site_p=0;site_p<basis.Length ;site_p++){
+                        alpha_p_ = basis.Length*sigma_p + site_p;
+
+
+                        if(Hopping_mat_LongRange[alpha_p_][alpha_]!=zero){
+
+                            //HOPPING COEFFICIENT IN FRONT OF
+                            // (?) X c_{site_p,sigma_p}^{\dagger} c_{site,sigma}
+
+
+
+                            if(sigma==0 && sigma_p==0){
+
+                                //---------------Hopping: up to up electrons-------------------//
+                                //there have to be one up electron on site
+                                //there have to be no up electron on site_p
+                                if(
+                                        ( (bit_value(basis.D_up_basis[i],site)==1)
+                                          &&
+                                          (bit_value(basis.D_up_basis[i],site_p)==0)
+                                          )
+                                        &&
+                                        (site_p<site)
+                                        )
+                                {
+
+
+                                    D_up = (int) (basis.D_up_basis[i] + pow(2, site_p)
+                                                  - pow(2, site) );
+                                    D_dn = basis.D_dn_basis[j];
+
+                                    i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                                    j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+                                    m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                                            basis.Nup_offsets[__builtin_popcount(D_up)].first;
+
+
+                                    l= site;
+                                    lp= site_p;
+
+                                    sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+                                    sign_FM = pow(-1.0, sign_pow_up);
+
+
+                                    assert(m_new<i);
+                                    double_type value_ = sign_FM*(Hopping_mat_LongRange[alpha_p_][alpha_])*one;
+                                    Vec_out_private[thread_id][m_new] += value_*Vec_in[i];
+                                    Vec_out_private[thread_id][i] += conjugate(value_)*Vec_in[m_new];
+
+
+                                } // if up-up hopping possible
+
+                            }
+
+
+                            if(sigma==1 && sigma_p==1){
+
+                                //---------------Hopping: dn to dn electrons-------------------//
+                                //there have to be one dn electron on site
+                                //there have to be no dn electron on site_p
+                                if(
+                                        (
+                                            (bit_value(basis.D_dn_basis[j], site)==1)
+                                            &&
+                                            (bit_value(basis.D_dn_basis[j], site_p)==0)
+                                            )
+                                        &&
+                                        (site_p<site)
+                                        )
+                                {
+
+                                    D_up = basis.D_up_basis[i];
+                                    D_dn = (int) (basis.D_dn_basis[j] + pow(2, site_p)
+                                                  - pow(2, site) );
+
+
+                                    i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                                    j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+                                    m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                                            basis.Nup_offsets[__builtin_popcount(D_up)].first;
+
+
+                                    l= site;
+                                    lp= site_p;
+
+                                    sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+
+                                    sign_FM = pow(-1.0, sign_pow_dn);
+
+                                    assert(m_new<i);
+                                    double_type value_ = 1.0*sign_FM*(Hopping_mat_LongRange[alpha_p_][alpha_])*one;
+                                    Vec_out_private[thread_id][m_new] += value_*Vec_in[i];
+                                    Vec_out_private[thread_id][i] += conjugate(value_)*Vec_in[m_new];
+
+
+                                } // if dn-dn hopping possible
+
+                            }
+
+
+                            if(sigma==0 && sigma_p==1){
+
+                                //---------------Hopping: up to dn state-------------------//
+                                //there have to be one up electron on site
+                                //there have to be no dn electron on site_p
+                                if(
+                                        (bit_value(basis.D_up_basis[i], site)==1)
+                                        &&
+                                        (bit_value(basis.D_dn_basis[j], site_p)==0)
+
+                                        )
+                                {
+
+                                    D_up = (int) (basis.D_up_basis[i] - pow(2, site)   );
+                                    D_dn = (int) (basis.D_dn_basis[j] + pow(2, site_p) );
+
+
+                                    i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                                    j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+                                    m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                                            basis.Nup_offsets[__builtin_popcount(D_up)].first;
+
+
+                                    l= site;
+                                    lp= site_p;
+
+                                    //-----
+                                    max_up = basis.Length -1;
+                                    max_dn = basis.Length -1;
+                                    min_dn = 0;
+
+
+                                    sign_pow_up = one_bits_in_bw(max_up ,l,basis.D_up_basis[i]) ;
+                                    if(l != max_up){
+                                        sign_pow_up += bit_value(basis.D_up_basis[i],max_up);
+                                    }
+                                    sign_pow_dn = one_bits_in_bw(lp, min_dn, basis.D_dn_basis[j]);
+                                    if(lp != min_dn){
+                                        sign_pow_dn += bit_value(basis.D_dn_basis[j],min_dn);
+                                    }
+
+                                    sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn);
+                                    //-----
+
+                                    assert(m_new<i);
+                                    double_type value_ = 1.0*sign_FM*(Hopping_mat_LongRange[alpha_p_][alpha_])*one;
+                                    Vec_out_private[thread_id][m_new] += value_*Vec_in[i];
+                                    Vec_out_private[thread_id][i] += conjugate(value_)*Vec_in[m_new];
+
+
+                                } // if up ---to---> dn hopping possible
+
+                            }
+
+
+                        }//if hopping matrix element is non-zero
+
+                    }//site_p
+                }//sigma_p
+
+            } // site
+        }//sigma
+    }
+
+#ifdef _OPENMP
+    }
+#endif
+
+    for(int thread=0;thread<N_threads;thread++){
+        for(int i=0;i<basis.D_up_basis.size();i++){
+            Vec_out[i] += Vec_out_private[thread][i];
+        }
+    }
 
 }
 
 template <typename Basis_type>
-void MODEL_1_orb_Hubbard_GC<Basis_type>::Add_diagonal_terms(){
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Add_diagonal_terms_old(){
 
     Hamil.nrows = basis.D_up_basis.size();
     Hamil.ncols = Hamil.nrows;
@@ -90,6 +356,8 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Add_diagonal_terms(){
     //Remember H[l][m]=<l|H|m>
     int m,j;
     double value;
+
+
     for (int i=0;i<basis.D_up_basis.size();i++){
 
         m=i;
@@ -142,13 +410,101 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Add_diagonal_terms(){
 
 
 template <typename Basis_type>
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Add_diagonal_terms(){
+
+    Hamil.nrows = basis.D_up_basis.size();
+    Hamil.ncols = Hamil.nrows;
+
+    //Remember H[l][m]=<l|H|m>
+    int N_threads = 1;
+#ifdef _OPENMP
+    N_threads = omp_get_max_threads();
+#endif
+    vector<Matrix_COO> Hamil_private;
+    Hamil_private.resize(N_threads);
+
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+#endif
+    int m,j;
+    double value;
+    int thread_id = 0;
+#ifdef _OPENMP
+    thread_id = omp_get_thread_num();
+
+#pragma omp for
+#endif
+    for (int i=0;i<basis.D_up_basis.size();i++){
+
+        m=i;
+        j=i;
+
+        value=0;
+        //intra-orbital coulomb repulsion:
+        value+=U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
+
+
+        //Long range density-density interaction:
+        for(int site1=0;site1<basis.Length;site1++){
+            for(int site2=0;site2<basis.Length;site2++){
+                value+=DenDenInt_mat_LongRange[site1][site2]*
+                        ( ( bit_value(basis.D_up_basis[i], site1) +
+                            bit_value(basis.D_dn_basis[j], site1) )
+                          *
+                          ( bit_value(basis.D_up_basis[i], site2) +
+                            bit_value(basis.D_dn_basis[j], site2) )
+                        );
+            }
+        }
+
+        //Crystal Field Splitting (CFE):
+        for(int site=0;site<basis.Length;site++){
+            value+=(CFS[site])*
+                    ( ( bit_value(basis.D_up_basis[i], site) +
+                        bit_value(basis.D_dn_basis[j], site) )
+                      );
+        }
+
+        //magnetic Field * [Sz]
+        for(int site=0;site<basis.Length;site++){
+            value+=0.5*(H_field[site])*
+                    ( ( bit_value(basis.D_up_basis[i],site) -
+                        bit_value(basis.D_dn_basis[j], site) )
+                      );
+        }
+
+
+        if(value!=0){
+            Hamil_private[thread_id].value.push_back(value*one);
+            Hamil_private[thread_id].rows.push_back(m);
+            Hamil_private[thread_id].columns.push_back(m);
+        }
+
+    }
+
+#ifdef _OPENMP
+    }
+#endif
+
+    for(int thread=0;thread<N_threads;thread++){
+        Hamil.value.insert(Hamil.value.end(),Hamil_private[thread].value.begin(), Hamil_private[thread].value.end() );
+        Hamil.rows.insert(Hamil.rows.end(),Hamil_private[thread].rows.begin(), Hamil_private[thread].rows.end() );
+        Hamil.columns.insert(Hamil.columns.end(),Hamil_private[thread].columns.begin(), Hamil_private[thread].columns.end() );
+    }
+
+}
+
+
+
+template <typename Basis_type>
 void MODEL_1_orb_Hubbard_GC<Basis_type>::Add_non_diagonal_terms(){
     //NOTHING FOR THIS MODEL
 }
 
 
 template <typename Basis_type>
-void MODEL_1_orb_Hubbard_GC<Basis_type>::Add_connections(){
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Add_connections_old(){
 
 
     double_type value;
@@ -356,6 +712,247 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Add_connections(){
     } // "i" i.e up_decimals
 
 }
+
+
+
+template <typename Basis_type>
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Add_connections(){
+
+
+   
+    complex<double> iota_ (0.0,1.0);
+
+
+
+    int N_threads = 1;
+#ifdef _OPENMP
+    N_threads = omp_get_max_threads();
+#endif
+    vector<Matrix_COO> Hamil_private;
+    Hamil_private.resize(N_threads);
+
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+#endif
+    int thread_id = 0;
+    double_type value;
+    int alpha_, alpha_p_;
+    int m,j;
+    int D_up,D_dn;
+    int i_new,j_new;
+    int m_new;
+    double sign_FM;
+    int sign_pow_up, sign_pow_dn;
+    int max_up, max_dn, min_up, min_dn;
+    int l,lp;
+#ifdef _OPENMP
+    thread_id = omp_get_thread_num();
+
+#pragma omp for
+#endif
+    for (int i=0;i<basis.D_up_basis.size();i++){
+        //cout<<i<<" done"<<endl;
+        m=i;
+        j=i;
+
+
+        for(int sigma=0;sigma<2 ;sigma++){
+            for(int site=0;site<basis.Length ;site++){
+                alpha_ = basis.Length*sigma + site;
+
+                for(int sigma_p=0;sigma_p<2 ;sigma_p++){
+                    for(int site_p=0;site_p<basis.Length ;site_p++){
+                        alpha_p_ = basis.Length*sigma_p + site_p;
+
+
+                        if(Hopping_mat_LongRange[alpha_p_][alpha_]!=zero){
+
+                            //HOPPING COEFFICIENT IN FRONT OF
+                            // (?) X c_{site_p,sigma_p}^{\dagger} c_{site,sigma}
+
+
+                            //cout<<i<<"  "<<sigma<<"  "<<site<<"  "<<sigma_p<<"  "<<site_p<<"  "<<Hopping_mat_LongRange[alpha_p_][alpha_]<<endl;
+
+                            if(sigma==0 && sigma_p==0){
+
+                                //---------------Hopping: up to up electrons-------------------//
+                                //there have to be one up electron on site
+                                //there have to be no up electron on site_p
+                                if(
+                                        ( (bit_value(basis.D_up_basis[i],site)==1)
+                                          &&
+                                          (bit_value(basis.D_up_basis[i],site_p)==0)
+                                          )
+                                        &&
+                                        (site_p<site)
+                                        )
+                                {
+
+
+                                    D_up = (int) (basis.D_up_basis[i] + pow(2, site_p)
+                                                  - pow(2, site) );
+                                    D_dn = basis.D_dn_basis[j];
+
+                                    i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                                    j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+                                    m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                                            basis.Nup_offsets[__builtin_popcount(D_up)].first;
+
+
+                                    l= site;
+                                    lp= site_p;
+
+                                    sign_pow_up = one_bits_in_bw(l,lp,basis.D_up_basis[i]);
+                                    sign_FM = pow(-1.0, sign_pow_up);
+
+
+                                    assert(m_new<m);
+                                    Hamil_private[thread_id].value.push_back(sign_FM*(Hopping_mat_LongRange[alpha_p_][alpha_])*one);
+                                    Hamil_private[thread_id].rows.push_back((m_new));
+                                    Hamil_private[thread_id].columns.push_back((m));
+
+
+                                } // if up-up hopping possible
+
+                            }
+
+
+                            if(sigma==1 && sigma_p==1){
+
+                                //---------------Hopping: dn to dn electrons-------------------//
+                                //there have to be one dn electron on site
+                                //there have to be no dn electron on site_p
+                                if(
+                                        (
+                                            (bit_value(basis.D_dn_basis[j], site)==1)
+                                            &&
+                                            (bit_value(basis.D_dn_basis[j], site_p)==0)
+                                            )
+                                        &&
+                                        (site_p<site)
+                                        )
+                                {
+
+                                    D_up = basis.D_up_basis[i];
+                                    D_dn = (int) (basis.D_dn_basis[j] + pow(2, site_p)
+                                                  - pow(2, site) );
+
+
+                                    i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                                    j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+                                    m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                                            basis.Nup_offsets[__builtin_popcount(D_up)].first;
+
+
+                                    l= site;
+                                    lp= site_p;
+
+                                    sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+
+                                    sign_FM = pow(-1.0, sign_pow_dn);
+
+                                    assert(m_new<m);
+                                    Hamil_private[thread_id].value.push_back(1.0*sign_FM*(Hopping_mat_LongRange[alpha_p_][alpha_])*one);
+                                    Hamil_private[thread_id].rows.push_back((m_new));
+                                    Hamil_private[thread_id].columns.push_back((m));
+
+
+                                } // if dn-dn hopping possible
+
+                            }
+
+
+                            if(sigma==0 && sigma_p==1){
+
+                                //---------------Hopping: up to dn state-------------------//
+                                //there have to be one up electron on site
+                                //there have to be no dn electron on site_p
+                                if(
+                                        (bit_value(basis.D_up_basis[i], site)==1)
+                                        &&
+                                        (bit_value(basis.D_dn_basis[j], site_p)==0)
+
+                                        )
+                                {
+
+                                    D_up = (int) (basis.D_up_basis[i] - pow(2, site)   );
+                                    D_dn = (int) (basis.D_dn_basis[j] + pow(2, site_p) );
+
+
+                                    i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                                    j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+                                    m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                                            basis.Nup_offsets[__builtin_popcount(D_up)].first;
+
+
+                                    l= site;
+                                    lp= site_p;
+
+                                    //                                sign_pow_dn = one_bits_in_bw(l,lp,basis.D_dn_basis[j]);
+                                    //                                sign_FM = pow(-1.0, sign_pow_dn);
+
+                                    //-----
+                                    max_up = basis.Length -1;
+                                    min_up = 0;
+                                    max_dn = basis.Length -1;
+                                    min_dn = 0;
+
+
+                                    sign_pow_up = one_bits_in_bw(max_up ,l,basis.D_up_basis[i]) ;
+                                    if(l != max_up){
+                                        sign_pow_up += bit_value(basis.D_up_basis[i],max_up);
+                                    }
+                                    sign_pow_dn = one_bits_in_bw(lp, min_dn, basis.D_dn_basis[i]);
+                                    if(lp != min_dn){
+                                        sign_pow_dn += bit_value(basis.D_dn_basis[i],min_dn);
+                                    }
+
+                                    //try this as well
+                                    /*
+                                            sign_pow_up = one_bits_in_bw(l,min_up, basis.D_up_basis[i]) + bit_value(basis.D_up_basis[i],min_up);
+                                            sign_pow_dn = one_bits_in_bw(max_dn,lp, basis.D_up_basis[i])+ bit_value(basis.D_dn_basis[i],max_dn);
+                                            */
+
+                                    sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn);
+                                    //-----
+
+                                    assert(m_new<m);
+                                    Hamil_private[thread_id].value.push_back(1.0*sign_FM*(Hopping_mat_LongRange[alpha_p_][alpha_])*one);
+                                    Hamil_private[thread_id].rows.push_back((m_new));
+                                    Hamil_private[thread_id].columns.push_back((m));
+
+
+                                } // if up ---to---> dn hopping possible
+
+                            }
+
+
+                        }//if hopping matrix element is non-zero
+
+                    }//site_p
+                }//sigma_p
+
+            } // site
+        }//sigma
+
+    } // "i" i.e up_decimals
+
+#ifdef _OPENMP
+    }
+#endif
+
+    for(int thread=0;thread<N_threads;thread++){
+        Hamil.value.insert(Hamil.value.end(),Hamil_private[thread].value.begin(), Hamil_private[thread].value.end() );
+        Hamil.rows.insert(Hamil.rows.end(),Hamil_private[thread].rows.begin(), Hamil_private[thread].rows.end() );
+        Hamil.columns.insert(Hamil.columns.end(),Hamil_private[thread].columns.begin(), Hamil_private[thread].columns.end() );
+    }
+
+}
+
 
 
 template <typename Basis_type>
@@ -878,10 +1475,10 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_two_point_observables(Mat_1_d
                 sum_ += value_;
 
                 cout<<value_<<"  ";
+
                 vector< int >().swap( OPR_.columns );
                 vector< int >().swap( OPR_.rows );
                 vector< double_type >().swap( OPR_.value );
-
 
             }
             cout<<endl;
@@ -935,8 +1532,10 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_one_point_observables(Mat_1_d
     for(int obs_no=0;obs_no<one_point_obs.size();obs_no++){
 
         for(int site=0;site<basis.Length;site++){
+
             Get_CdaggerC_type_Opr(AMat[obs_no], OPR_, site);
             Matrix_COO_vector_multiplication("cx", OPR_, Vec_, Vec_temp_);
+
             value_ = dot_product(Vec_temp_,Vec_);
 #ifdef USE_COMPLEX
             cout<<one_point_obs[obs_no]<<"["<<site<<"] = "<<value_.real() << "  "<<value_.imag()<<endl;
@@ -1059,40 +1658,278 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_four_point_observables(Mat_1_
 }
 
 template <typename Basis_type>
-void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site){
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_two_point_observables_acting(Mat_1_doub &Vec_){
+
+    Mat_1_doub VecL_, VecR_;
+    double_type value_;
+
+    Mat_2_doub AMat0; //[sigma][sigma_p]
+    AMat0.resize(2);
+    for(int ind=0;ind<2;ind++){
+        AMat0[ind].resize(2);
+    }
 
 
+    int TOTAL_NO_OBS=5;
+    Mat_3_doub AMatL, AMatR;
+    AMatL.resize(TOTAL_NO_OBS);
+    AMatR.resize(TOTAL_NO_OBS);
+
+    two_point_obs.resize(TOTAL_NO_OBS);
+
+    two_point_obs[0]="<n[i].n[j]>";
+    AMatL[0]=AMat0;AMatR[0]=AMat0;
+    AMatL[0][0][0]=one;AMatL[0][1][1]=one;
+    AMatR[0][0][0]=one;AMatR[0][1][1]=one;
+
+    two_point_obs[1]="<Sz[i].Sz[j]>";
+    AMatL[1]=AMat0;AMatR[1]=AMat0;
+    AMatL[1][0][0]=one*(0.5);AMatL[1][1][1]=one*(-0.5);
+    AMatR[1][0][0]=one*(0.5);AMatR[1][1][1]=one*(-0.5);
+
+    two_point_obs[2]="<Splus[i].Sminus[j]>";
+    AMatL[2]=AMat0;AMatR[2]=AMat0;
+    AMatL[2][1][0]=one; //S-
+    AMatR[2][1][0]=one; //S-
+
+    two_point_obs[3]="<Sminus[i].Splus[j]>";
+    AMatL[3]=AMat0;AMatR[3]=AMat0;
+    AMatL[3][0][1]=one; //S+
+    AMatR[3][0][1]=one; //S+
+
+    two_point_obs[4]="<nup[i].ndn[j]>";
+    AMatL[4]=AMat0;AMatR[4]=AMat0;
+    AMatL[4][0][0]=one;
+    AMatR[4][1][1]=one;
+
+
+
+    double_type sum_;
+    for(int obs_no=0;obs_no<TOTAL_NO_OBS;obs_no++){
+        cout<<"--------------"<<two_point_obs[obs_no]<<"-------------------"<<endl;
+
+
+        sum_=zero;
+        for(int siteL=0;siteL<basis.Length;siteL++){
+            Get_CdaggerC_type_Opr(AMatL[obs_no], Vec_, VecL_, siteL);
+
+
+            for(int siteR=0;siteR<basis.Length;siteR++){
+                Get_CdaggerC_type_Opr(AMatR[obs_no], Vec_, VecR_, siteR);
+
+                value_ = dot_product(VecR_,VecL_);
+                sum_ += value_;
+
+                cout<<value_<<"  ";
+
+            }
+            cout<<endl;
+        }
+
+        cout<<"-------------------------------------------------------"<<endl;
+        cout<<"sum = "<<sum_<<endl<<endl;
+        cout<<endl;
+
+
+    }
+
+
+
+}
+
+template <typename Basis_type>
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_one_point_observables_acting(Mat_1_doub &Vec_){
+
+
+    Mat_1_doub Vec_temp_;
+    double_type value_;
+
+    Mat_2_doub AMat0; //[sigma][sigma_p]
+    AMat0.resize(2);
+    for(int ind=0;ind<2;ind++){
+        AMat0[ind].resize(2);
+    }
+
+
+    int TOTAL_NO_OBS=3;
+    Mat_3_doub AMat;
+    AMat.resize(TOTAL_NO_OBS);
+
+    one_point_obs.resize(TOTAL_NO_OBS);
+    one_point_obs[0]="n_up";
+    AMat[0]=AMat0;
+    AMat[0][0][0]=one;
+
+    one_point_obs[1]="n_dn";
+    AMat[1]=AMat0;
+    AMat[1][1][1]=one;
+
+    one_point_obs[2]="S_plus";
+    AMat[2]=AMat0;
+    AMat[2][0][1]=one;
+
+
+    for(int obs_no=0;obs_no<one_point_obs.size();obs_no++){
+
+        for(int site=0;site<basis.Length;site++){
+
+            Get_CdaggerC_type_Opr(AMat[obs_no], Vec_, Vec_temp_, site);
+
+            value_ = dot_product(Vec_temp_,Vec_);
+#ifdef USE_COMPLEX
+            cout<<one_point_obs[obs_no]<<"["<<site<<"] = "<<value_.real() << "  "<<value_.imag()<<endl;
+#endif
+#ifndef USE_COMPLEX
+            cout<<one_point_obs[obs_no]<<"["<<site<<"] = "<<value_<<endl;
+#endif
+
+        }
+
+        cout<<endl;
+    }
+
+}
+
+template <typename Basis_type>
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Calculate_four_point_observables_acting(Mat_1_doub &Vec_){
+
+    Mat_1_doub Vec_temp_, Vec_temp2_,Vec_final_;
+    double_type value_, value_sum_;
+    double_type value_sum_quantum;
+
+    double_type Value1_class, Value2_class;
+
+    double_type Total_Value_Sum=zero;
+    double_type Total_Value_Sum_quantum=zero;
+
+    Mat_2_doub AMat0;
+    AMat0.resize(2);
+    for(int ind=0;ind<2;ind++){
+        AMat0[ind].resize(2);
+        for(int ind2=0;ind2<2;ind2++){
+            AMat0[ind][ind2]=zero;
+        }
+    }
+
+    cout<<"-------------- <cdag c cdag c> and <cdagc><cdagc>  and <cdag c cdag c> - <cdagc><cdagc>-------------------"<<endl;
+
+    for(int set_no=0;set_no<fourpointSitesSet.size();set_no++){
+        assert(fourpointSitesSet[set_no].size()==fourpointSpinsSet[set_no].size());
+        assert(fourpointSitesSet[set_no].size()==fourpointValuesSet[set_no].size());
+
+        value_sum_=zero;
+
+        cout<<"Set = "<<set_no<<endl;
+        for(int term_no=0;term_no<fourpointSitesSet[set_no].size();term_no++){
+            Mat_2_doub AMat1, AMat2;
+            tetra_int sites_;
+            tetra_int spins_;
+
+            AMat1=AMat0;
+            AMat2=AMat0;
+
+            sites_ = fourpointSitesSet[set_no][term_no];
+            spins_ = fourpointSpinsSet[set_no][term_no];
+
+            AMat1[spins_.first][spins_.second]=one;
+            AMat2[spins_.third][spins_.fourth]=one;
+
+            Get_CdaggerC_type_Opr(AMat2, Vec_, Vec_temp_, sites_.third, sites_.fourth);
+
+
+            Get_CdaggerC_type_Opr(AMat1, Vec_temp_, Vec_final_, sites_.first, sites_.second);
+
+            //For classical <cdag1 c2>
+            Get_CdaggerC_type_Opr(AMat1, Vec_, Vec_temp2_, sites_.first, sites_.second);
+
+
+            value_ = fourpointValuesSet[set_no][term_no]*dot_product(Vec_final_, Vec_);
+
+
+            Value2_class = dot_product(Vec_temp_, Vec_);
+            Value1_class = dot_product(Vec_temp2_, Vec_);
+
+
+            value_sum_ += value_;
+
+            value_sum_quantum +=  value_ - (fourpointValuesSet[set_no][term_no]*Value1_class*Value2_class);
+
+            cout<<"term="<<term_no<<"  coeff="<<fourpointValuesSet[set_no][term_no]
+                <<"  sites=("<<sites_.first<<","<<sites_.second<<","<<sites_.third<<","<<sites_.fourth<<")"
+                <<"  spins=("<<spins_.first<<","<<spins_.second<<","<<spins_.third<<","<<spins_.fourth<<")"
+                <<"  value="<<value_
+                <<"  value_classical="<<fourpointValuesSet[set_no][term_no]*Value1_class*Value2_class
+                <<"  value_quantum="<<value_ - (fourpointValuesSet[set_no][term_no]*Value1_class*Value2_class)
+                <<endl;
+
+            vector< double_type >().swap( Vec_temp_ );
+            vector< double_type >().swap( Vec_temp2_ );
+            vector< double_type >().swap( Vec_final_ );
+        }
+
+        cout<<"Total for set "<<set_no<<" = "<<value_sum_<<endl;
+        cout<<"Total quantum for set "<<set_no<<" = "<<value_sum_quantum<<endl;
+        cout<<endl;
+        Total_Value_Sum += value_sum_;
+        Total_Value_Sum_quantum += value_sum_quantum;
+    }
+
+    cout<<"------------------------------------------------"<<endl;
+    cout<<"Total Value Sum = "<<Total_Value_Sum<<endl;
+    cout<<"Total Value Sum Quantum = "<<Total_Value_Sum_quantum<<endl;
+
+}
+
+template <typename Basis_type>
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, Mat_1_doub &Vec_in, Mat_1_doub &Vec_out, int site){
+
+
+    assert(Vec_in.size()==basis.D_up_basis.size());
+    Vec_out.clear();
+    Vec_out.resize(basis.D_up_basis.size());
+    for(int i=0;i<basis.D_up_basis.size();i++){
+        Vec_out[i]=zero;
+    }
+    int N_threads = 1;
+#ifdef _OPENMP
+    N_threads = omp_get_max_threads();
+#endif
+    vector<Mat_1_doub> Vec_out_private;
+    Vec_out_private.resize(N_threads);
+    for(int thread=0;thread<N_threads;thread++){
+        Vec_out_private[thread].resize(basis.D_up_basis.size());
+        for(int i=0;i<basis.D_up_basis.size();i++){
+            Vec_out_private[thread][i]=zero;
+        }
+    }
+
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+#endif
+    int thread_id = 0;
     int i_new, j_new, m_new;
-    int l,lp, max_up, min_up, min_dn, max_dn;
+    int l,lp, max_up, min_dn;
     int sign_pow_up, sign_pow_dn;
     double sign_FM;
     int D_up, D_dn;
-    int nup_temp, ndn_temp;
-
-    OPR.value.clear();
-    OPR.rows.clear();
-    OPR.columns.clear();
-    OPR.nrows = basis.D_up_basis.size();
-    OPR.ncols = OPR.nrows;
-
     bool check;
     int SPIN_UP=0;
     int SPIN_DN=1;
-
     int value_;
     double_type value_diagonal;
 
+#ifdef _OPENMP
+    thread_id = omp_get_thread_num();
 
-    //Diagonal
+#pragma omp for
+#endif
     for (int i=0;i<basis.D_up_basis.size();i++){
         value_diagonal=zero;
 
         for(int sigma=0;sigma<2;sigma++){
             for(int sigma_p=0;sigma_p<2;sigma_p++){
-
-                //A[sigma][sigma_p]*c^{dagger}(sigma)*c(sigma_p)
                 if(AMat[(sigma)][(sigma_p)] != zero){
-
                     if( ((sigma)) == ((sigma_p)) ){
                         assert(sigma == sigma_p);
                         if(sigma==SPIN_UP){value_=bit_value(basis.D_up_basis[i], site);}
@@ -1105,23 +1942,11 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, 
             }
         }
 
-        OPR.value.push_back(value_diagonal*one);
-        OPR.rows.push_back(i);
-        OPR.columns.push_back(i);
-    }
-
-
-
-
-    //OFF-diagonal
-    for (int i=0;i<basis.D_up_basis.size();i++){
+        Vec_out_private[thread_id][i] += value_diagonal*Vec_in[i];
 
         for(int sigma=0;sigma<2;sigma++){
             for(int sigma_p=0;sigma_p<2;sigma_p++){
-
-                //A[sigma,gamma][sigma_p,gamma_p]*c^{dagger}(sigma,gamma)*c(sigma_p,gamma_p)
                 if(AMat[(sigma)][(sigma_p)] != zero){
-
                     if( ((sigma)) != ((sigma_p)) ){
                         if(sigma==SPIN_UP && sigma_p==SPIN_UP){
                             check=(bit_value(basis.D_up_basis[i],site)==1);
@@ -1144,10 +1969,8 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, 
                                      (bit_value(basis.D_dn_basis[i],site)==0));
                         }
 
-
                         if(check)
                         {
-
                             D_up = (int) (basis.D_up_basis[i]
                                           + ((1-sigma)*pow(2,site))
                                           - ((1-sigma_p)*pow(2,site)) );
@@ -1155,29 +1978,15 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, 
                                           + (sigma*pow(2,site))
                                           - (sigma_p*pow(2,site)) );
 
-                            //i_new = Find_int_in_intarray(D_up,basis.D_up_basis);
-                            //j_new = Find_int_in_intarray(D_dn,basis.D_dn_basis);
-
-
                             i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
                             j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
 
                             m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
                                     basis.Nup_offsets[__builtin_popcount(D_up)].first;
 
-
-                            //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,
-                            //basis.D_dn_basis,__builtin_popcount(D_up),basis.Nup_offsets);
-
-                            //m_new = basis.D_dn_basis.size()*i_new + j_new;
-
-
                             l=site;
                             lp=site;
-
                             max_up = basis.Length -1;
-                            min_up = 0;
-                            max_dn = basis.Length -1;
                             min_dn = 0;
 
                             if(sigma==SPIN_UP && sigma_p==SPIN_DN){
@@ -1209,70 +2018,78 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, 
                                 sign_pow_dn = one_bits_in_bw(l ,lp,basis.D_dn_basis[i]);
                             }
 
-                            //try this as well
-                            /*
-                                    sign_pow_up = one_bits_in_bw(l,min_up, basis.D_up_basis[i]) + bit_value(basis.D_up_basis[i],min_up);
-                                    sign_pow_dn = one_bits_in_bw(max_dn,lp, basis.D_up_basis[i])+ bit_value(basis.D_dn_basis[i],max_dn);
-                                    */
-
                             sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn);
-
-                            //assert(m_new<m);
-
-                            OPR.value.push_back(sign_FM*AMat[(sigma)][(sigma_p)]*one);
-                            OPR.rows.push_back(m_new);
-                            OPR.columns.push_back(i);
-
+                            Vec_out_private[thread_id][m_new] += (sign_FM*AMat[(sigma)][(sigma_p)]*one)*Vec_in[i];
                         }
                     }
-
                 }
-
-
             }
+        }
+    }
 
+#ifdef _OPENMP
+    }
+#endif
+
+    for(int thread=0;thread<N_threads;thread++){
+        for(int i=0;i<basis.D_up_basis.size();i++){
+            Vec_out[i] += Vec_out_private[thread][i];
         }
     }
 
 
 }
 
-
 template <typename Basis_type>
-void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site, int site_p){
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, Mat_1_doub &Vec_in, Mat_1_doub &Vec_out, int site, int site_p){
 
     //sum_{sigma,sigma_p} AMat[sigma][sigma_p]
     //c_{sigma}^{dagger,site}*c_{sigma_p,site_p}
+    assert(Vec_in.size()==basis.D_up_basis.size());
+    Vec_out.clear();
+    Vec_out.resize(basis.D_up_basis.size());
+    for(int i=0;i<basis.D_up_basis.size();i++){
+        Vec_out[i]=zero;
+    }
+    int N_threads = 1;
+#ifdef _OPENMP
+    N_threads = omp_get_max_threads();
+#endif
+    vector<Mat_1_doub> Vec_out_private;
+    Vec_out_private.resize(N_threads);
+    for(int thread=0;thread<N_threads;thread++){
+        Vec_out_private[thread].resize(basis.D_up_basis.size());
+        for(int i=0;i<basis.D_up_basis.size();i++){
+            Vec_out_private[thread][i]=zero;
+        }
+    }
+
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+#endif
+    int thread_id = 0;
     int i_new, j_new, m_new;
-    int l,lp, max_up, min_up, min_dn, max_dn;
+    int l,lp, max_up, min_dn;
     int sign_pow_up, sign_pow_dn;
     double sign_FM;
     int D_up, D_dn;
-    int nup_temp, ndn_temp;
-
-    OPR.value.clear();
-    OPR.rows.clear();
-    OPR.columns.clear();
-    OPR.nrows = basis.D_up_basis.size();
-    OPR.ncols = OPR.nrows;
-
     bool check;
     int SPIN_UP=0;
     int SPIN_DN=1;
-
     int value_;
     double_type value_diagonal;
 
+#ifdef _OPENMP
+    thread_id = omp_get_thread_num();
 
-    //Diagonal
+#pragma omp for
+#endif
     for (int i=0;i<basis.D_up_basis.size();i++){
         value_diagonal=zero;
         for(int sigma=0;sigma<2;sigma++){
             for(int sigma_p=0;sigma_p<2;sigma_p++){
-
-                //A[sigma,gamma][sigma_p,gamma_p]*c^{dagger}(sigma,gamma)*c(sigma_p,gamma_p)
                 if( AMat[(sigma)][(sigma_p)] != zero){
-
                     if( ( ((sigma)) == ((sigma_p)) ) &&
                             (site == site_p)
                             ){
@@ -1287,23 +2104,11 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, 
             }
         }
 
-        OPR.value.push_back(value_diagonal*one);
-        OPR.rows.push_back(i);
-        OPR.columns.push_back(i);
-    }
-
-
-
-
-    //OFF-diagonal
-    for (int i=0;i<basis.D_up_basis.size();i++){
+        Vec_out_private[thread_id][i] += value_diagonal*Vec_in[i];
 
         for(int sigma=0;sigma<2;sigma++){
             for(int sigma_p=0;sigma_p<2;sigma_p++){
-
-                //A[sigma,gamma][sigma_p,gamma_p]*c^{dagger}(sigma,gamma,site)*c(sigma_p,gamma_p,site_p)
                 if(AMat[(sigma)][(sigma_p)] != zero){
-
                     if( ( ((sigma)) != ((sigma_p)) ) ||
                             (site != site_p)
                             ){
@@ -1328,10 +2133,8 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, 
                                      (bit_value(basis.D_dn_basis[i], site)==0));
                         }
 
-
                         if(check)
                         {
-
                             D_up = (int) (basis.D_up_basis[i]
                                           + ((1-sigma)*pow(2, site))
                                           - ((1-sigma_p)*pow(2, site_p)) );
@@ -1339,28 +2142,15 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, 
                                           + (sigma*pow(2, site))
                                           - (sigma_p*pow(2, site_p)) );
 
-                            //i_new = Find_int_in_intarray(D_up,basis.D_up_basis);
-                            //j_new = Find_int_in_intarray(D_dn,basis.D_dn_basis);
-
                             i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
                             j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
 
                             m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
                                     basis.Nup_offsets[__builtin_popcount(D_up)].first;
 
-
-                            //m_new = Find_intpair_in_intarraypair(D_up,D_dn,basis.D_up_basis,
-                            //basis.D_dn_basis,__builtin_popcount(D_up),basis.Nup_offsets);
-
-                            //m_new = basis.D_dn_basis.size()*i_new + j_new;
-
-
                             l=site;
                             lp=site_p;
-
                             max_up = basis.Length -1;
-                            min_up = 0;
-                            max_dn = basis.Length -1;
                             min_dn = 0;
 
                             if(sigma==SPIN_UP && sigma_p==SPIN_DN){
@@ -1392,25 +2182,343 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, 
                                 sign_pow_dn = one_bits_in_bw(l ,lp,basis.D_dn_basis[i]);
                             }
 
-                            //try this as well
-                            /*
-                                    sign_pow_up = one_bits_in_bw(l,min_up, basis.D_up_basis[i]) + bit_value(basis.D_up_basis[i],min_up);
-                                    sign_pow_dn = one_bits_in_bw(max_dn,lp, basis.D_up_basis[i])+ bit_value(basis.D_dn_basis[i],max_dn);
-                                    */
-
                             sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn);
-
-                            //assert(m_new<m);
-
-                            OPR.value.push_back(sign_FM*AMat[(sigma)][(sigma_p)]*one);
-                            OPR.rows.push_back(m_new);
-                            OPR.columns.push_back(i);
-
+                            Vec_out_private[thread_id][m_new] += (sign_FM*AMat[(sigma)][(sigma_p)]*one)*Vec_in[i];
                         }
                     }
                 }
             }
         }
+    }
+
+#ifdef _OPENMP
+    }
+#endif
+
+    for(int thread=0;thread<N_threads;thread++){
+        for(int i=0;i<basis.D_up_basis.size();i++){
+            Vec_out[i] += Vec_out_private[thread][i];
+        }
+    }
+
+
+
+}
+
+template <typename Basis_type>
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site){
+
+
+    OPR.value.clear();
+    OPR.rows.clear();
+    OPR.columns.clear();
+    OPR.nrows = basis.D_up_basis.size();
+    OPR.ncols = OPR.nrows;
+    int N_threads = 1;
+#ifdef _OPENMP
+    N_threads = omp_get_max_threads();
+#endif
+    vector<Matrix_COO> OPR_private;
+    OPR_private.resize(N_threads);
+
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+#endif
+    int thread_id = 0;
+    int i_new, j_new, m_new;
+    int l,lp, max_up, min_dn;
+    int sign_pow_up, sign_pow_dn;
+    double sign_FM;
+    int D_up, D_dn;
+    bool check;
+    int SPIN_UP=0;
+    int SPIN_DN=1;
+    int value_;
+    double_type value_diagonal;
+
+#ifdef _OPENMP
+    thread_id = omp_get_thread_num();
+
+#pragma omp for
+#endif
+    for (int i=0;i<basis.D_up_basis.size();i++){
+        value_diagonal=zero;
+
+        for(int sigma=0;sigma<2;sigma++){
+            for(int sigma_p=0;sigma_p<2;sigma_p++){
+                if(AMat[(sigma)][(sigma_p)] != zero){
+                    if( ((sigma)) == ((sigma_p)) ){
+                        assert(sigma == sigma_p);
+                        if(sigma==SPIN_UP){value_=bit_value(basis.D_up_basis[i], site);}
+                        if(sigma==SPIN_DN){value_=bit_value(basis.D_dn_basis[i], site);}
+                        if(value_ != 0){
+                            value_diagonal += AMat[(sigma)][(sigma_p)]*one;
+                        }
+                    }
+                }
+            }
+        }
+
+        OPR_private[thread_id].value.push_back(value_diagonal*one);
+        OPR_private[thread_id].rows.push_back(i);
+        OPR_private[thread_id].columns.push_back(i);
+
+        for(int sigma=0;sigma<2;sigma++){
+            for(int sigma_p=0;sigma_p<2;sigma_p++){
+                if(AMat[(sigma)][(sigma_p)] != zero){
+                    if( ((sigma)) != ((sigma_p)) ){
+                        if(sigma==SPIN_UP && sigma_p==SPIN_UP){
+                            check=(bit_value(basis.D_up_basis[i],site)==1);
+                            check = (check &&
+                                     (bit_value(basis.D_up_basis[i], site)==0));
+                        }
+                        if(sigma==SPIN_DN && sigma_p==SPIN_DN){
+                            check=(bit_value(basis.D_dn_basis[i],site)==1);
+                            check = (check &&
+                                     (bit_value(basis.D_dn_basis[i],site)==0));
+                        }
+                        if(sigma==SPIN_UP && sigma_p==SPIN_DN){
+                            check=(bit_value(basis.D_dn_basis[i],site)==1);
+                            check = (check &&
+                                     (bit_value(basis.D_up_basis[i],site)==0));
+                        }
+                        if(sigma==SPIN_DN && sigma_p==SPIN_UP){
+                            check=(bit_value(basis.D_up_basis[i],site)==1);
+                            check = (check &&
+                                     (bit_value(basis.D_dn_basis[i],site)==0));
+                        }
+
+                        if(check)
+                        {
+                            D_up = (int) (basis.D_up_basis[i]
+                                          + ((1-sigma)*pow(2,site))
+                                          - ((1-sigma_p)*pow(2,site)) );
+                            D_dn = (int) (basis.D_dn_basis[i]
+                                          + (sigma*pow(2,site))
+                                          - (sigma_p*pow(2,site)) );
+
+                            i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                            j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+                            m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                                    basis.Nup_offsets[__builtin_popcount(D_up)].first;
+
+                            l=site;
+                            lp=site;
+                            max_up = basis.Length -1;
+                            min_dn = 0;
+
+                            if(sigma==SPIN_UP && sigma_p==SPIN_DN){
+                                sign_pow_up = one_bits_in_bw(max_up ,l,basis.D_up_basis[i]) ;
+                                if(l != max_up){
+                                    sign_pow_up += bit_value(basis.D_up_basis[i],max_up);
+                                }
+                                sign_pow_dn = one_bits_in_bw(lp, min_dn, basis.D_dn_basis[i]);
+                                if(lp != min_dn){
+                                    sign_pow_dn += bit_value(basis.D_dn_basis[i],min_dn);
+                                }
+                            }
+                            if(sigma==SPIN_DN && sigma_p==SPIN_UP){
+                                sign_pow_up = one_bits_in_bw(max_up ,lp,basis.D_up_basis[i]) ;
+                                if(lp != max_up){
+                                    sign_pow_up += bit_value(basis.D_up_basis[i],max_up);
+                                }
+                                sign_pow_dn = one_bits_in_bw(l, min_dn, basis.D_dn_basis[i]);
+                                if(l != min_dn){
+                                    sign_pow_dn += bit_value(basis.D_dn_basis[i],min_dn);
+                                }
+                            }
+                            if(sigma==SPIN_UP && sigma_p==SPIN_UP){
+                                sign_pow_dn=0;
+                                sign_pow_up = one_bits_in_bw(l ,lp,basis.D_up_basis[i]);
+                            }
+                            if(sigma==SPIN_DN && sigma_p==SPIN_DN){
+                                sign_pow_up=0;
+                                sign_pow_dn = one_bits_in_bw(l ,lp,basis.D_dn_basis[i]);
+                            }
+
+                            sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn);
+                            OPR_private[thread_id].value.push_back(sign_FM*AMat[(sigma)][(sigma_p)]*one);
+                            OPR_private[thread_id].rows.push_back(m_new);
+                            OPR_private[thread_id].columns.push_back(i);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+#ifdef _OPENMP
+    }
+#endif
+
+    for(int thread=0;thread<N_threads;thread++){
+        OPR.value.insert(OPR.value.end(),OPR_private[thread].value.begin(), OPR_private[thread].value.end() );
+        OPR.rows.insert(OPR.rows.end(),OPR_private[thread].rows.begin(), OPR_private[thread].rows.end() );
+        OPR.columns.insert(OPR.columns.end(),OPR_private[thread].columns.begin(), OPR_private[thread].columns.end() );
+    }
+
+
+}
+
+
+template <typename Basis_type>
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site, int site_p){
+
+    //sum_{sigma,sigma_p} AMat[sigma][sigma_p]
+    //c_{sigma}^{dagger,site}*c_{sigma_p,site_p}
+    OPR.value.clear();
+    OPR.rows.clear();
+    OPR.columns.clear();
+    OPR.nrows = basis.D_up_basis.size();
+    OPR.ncols = OPR.nrows;
+    int N_threads = 1;
+#ifdef _OPENMP
+    N_threads = omp_get_max_threads();
+#endif
+    vector<Matrix_COO> OPR_private;
+    OPR_private.resize(N_threads);
+
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+#endif
+    int thread_id = 0;
+    int i_new, j_new, m_new;
+    int l,lp, max_up, min_dn;
+    int sign_pow_up, sign_pow_dn;
+    double sign_FM;
+    int D_up, D_dn;
+    bool check;
+    int SPIN_UP=0;
+    int SPIN_DN=1;
+    int value_;
+    double_type value_diagonal;
+
+#ifdef _OPENMP
+    thread_id = omp_get_thread_num();
+
+#pragma omp for
+#endif
+    for (int i=0;i<basis.D_up_basis.size();i++){
+        value_diagonal=zero;
+        for(int sigma=0;sigma<2;sigma++){
+            for(int sigma_p=0;sigma_p<2;sigma_p++){
+                if( AMat[(sigma)][(sigma_p)] != zero){
+                    if( ( ((sigma)) == ((sigma_p)) ) &&
+                            (site == site_p)
+                            ){
+                        assert(sigma == sigma_p);
+                        if(sigma==SPIN_UP){value_=bit_value(basis.D_up_basis[i],site);}
+                        if(sigma==SPIN_DN){value_=bit_value(basis.D_dn_basis[i],site);}
+                        if(value_ != 0){
+                            value_diagonal += AMat[(sigma)][(sigma_p)]*one;
+                        }
+                    }
+                }
+            }
+        }
+
+        OPR_private[thread_id].value.push_back(value_diagonal*one);
+        OPR_private[thread_id].rows.push_back(i);
+        OPR_private[thread_id].columns.push_back(i);
+
+        for(int sigma=0;sigma<2;sigma++){
+            for(int sigma_p=0;sigma_p<2;sigma_p++){
+                if(AMat[(sigma)][(sigma_p)] != zero){
+                    if( ( ((sigma)) != ((sigma_p)) ) ||
+                            (site != site_p)
+                            ){
+                        if(sigma==SPIN_UP && sigma_p==SPIN_UP){
+                            check=(bit_value(basis.D_up_basis[i],site_p)==1);
+                            check = (check &&
+                                     (bit_value(basis.D_up_basis[i],site)==0));
+                        }
+                        if(sigma==SPIN_DN && sigma_p==SPIN_DN){
+                            check=(bit_value(basis.D_dn_basis[i],site_p)==1);
+                            check = (check &&
+                                     (bit_value(basis.D_dn_basis[i],site)==0));
+                        }
+                        if(sigma==SPIN_UP && sigma_p==SPIN_DN){
+                            check=(bit_value(basis.D_dn_basis[i],site_p)==1);
+                            check = (check &&
+                                     (bit_value(basis.D_up_basis[i],site)==0));
+                        }
+                        if(sigma==SPIN_DN && sigma_p==SPIN_UP){
+                            check=(bit_value(basis.D_up_basis[i],site_p)==1);
+                            check = (check &&
+                                     (bit_value(basis.D_dn_basis[i], site)==0));
+                        }
+
+                        if(check)
+                        {
+                            D_up = (int) (basis.D_up_basis[i]
+                                          + ((1-sigma)*pow(2, site))
+                                          - ((1-sigma_p)*pow(2, site_p)) );
+                            D_dn = (int) (basis.D_dn_basis[i]
+                                          + (sigma*pow(2, site))
+                                          - (sigma_p*pow(2, site_p)) );
+
+                            i_new = Find_int_in_intarray(D_up,basis.Canonical_partition_up[__builtin_popcount(D_up)]);
+                            j_new = Find_int_in_intarray(D_dn,basis.Canonical_partition_dn[__builtin_popcount(D_up)]);
+
+                            m_new = (basis.Canonical_partition_dn[__builtin_popcount(D_up)].size()*i_new + j_new) +
+                                    basis.Nup_offsets[__builtin_popcount(D_up)].first;
+
+                            l=site;
+                            lp=site_p;
+                            max_up = basis.Length -1;
+                            min_dn = 0;
+
+                            if(sigma==SPIN_UP && sigma_p==SPIN_DN){
+                                sign_pow_up = one_bits_in_bw(max_up ,l,basis.D_up_basis[i]) ;
+                                if(l != max_up){
+                                    sign_pow_up += bit_value(basis.D_up_basis[i],max_up);
+                                }
+                                sign_pow_dn = one_bits_in_bw(lp, min_dn, basis.D_dn_basis[i]);
+                                if(lp != min_dn){
+                                    sign_pow_dn += bit_value(basis.D_dn_basis[i],min_dn);
+                                }
+                            }
+                            if(sigma==SPIN_DN && sigma_p==SPIN_UP){
+                                sign_pow_up = one_bits_in_bw(max_up ,lp,basis.D_up_basis[i]) ;
+                                if(lp != max_up){
+                                    sign_pow_up += bit_value(basis.D_up_basis[i],max_up);
+                                }
+                                sign_pow_dn = one_bits_in_bw(l, min_dn, basis.D_dn_basis[i]);
+                                if(l != min_dn){
+                                    sign_pow_dn += bit_value(basis.D_dn_basis[i],min_dn);
+                                }
+                            }
+                            if(sigma==SPIN_UP && sigma_p==SPIN_UP){
+                                sign_pow_dn=0;
+                                sign_pow_up = one_bits_in_bw(l ,lp,basis.D_up_basis[i]);
+                            }
+                            if(sigma==SPIN_DN && sigma_p==SPIN_DN){
+                                sign_pow_up=0;
+                                sign_pow_dn = one_bits_in_bw(l ,lp,basis.D_dn_basis[i]);
+                            }
+
+                            sign_FM = pow(-1.0, sign_pow_up + sign_pow_dn);
+                            OPR_private[thread_id].value.push_back(sign_FM*AMat[(sigma)][(sigma_p)]*one);
+                            OPR_private[thread_id].rows.push_back(m_new);
+                            OPR_private[thread_id].columns.push_back(i);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+#ifdef _OPENMP
+    }
+#endif
+
+    for(int thread=0;thread<N_threads;thread++){
+        OPR.value.insert(OPR.value.end(),OPR_private[thread].value.begin(), OPR_private[thread].value.end() );
+        OPR.rows.insert(OPR.rows.end(),OPR_private[thread].rows.begin(), OPR_private[thread].rows.end() );
+        OPR.columns.insert(OPR.columns.end(),OPR_private[thread].columns.begin(), OPR_private[thread].columns.end() );
     }
 
 

@@ -56,9 +56,13 @@ public:
     void Read_parameters(string filename);
     void Read_parameters_for_dynamics(string filename);
     void Create_Lattice_Graph(string output_filename);
+
+    void Add_diagonal_terms_old();
+    void Add_connections_old();
+
     void Add_diagonal_terms();
-    void Add_non_diagonal_terms();
     void Add_connections();
+    void Add_non_diagonal_terms();
     //    void Initialize_one_point_to_calculate();
     //    void Initialize_two_point_to_calculate();
     void Initialize_Opr_for_Dynamics();
@@ -70,8 +74,13 @@ public:
     void Calculate_one_point_observables(Mat_1_doub &Vec_);
     void Calculate_two_point_observables(Mat_1_doub &Vec_);
     void Calculate_four_point_observables(Mat_1_doub &Vec_);
+    void Calculate_one_point_observables_acting(Mat_1_doub &Vec_);
+    void Calculate_two_point_observables_acting(Mat_1_doub &Vec_);
+    void Calculate_four_point_observables_acting(Mat_1_doub &Vec_);
     void Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site);
     void Get_CdaggerC_type_Opr(Mat_2_doub AMat, Matrix_COO &OPR, int site, int site_p);
+    void Get_CdaggerC_type_Opr(Mat_2_doub AMat, Mat_1_doub &Vec_in, Mat_1_doub &Vec_out, int site);
+    void Get_CdaggerC_type_Opr(Mat_2_doub AMat, Mat_1_doub &Vec_in, Mat_1_doub &Vec_out, int site, int site_p);
 
     void Act_Hamil(BASIS_1_orb_Hubbard_GC &basis, Mat_1_doub &Vec_in, Mat_1_doub& Vec_out);
 

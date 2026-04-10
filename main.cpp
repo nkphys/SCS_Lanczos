@@ -5918,24 +5918,27 @@ int main(int argc, char** argv){
             //_MODEL.Create_Lattice_Graph("latticegraph.svg");
             _BASIS.Construct_basis();
             cout<<"Basis contructed"<<endl;
+
+            //assert(false);
+
+             LANCZOS<BASIS_1_orb_Hubbard_GC, MODEL_1_orb_Hubbard_GC<BASIS_1_orb_Hubbard_GC>> _LANCZOS(_BASIS, _MODEL);
+            _LANCZOS.Dynamics_performed=false;
+            _LANCZOS.TimeEvoPerformed=false;
+            _LANCZOS.Read_Lanczos_parameters(inp_filename);
+
+            if(_LANCZOS.Saving_Hamil){
+            
+            cout<<"Hamiltonian is being constructed and saved in COO format"<<endl;
             _MODEL.Add_diagonal_terms();
             cout<<"Diagonal terms added"<<endl;
             _MODEL.Add_connections();
             cout<<"Connections added"<<endl;
-
-
             cout<<"Size of Hilbert space = "<<_MODEL.Hamil.nrows<<endl;
             cout<<"Sparsity = "<<(1.0*_MODEL.Hamil.value.size())/(1.0*_MODEL.Hamil.nrows*_MODEL.Hamil.nrows)<<endl;
             cout<<scientific<<setprecision(16);
             //Print_Matrix_COO(_MODEL.Hamil);
 
-            LANCZOS<BASIS_1_orb_Hubbard_GC, MODEL_1_orb_Hubbard_GC<BASIS_1_orb_Hubbard_GC>> _LANCZOS(_BASIS, _MODEL);
-            _LANCZOS.Dynamics_performed=false;
-            _LANCZOS.TimeEvoPerformed=false;
-
-
-
-            if(DO_FULL_DIAGONALIZATION==true && (_MODEL.Hamil.nrows<400)){
+              if(DO_FULL_DIAGONALIZATION==true && (_MODEL.Hamil.nrows<400)){
 
                 Mat_1_real Evals_temp;
                 Mat_1_doub vecG;
@@ -5950,18 +5953,33 @@ int main(int argc, char** argv){
                 cout<<"-------------------------------------------------------"<<endl;
             }
 
-            _LANCZOS.Read_Lanczos_parameters(inp_filename);
+            }
+            else{
+              _MODEL.Hamil.nrows = _BASIS.D_up_basis.size();
+                _MODEL.Hamil.ncols = _MODEL.Hamil.nrows;
+                cout<<"Hamiltonian is acted in-situ [NOT SAVED]"<<endl;   
+            }
+
+           
+
             _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
             _LANCZOS.Write_full_spectrum();
 
 
-            Print_vector_in_file(_LANCZOS.Eig_vec,"GS_vec.txt");
+         //   Print_vector_in_file(_LANCZOS.Eig_vec,"GS_vec.txt");
 
-            cout<<scientific<<setprecision(6);
+            // cout<<scientific<<setprecision(6);
+            
+            if(_LANCZOS.Saving_Hamil){
             _MODEL.Calculate_one_point_observables(_LANCZOS.Eig_vec);
-            _MODEL.Calculate_two_point_observables(_LANCZOS.Eig_vec);
-            _MODEL.Calculate_four_point_observables(_LANCZOS.Eig_vec);
-
+             _MODEL.Calculate_two_point_observables(_LANCZOS.Eig_vec);
+             _MODEL.Calculate_four_point_observables(_LANCZOS.Eig_vec);
+            }
+            else{
+                _MODEL.Calculate_one_point_observables_acting(_LANCZOS.Eig_vec);
+                _MODEL.Calculate_two_point_observables_acting(_LANCZOS.Eig_vec);
+                _MODEL.Calculate_four_point_observables_acting(_LANCZOS.Eig_vec);
+            }
             // Only following basis are printed.
             /*  Mat_1_int Temp_index;
         Temp_index.push_back(149); Temp_index.push_back(774); Temp_index.push_back(145); Temp_index.push_back(150);
@@ -5978,9 +5996,9 @@ int main(int argc, char** argv){
 
 
 
-            bool Dynamics_SPDOS = true;
-            bool Above_mu = true;
-            bool Below_mu= true;
+            bool Dynamics_SPDOS = false;
+            bool Above_mu = false;
+            bool Below_mu= false;
 
 
             if(Do_Dynamics && Dynamics_SPDOS){

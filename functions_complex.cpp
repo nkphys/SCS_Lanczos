@@ -866,7 +866,13 @@ int Find_int_in_intarray(int num, Mat_1_int &array){
     bool not_found=true;
     int ind=0;
     while(not_found){
+        
+        if( !(ind<array.size()) ){
+            cout<<ind<<"  "<<array.size()<<endl;
+        }
         assert(ind<array.size());
+
+
         if(num==array[ind]){
             pos=ind;
             not_found = false;

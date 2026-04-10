@@ -152,6 +152,8 @@ void BASIS_1_orb_Hubbard_GC::Construct_basis(){
     //Mat_1_int temp=decimal_to_binary(2147483647);
     //cout<<endl;
 
+    cout<<"Basis construction complete. No of basis states = "<<D_up_basis.size()<<endl;
+
     cout<<"BOUNDARY CONDITIONS ARE DECIDED BY LONG RANGE HOPPING MATRIX"<<endl;
 }
 
