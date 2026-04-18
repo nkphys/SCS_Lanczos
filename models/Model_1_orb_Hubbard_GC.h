@@ -33,6 +33,7 @@ public:
     string LongRangeDenDenIntfilepath;
     string FourPointObsSet_filepath;
     bool CFS_SITE_RESOLVED_bool;
+    bool H_MAG_SITE_RESOLVED_bool;
 
     Matrix_COO Hamil;
     bool Calculate_observables_onepoint;

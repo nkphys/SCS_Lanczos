@@ -1,26 +1,26 @@
 Model = 1_orb_Hubbard_GC
 ------------------------------------------
-Length = 16
-N_Total = 4
+Length = 12
+N_Total = 12
 CFS_SITE_RESOLVED = false 0 -0.6 0 0 -0.6 0 0 -0.6 0 0 -0.6 0
 LongRangeHopping_file = Hopping.txt
 LongRangeDenDenInt_file = DenDen.txt
-U = 4.0
-H_mag = 0.0
+U = 6.0
+H_mag_site_resolved = true 0.1 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 
 FourPointObsSet_file = 4pt_Cd_C_Cd_C.txt
 
 ----------------------------------------
-Saving_Hamiltonian_and_Oprs = truee
+Saving_Hamiltonian_and_Oprs = true
 Random_seed_generator = 564
 --------------------------------------
 
-Lanc_Error = 10e-12
-max_steps = 400
+Lanc_Error = -10e-12
+max_steps = 100
 file_eval_spectrum = Tri_evals_OBC_GC.txt
-save_all_Krylov_space_vecs = false
-get_overlap_bw_eigstates_and_K_vecs = false
-lanczos_reorthogonalization = false
+save_all_Krylov_space_vecs = truee
+get_overlap_bw_eigstates_and_K_vecs = truee
+lanczos_reorthogonalization = truee
 Get_Full_Spectrum = false
 need_few_eig_vecs = false
 Get_overlap_with_basis = false
@@ -37,20 +37,20 @@ seed_file = seed_GSold.txt
 
 
 ----------------------------------
-Perform_Dynamics = false
-check_omega = 2.0
+Perform_Dynamics = true
+check_omega = 0.5
 Opr_for_Dynamics = Delta_SOC
 Momentum_resolved = false
 k = 0.0
-file_dynamics_out = spindn_site1
-Dynamics_dos_operators = 1 1.0 0.0 0 1 0
+file_dynamics_out = AFMspin1_a0_k0
+Dynamics_dos_operators = 6 1.0 0.0 0 1 0 1.0 0.0 0 1 2 1.0 0.0 0 1 4 1.0 0.0 0 1 6 1.0 0.0 0 1 8 1.0 0.0 0 1 10
 ---------------------------------------------------
 
 ---------------For both RIXS and std. dynamics---------
-eta = 0.01
-omega_max = 10.0
-omega_min = -10.0
-d_omega = 0.002
+eta = 0.05
+omega_max = 7.0
+omega_min = -2.0
+d_omega = 0.02
 --------------------------------------
 
 ----------------------------------------

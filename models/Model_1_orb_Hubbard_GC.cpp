@@ -967,7 +967,7 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Read_parameters(string filename){
     string ntotal, Ntotal = "N_Total = ";
 
     string ucoul, Ucoul = "U = ";
-    string hmag, Hmag = "H_mag = ";
+    string hmag_site_resolved, Hmag_site_resolved = "H_mag_site_resolved = ";
     string cfs_site_resolved, CFS_SITE_RESOLVED = "CFS_SITE_RESOLVED = ";
 
     string LongRangeHoppingfile_ = "LongRangeHopping_file = ";
@@ -996,8 +996,8 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Read_parameters(string filename){
             if ((offset = line.find(Ucoul, 0)) != string::npos) {
                 ucoul= line.substr (offset + Ucoul.length());		}
 
-            if ((offset = line.find(Hmag, 0)) != string::npos) {
-                hmag = line.substr (offset + Hmag.length());		}
+            if ((offset = line.find(Hmag_site_resolved, 0)) != string::npos) {
+                hmag_site_resolved = line.substr (offset + Hmag_site_resolved.length());		}
 
             if ((offset = line.find(CFS_SITE_RESOLVED, 0)) != string::npos) {
                 cfs_site_resolved = line.substr (offset+CFS_SITE_RESOLVED.length());				}
@@ -1028,14 +1028,39 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Read_parameters(string filename){
     U=atof(ucoul.c_str());
     cout<<"U = "<<U<<endl;
 
-    double h;
-    h=atof(hmag.c_str());
-    H_field.resize(basis.Length);
-    for(int i=0;i<basis.Length;i++){
-        H_field[i]=h;
-    }
-    cout<<"H_field = "<<h<<endl;
+    //double h;
+    string temp_string_h;
+    stringstream h_site_resolved_stream;
+    h_site_resolved_stream<<hmag_site_resolved;
+    h_site_resolved_stream>>temp_string_h;
 
+    if(temp_string_h == "true"){
+        H_MAG_SITE_RESOLVED_bool = true;
+    }
+    else{
+        H_MAG_SITE_RESOLVED_bool = false;
+    }
+
+
+    H_field.clear();
+    H_field.resize(basis.Length);
+     for(int i=0;i<basis.Length;i++){
+        if(H_MAG_SITE_RESOLVED_bool==true){
+
+            h_site_resolved_stream >> temp_val;
+            H_field[i]=temp_val;
+        }
+        else{
+            H_field[i]=0.0;
+        }
+    }
+
+
+    cout<<"H_mag_site_resolved = "<<endl;
+    for(int i=0;i<basis.Length;i++){
+        cout<<H_field[i]<<" ";
+    }
+    cout<<endl;
 
 
     string temp_string;

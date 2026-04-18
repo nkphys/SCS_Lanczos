@@ -5973,12 +5973,12 @@ int main(int argc, char** argv){
             if(_LANCZOS.Saving_Hamil){
             _MODEL.Calculate_one_point_observables(_LANCZOS.Eig_vec);
              _MODEL.Calculate_two_point_observables(_LANCZOS.Eig_vec);
-             _MODEL.Calculate_four_point_observables(_LANCZOS.Eig_vec);
+           //  _MODEL.Calculate_four_point_observables(_LANCZOS.Eig_vec);
             }
             else{
                 _MODEL.Calculate_one_point_observables_acting(_LANCZOS.Eig_vec);
-                _MODEL.Calculate_two_point_observables_acting(_LANCZOS.Eig_vec);
-                _MODEL.Calculate_four_point_observables_acting(_LANCZOS.Eig_vec);
+               _MODEL.Calculate_two_point_observables_acting(_LANCZOS.Eig_vec);
+             //   _MODEL.Calculate_four_point_observables_acting(_LANCZOS.Eig_vec);
             }
             // Only following basis are printed.
             /*  Mat_1_int Temp_index;
@@ -5996,9 +5996,9 @@ int main(int argc, char** argv){
 
 
 
-            bool Dynamics_SPDOS = false;
-            bool Above_mu = false;
-            bool Below_mu= false;
+            bool Dynamics_SPDOS = true;
+            bool Above_mu = true;
+            bool Below_mu= true;
 
 
             if(Do_Dynamics && Dynamics_SPDOS){
