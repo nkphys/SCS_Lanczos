@@ -26,6 +26,8 @@ public:
     //2Lx2L matrix for L sites, "2" for spin, it includes hopping and SOC both.
     //index=L*spin + site; spin \in {0=UP,1=DOWN}, and L=No of sites
     Mat_2_doub Hopping_mat_LongRange;
+    //2Lx2L matrix for spin-resolved density-density interaction:
+    //sum_{alpha,beta} V_{alpha,beta} n_{alpha} n_{beta}, alpha=L*spin+site
     Mat_2_real DenDenInt_mat_LongRange;
     Mat_1_real CFS;
 
@@ -34,6 +36,9 @@ public:
     string FourPointObsSet_filepath;
     bool CFS_SITE_RESOLVED_bool;
     bool H_MAG_SITE_RESOLVED_bool;
+    bool Calculate_Bipartite_Entanglement;
+    Mat_1_int Sys1_Ent_sites;
+    Mat_1_int Sys2_Ent_sites;
 
     Matrix_COO Hamil;
     bool Calculate_observables_onepoint;
@@ -72,6 +77,8 @@ public:
                      Mat_1_trio_int TRIO_VEC, Mat_1_doub values);
     void Get_cdagger_on_GS(Mat_1_doub & EigVec_, BASIS_1_orb_Hubbard_GC & basis_Np1,
                            Mat_1_trio_int TRIO_VEC, Mat_1_doub values);
+    void Get_BipartiteEntanglement(Mat_1_int &Sys1_, Mat_1_int &Sys2_,
+                                   Mat_1_doub &Vec_, double & VonNuemannEntropy);
     void Calculate_one_point_observables(Mat_1_doub &Vec_);
     void Calculate_two_point_observables(Mat_1_doub &Vec_);
     void Calculate_four_point_observables(Mat_1_doub &Vec_);

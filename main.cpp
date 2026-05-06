@@ -5965,6 +5965,12 @@ int main(int argc, char** argv){
             _LANCZOS.Perform_LANCZOS(_MODEL.Hamil);
             _LANCZOS.Write_full_spectrum();
 
+            if(_MODEL.Calculate_Bipartite_Entanglement){
+                double VNEntropy;
+                _MODEL.Get_BipartiteEntanglement(_MODEL.Sys1_Ent_sites, _MODEL.Sys2_Ent_sites, _LANCZOS.Eig_vec, VNEntropy);
+                cout<<"Von Neumann Entropy for user-defined bipartition = "<<VNEntropy<<endl;
+            }
+
 
          //   Print_vector_in_file(_LANCZOS.Eig_vec,"GS_vec.txt");
 

@@ -1,0 +1,66 @@
+Geometry = LongRange
+Model = 1_orb_Hubbard_chain
+------------------------------------------
+PBC = false
+Length_X = 16
+Length_Y = 1
+Total_Sites = 16
+Ndown = 10
+Nup = 6
+ 
+Hopping = 0.0
+Hopping_NN = 0.0
+U = 8.0
+H_mag = 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+File_Onsite_Energies = false onsite_ener.txt
+File_Hopping_Connections = Hopping_L16_chain_OBC_t1.txt
+File_NonLocal_Int_Connections = ZeroMatrix_L16.txt
+File_Direct_Exchange_Connections = ZeroMatrix_L16.txt
+File_Pair_Hopping_Connections = ZeroMatrix_L16.txt
+File_Interaction_Assisted_Hopping_Connections = ZeroMatrix_L16.txt
+
+File_Three_Point_Observation = ThreePointOprs_zero.txt
+File_Three_Point_Interaction = ThreePointIntrs_zero.txt
+----------------------------------------
+-------------------------------------
+Saving_Hamiltonian_and_Oprs = false
+Random_seed_generator = 564
+---------------------------------------------
+Lanc_Error = 10e-12
+max_steps = 300
+file_eval_spectrum = Tri_evals_OBC_GC.txt
+save_all_Krylov_space_vecs = false
+get_overlap_bw_eigstates_and_K_vecs = false
+lanczos_reorthogonalization = false
+Get_Full_Spectrum = false
+need_few_eig_vecs = true
+few = 4
+----------------------------------------
+Get_overlap_with_basis = false
+States_to_look = 1 0
+overlap_out_file = out_L16_Nup6_Ndn10.txt
+calculate_local_obs_for_states_to_look = false
+calculate_local_obs_for_states_to_look_for_first_n_basis = 200
+file_out_local_obs_for_states_to_look = local_obs_for_state_no
+--------------------------------------
+
+----------------------------------
+Perform_Dynamics = false
+eta = 0.05
+check_omega = 0.5
+omega_max = 10.0
+omega_min = -10.0
+d_omega = 0.01
+Opr_for_Dynamics = J
+Momentum_resolved = false
+k = 0.0
+file_dynamics_out = dyn_L16_Nup6_Ndn10
+Dynamics_dos_operators = 1 1.0 0.0 0 0 0
+---------------------------------
+
+Static_Finite_Temperature = false
+Number_of_Random_States = 100
+Number_of_LowKrylov_States_used = 40
+Temperature = 0.2
+
+Processors = 4

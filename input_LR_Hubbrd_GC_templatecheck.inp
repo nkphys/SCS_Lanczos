@@ -1,19 +1,19 @@
 Model = 1_orb_Hubbard_GC
 ------------------------------------------
-Length = 12
-N_Total = 12
+Length = 8
+N_Total = 8
 CFS_SITE_RESOLVED = false 0 -0.6 0 0 -0.6 0 0 -0.6 0 0 -0.6 0
 LongRangeHopping_file = Hopping.txt
 LongRangeDenDenInt_file = DenDenSpinResolved.txt
-U = 8.0
-H_mag_site_resolved = true 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+U = 100.0
+H_mag_site_resolved = true 0.0 -0.0
 
 FourPointObsSet_file = 4pt_Cd_C_Cd_C.txt
 
 
 Calculate_Bipartite_Entanglement = true
-Sys1 = 0 1 2 3 4 5
-Sys2 = 6 7 8 9 10 11
+Sys1 = 0 2 4 6
+Sys2 = 1 3 5 7
 
 ----------------------------------------
 Saving_Hamiltonian_and_Oprs = true

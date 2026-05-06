@@ -131,16 +131,31 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Act_Hamil(BASIS_1_orb_Hubbard_GC &basis
         //intra-orbital coulomb repulsion:
         value += U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
 
-        //Long range density-density interaction:
-        for(int site1=0;site1<basis.Length;site1++){
-            for(int site2=0;site2<basis.Length;site2++){
-                value += DenDenInt_mat_LongRange[site1][site2]*
-                        ( ( bit_value(basis.D_up_basis[i], site1) +
-                            bit_value(basis.D_dn_basis[j], site1) )
-                          *
-                          ( bit_value(basis.D_up_basis[i], site2) +
-                            bit_value(basis.D_dn_basis[j], site2) )
-                        );
+        //Long range density-density interaction: n_{i,s} n_{j,s'}
+        for(int spin1=0;spin1<2;spin1++){
+            for(int site1=0;site1<basis.Length;site1++){
+                int alpha1 = basis.Length*spin1 + site1;
+                int n_alpha1;
+                if(spin1==0){
+                    n_alpha1 = bit_value(basis.D_up_basis[i], site1);
+                }
+                else{
+                    n_alpha1 = bit_value(basis.D_dn_basis[j], site1);
+                }
+
+                for(int spin2=0;spin2<2;spin2++){
+                    for(int site2=0;site2<basis.Length;site2++){
+                        int alpha2 = basis.Length*spin2 + site2;
+                        int n_alpha2;
+                        if(spin2==0){
+                            n_alpha2 = bit_value(basis.D_up_basis[i], site2);
+                        }
+                        else{
+                            n_alpha2 = bit_value(basis.D_dn_basis[j], site2);
+                        }
+                        value += DenDenInt_mat_LongRange[alpha1][alpha2]*(n_alpha1*n_alpha2);
+                    }
+                }
             }
         }
 
@@ -368,16 +383,31 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Add_diagonal_terms_old(){
         value+=U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
 
 
-        //Long range density-density interaction:
-        for(int site1=0;site1<basis.Length;site1++){
-            for(int site2=0;site2<basis.Length;site2++){
-                value+=DenDenInt_mat_LongRange[site1][site2]*
-                        ( ( bit_value(basis.D_up_basis[i], site1) +
-                            bit_value(basis.D_dn_basis[j], site1) )
-                          *
-                          ( bit_value(basis.D_up_basis[i], site2) +
-                            bit_value(basis.D_dn_basis[j], site2) )
-                        );
+        //Long range density-density interaction: n_{i,s} n_{j,s'}
+        for(int spin1=0;spin1<2;spin1++){
+            for(int site1=0;site1<basis.Length;site1++){
+                int alpha1 = basis.Length*spin1 + site1;
+                int n_alpha1;
+                if(spin1==0){
+                    n_alpha1 = bit_value(basis.D_up_basis[i], site1);
+                }
+                else{
+                    n_alpha1 = bit_value(basis.D_dn_basis[j], site1);
+                }
+
+                for(int spin2=0;spin2<2;spin2++){
+                    for(int site2=0;site2<basis.Length;site2++){
+                        int alpha2 = basis.Length*spin2 + site2;
+                        int n_alpha2;
+                        if(spin2==0){
+                            n_alpha2 = bit_value(basis.D_up_basis[i], site2);
+                        }
+                        else{
+                            n_alpha2 = bit_value(basis.D_dn_basis[j], site2);
+                        }
+                        value+=DenDenInt_mat_LongRange[alpha1][alpha2]*(n_alpha1*n_alpha2);
+                    }
+                }
             }
         }
 
@@ -445,16 +475,31 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Add_diagonal_terms(){
         value+=U*countCommonBits(basis.D_up_basis[i],basis.D_dn_basis[j]);
 
 
-        //Long range density-density interaction:
-        for(int site1=0;site1<basis.Length;site1++){
-            for(int site2=0;site2<basis.Length;site2++){
-                value+=DenDenInt_mat_LongRange[site1][site2]*
-                        ( ( bit_value(basis.D_up_basis[i], site1) +
-                            bit_value(basis.D_dn_basis[j], site1) )
-                          *
-                          ( bit_value(basis.D_up_basis[i], site2) +
-                            bit_value(basis.D_dn_basis[j], site2) )
-                        );
+        //Long range density-density interaction: n_{i,s} n_{j,s'}
+        for(int spin1=0;spin1<2;spin1++){
+            for(int site1=0;site1<basis.Length;site1++){
+                int alpha1 = basis.Length*spin1 + site1;
+                int n_alpha1;
+                if(spin1==0){
+                    n_alpha1 = bit_value(basis.D_up_basis[i], site1);
+                }
+                else{
+                    n_alpha1 = bit_value(basis.D_dn_basis[j], site1);
+                }
+
+                for(int spin2=0;spin2<2;spin2++){
+                    for(int site2=0;site2<basis.Length;site2++){
+                        int alpha2 = basis.Length*spin2 + site2;
+                        int n_alpha2;
+                        if(spin2==0){
+                            n_alpha2 = bit_value(basis.D_up_basis[i], site2);
+                        }
+                        else{
+                            n_alpha2 = bit_value(basis.D_dn_basis[j], site2);
+                        }
+                        value+=DenDenInt_mat_LongRange[alpha1][alpha2]*(n_alpha1*n_alpha2);
+                    }
+                }
             }
         }
 
@@ -972,8 +1017,15 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Read_parameters(string filename){
 
     string LongRangeHoppingfile_ = "LongRangeHopping_file = ";
     string LongRangeDenDenIntfile_ = "LongRangeDenDenInt_file = ";
+    string BipartiteEntanglement_ = "Calculate_Bipartite_Entanglement = ";
+    string Sys1_sites_ = "Sys1 = ";
+    string Sys2_sites_ = "Sys2 = ";
 
     string FourPointObsSet_file_ = "FourPointObsSet_file = ";
+
+    string bipartite_entanglement_;
+    string sys1_sites_string_;
+    string sys2_sites_string_;
 
     int offset;
     string line;
@@ -1008,6 +1060,15 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Read_parameters(string filename){
             if ((offset = line.find(LongRangeDenDenIntfile_, 0)) != string::npos) {
                 LongRangeDenDenIntfilepath = line.substr (offset+LongRangeDenDenIntfile_.length());  }
 
+            if ((offset = line.find(BipartiteEntanglement_, 0)) != string::npos) {
+                bipartite_entanglement_ = line.substr (offset+BipartiteEntanglement_.length());  }
+
+            if ((offset = line.find(Sys1_sites_, 0)) != string::npos) {
+                sys1_sites_string_ = line.substr (offset+Sys1_sites_.length());  }
+
+            if ((offset = line.find(Sys2_sites_, 0)) != string::npos) {
+                sys2_sites_string_ = line.substr (offset+Sys2_sites_.length());  }
+
             if ((offset = line.find(FourPointObsSet_file_, 0)) != string::npos) {
                 FourPointObsSet_filepath = line.substr (offset+FourPointObsSet_file_.length());  }
 
@@ -1027,6 +1088,47 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Read_parameters(string filename){
 
     U=atof(ucoul.c_str());
     cout<<"U = "<<U<<endl;
+
+    Calculate_Bipartite_Entanglement = false;
+    Sys1_Ent_sites.clear();
+    Sys2_Ent_sites.clear();
+
+    if(bipartite_entanglement_=="true"){
+        Calculate_Bipartite_Entanglement = true;
+    }
+
+    if(sys1_sites_string_.size()>0){
+        stringstream sys1_stream(sys1_sites_string_);
+        int site_temp;
+        while(sys1_stream >> site_temp){
+            Sys1_Ent_sites.push_back(site_temp);
+        }
+    }
+    if(sys2_sites_string_.size()>0){
+        stringstream sys2_stream(sys2_sites_string_);
+        int site_temp;
+        while(sys2_stream >> site_temp){
+            Sys2_Ent_sites.push_back(site_temp);
+        }
+    }
+
+    //if(Sys1_Ent_sites.size()>0 && Sys2_Ent_sites.size()>0){
+    //    Calculate_Bipartite_Entanglement = true;
+   // }
+
+    if(Calculate_Bipartite_Entanglement){
+        cout<<"Bipartite entanglement calculation enabled"<<endl;
+        cout<<"Sys1 = ";
+        for(int i=0;i<Sys1_Ent_sites.size();i++){
+            cout<<Sys1_Ent_sites[i]<<" ";
+        }
+        cout<<endl;
+        cout<<"Sys2 = ";
+        for(int i=0;i<Sys2_Ent_sites.size();i++){
+            cout<<Sys2_Ent_sites[i]<<" ";
+        }
+        cout<<endl;
+    }
 
     //double h;
     string temp_string_h;
@@ -1106,7 +1208,7 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Read_parameters(string filename){
 
     cout<<"Reading DenDenInt matrix from : "<<LongRangeDenDenIntfilepath<<endl;
 
-    Read_matrix_from_file(LongRangeDenDenIntfilepath, DenDenInt_mat_LongRange , basis.Length, basis.Length);
+    Read_matrix_from_file(LongRangeDenDenIntfilepath, DenDenInt_mat_LongRange , 2*basis.Length, 2*basis.Length);
 
 
     cout<<"DenDenInt matrix read from file : "<<endl;
@@ -1427,6 +1529,100 @@ void MODEL_1_orb_Hubbard_GC<Basis_type>::Create_Lattice_Graph(string output_file
     cout<<"Lattice graph written to "<<output_filename<<endl;
 
 }
+
+
+
+
+
+
+template <typename Basis_type>
+void MODEL_1_orb_Hubbard_GC<Basis_type>::Get_BipartiteEntanglement(Mat_1_int &Sys1_, Mat_1_int &Sys2_,
+                                                                    Mat_1_doub &Vec_, double & VonNuemannEntropy){
+
+    assert((int)Vec_.size()==(int)basis.D_up_basis.size());
+    assert((int)Sys1_.size() + (int)Sys2_.size() == basis.Length);
+
+    Mat_1_int part_check;
+    part_check.resize(basis.Length);
+    for(int site=0;site<basis.Length;site++){
+        part_check[site]=0;
+    }
+    for(int s1=0;s1<Sys1_.size();s1++){
+        assert(Sys1_[s1]>=0 && Sys1_[s1]<basis.Length);
+        part_check[Sys1_[s1]] += 1;
+    }
+    for(int s2=0;s2<Sys2_.size();s2++){
+        assert(Sys2_[s2]>=0 && Sys2_[s2]<basis.Length);
+        part_check[Sys2_[s2]] += 1;
+    }
+    for(int site=0;site<basis.Length;site++){
+        assert(part_check[site]==1);
+    }
+
+    int len1 = Sys1_.size();
+    int len2 = Sys2_.size();
+
+    int dim_up_1 = (int)pow(2, len1);
+    int dim_dn_1 = (int)pow(2, len1);
+    int dim1 = dim_up_1*dim_dn_1;
+
+    int dim_up_2 = (int)pow(2, len2);
+    int dim_dn_2 = (int)pow(2, len2);
+    int dim2 = dim_up_2*dim_dn_2;
+
+    Matrix<double_type> Psi_LB;
+    Psi_LB.resize(dim1, dim2);
+    for(int i1=0;i1<dim1;i1++){
+        for(int i2=0;i2<dim2;i2++){
+            Psi_LB(i1,i2)=zero;
+        }
+    }
+
+    for(int m=0;m<basis.D_up_basis.size();m++){
+        int D_up = basis.D_up_basis[m];
+        int D_dn = basis.D_dn_basis[m];
+
+        int up1_dec = 0;
+        int dn1_dec = 0;
+        int up2_dec = 0;
+        int dn2_dec = 0;
+
+        for(int x=0;x<len1;x++){
+            int site = Sys1_[x];
+            up1_dec += bit_value(D_up, site)*(int)pow(2,x);
+            dn1_dec += bit_value(D_dn, site)*(int)pow(2,x);
+        }
+
+        for(int x=0;x<len2;x++){
+            int site = Sys2_[x];
+            up2_dec += bit_value(D_up, site)*(int)pow(2,x);
+            dn2_dec += bit_value(D_dn, site)*(int)pow(2,x);
+        }
+
+        int row = up1_dec + dim_up_1*dn1_dec;
+        int col = up2_dec + dim_up_2*dn2_dec;
+
+        Psi_LB(row,col) += Vec_[m];
+    }
+
+    int r_ = min(dim1,dim2);
+    Matrix<double_type> VT_;
+    Matrix<double_type> U_;
+    vector<double> Sigma_;
+    Perform_SVD(Psi_LB,VT_,U_,Sigma_);
+
+    double VonNuemannEntropy_temp=0.0;
+    for(int n=0;n<r_ && n<Sigma_.size();n++){
+        double prob_n = Sigma_[n]*Sigma_[n];
+        if(prob_n>1.0e-16){
+            VonNuemannEntropy_temp += -1.0*prob_n*(log2(prob_n));
+        }
+    }
+
+    VonNuemannEntropy = VonNuemannEntropy_temp;
+}
+
+
 
 
 template <typename Basis_type>

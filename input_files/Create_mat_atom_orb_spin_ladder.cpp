@@ -28,16 +28,13 @@ int main(){
 
 
 bool PBCX, PBCY;
-PBCX=true;
+PBCX=false;
 PBCY=true;
 
-bool t1_PBCX, t1_PBCY;
-t1_PBCX=true;
-t1_PBCY=true;
 
 
 
-int Lx=6;
+int Lx=4;
 int Ly=1;
 
 /*
@@ -55,11 +52,37 @@ complex<double> const iota(0,1);
 int N_atoms=2;
 int N_orbs=1;
 
-double t1_parameter=-0.5;
-double t1p_parameter=-0.2;
-double t2_parameter=-0.8;
+double t1_parameter=0.0;
+double t1p_parameter=0.2;
+double t2_parameter=1.0;
+double RSOC_parameter=0.0;
+double V1_uu_or_dd=0.0;
+double Jz=0.00;
 
 double phi=0.0*PI;
+
+
+
+Mat_2_Complex_doub Sigmax, Sigmay, Iden;
+
+Sigmax.resize(2);Sigmay.resize(2);Iden.resize(2);
+
+for(int i=0;i<2;i++){
+Sigmax[i].resize(2);
+Sigmay[i].resize(2);
+Iden[i].resize(2);
+for(int j=0;j<2;j++){
+Sigmax[i][j]=0.0;
+Sigmay[i][j]=0.0;
+Iden[i][j]=0.0;
+}
+}
+
+Iden[0][0]=1.0;Iden[1][1]=1.0;
+Sigmax[0][1]=1.0;Sigmax[1][0]=1.0;
+Sigmay[0][1]=complex<double>(0.0,-1.0);Sigmay[1][0]=complex<double>(0.0,1.0);
+
+
 
 
 //a + ix*(2) + spin*(2*Lx)
@@ -68,7 +91,7 @@ int neigh_x_bare, neigh_y_bare;
 string Hopping_file_str = "Hopping.txt" ;
 ofstream Hopping_file(Hopping_file_str.c_str());
 
-string DenDen_file_str = "DenDen.txt" ;
+string DenDen_file_str = "DenDenSpinResolved.txt" ;
 ofstream DenDen_file(DenDen_file_str.c_str());
 
 int dof1, dof2;
@@ -85,10 +108,10 @@ HopMat[i][j]=0.0;
 
 
 Mat_2_doub DenDenMat;
-DenDenMat.resize(2*Lx*Ly);
-for(int i=0;i<2*Lx*Ly;i++){
-DenDenMat[i].resize(2*Lx*Ly);
-for(int j=0;j<2*Lx*Ly;j++){
+DenDenMat.resize(4*Lx*Ly);
+for(int i=0;i<4*Lx*Ly;i++){
+DenDenMat[i].resize(4*Lx*Ly);
+for(int j=0;j<4*Lx*Ly;j++){
 DenDenMat[i][j]=0.0;
 }
 }
@@ -107,8 +130,7 @@ for(int orb1=0;orb1<N_orbs;orb1++){
 for(int atom1=0;atom1<N_atoms;atom1++){
 
 val=0;
-if((atom1==1) && (atom2==0) && (spin1==spin2) ){
-val=t1_parameter;
+if((atom1==1) && (atom2==0) ){
 
 for(int ix=0;ix<Lx;ix++){
 for(int iy=0;iy<Ly;iy++){
@@ -119,8 +141,17 @@ neigh_y=iy;
 dof1 = atom1 + ix*(2) + spin1*(2*Lx);
 dof2 = atom2 + neigh_x*(2) + spin2*(2*Lx);
 
-HopMat[dof2][dof1] = val;
+HopMat[dof2][dof1] = t1_parameter*Iden[spin1][spin2] + iota*RSOC_parameter*conj(Sigmax[spin1][spin2]);
 HopMat[dof1][dof2] =conj(HopMat[dof2][dof1]);
+
+DenDenMat[dof2][dof1] = V1_uu_or_dd*(Iden[spin1][spin2]).real(); 
+
+if(spin1==spin2){
+DenDenMat[dof2][dof1]  += Jz*0.25;
+}
+else{
+DenDenMat[dof2][dof1]  -= Jz*0.25;
+}
 
 
 }
@@ -147,8 +178,7 @@ for(int orb1=0;orb1<N_orbs;orb1++){
 for(int atom1=0;atom1<N_atoms;atom1++){
 
 val=0;
-if((atom1==0) && (atom2==1) && (spin1==spin2) ){
-val=t2_parameter;
+if((atom1==0) && (atom2==1)){
 
 for(int ix=0;ix<Lx;ix++){
 for(int iy=0;iy<Ly;iy++){
@@ -163,15 +193,15 @@ neigh_y = (neigh_y_bare +  Ly)%Ly;
 dof1 = atom1 + ix*(2) + spin1*(2*Lx);
 dof2 = atom2 + neigh_x*(2) + spin2*(2*Lx);
 
-HopMat[dof2][dof1] = val;
+HopMat[dof2][dof1] = t2_parameter*Iden[spin1][spin2]; 
 HopMat[dof1][dof2] =conj(HopMat[dof2][dof1]);
 }
 }
 }
 }
 
-if((atom1==1) && (atom2==0) && (spin1==spin2) ){
-val=-t2_parameter;
+if((atom1==1) && (atom2==0) ){
+
 
 for(int ix=0;ix<Lx;ix++){
 for(int iy=0;iy<Ly;iy++){
@@ -186,15 +216,14 @@ neigh_y = (neigh_y_bare +  Ly)%Ly;
 dof1 = atom1 + ix*(2) + spin1*(2*Lx);
 dof2 = atom2 + neigh_x*(2) + spin2*(2*Lx);
 
-HopMat[dof2][dof1] = val;
+HopMat[dof2][dof1] = -t2_parameter*Iden[spin1][spin2];
 HopMat[dof1][dof2] =conj(HopMat[dof2][dof1]);
 }
 }
 }
 }
 
-if((atom1==1) && (atom2==1) && (spin1==spin2) ){
-val=t1p_parameter;
+if((atom1==1) && (atom2==1) ){
 
 for(int ix=0;ix<Lx;ix++){
 for(int iy=0;iy<Ly;iy++){
@@ -209,7 +238,7 @@ neigh_y = (neigh_y_bare +  Ly)%Ly;
 dof1 = atom1 + ix*(2) + spin1*(2*Lx*Ly);
 dof2 = atom2 + neigh_x*(2) + spin2*(2*Lx*Ly);
 
-HopMat[dof2][dof1] = val;
+HopMat[dof2][dof1] = -t1p_parameter*Iden[spin1][spin2] + iota*RSOC_parameter*(Sigmay[spin2][spin1]);
 HopMat[dof1][dof2] =conj(HopMat[dof2][dof1]);
 }
 
@@ -218,9 +247,8 @@ HopMat[dof1][dof2] =conj(HopMat[dof2][dof1]);
 
 }
 
-if((atom1==0) && (atom2==0) && (spin1==spin2) ){
+if((atom1==0) && (atom2==0) ){
 
-val=t1p_parameter;
 for(int ix=0;ix<Lx;ix++){
 for(int iy=0;iy<Ly;iy++){
 neigh_x_bare=(ix+1);
@@ -234,7 +262,7 @@ neigh_y = (neigh_y_bare +  Ly)%Ly;
 dof1 = atom1 + ix*(2) + spin1*(2*Lx*Ly);
 dof2 = atom2 + neigh_x*(2) + spin2*(2*Lx*Ly);
 val = 
-HopMat[dof2][dof1] = val;
+HopMat[dof2][dof1] = t1p_parameter*Iden[spin1][spin2] + iota*RSOC_parameter*(Sigmay[spin2][spin1]);
 HopMat[dof1][dof2] =conj(HopMat[dof2][dof1]);
 
 }
@@ -262,10 +290,10 @@ Hopping_file<<endl;
 
 
 double temp_doub;
-for(int i=0;i<2*Lx*Ly;i++){
-for(int j=0;j<2*Lx*Ly;j++){
-if(j>=i){
-temp_doub = DenDenMat[i][j] + DenDenMat[j][i];
+for(int i=0;i<4*Lx*Ly;i++){
+for(int j=0;j<4*Lx*Ly;j++){
+if(j!=i){
+temp_doub = 0.5*(DenDenMat[i][j] + DenDenMat[j][i]);
 }
 else{
 temp_doub =0.0;
